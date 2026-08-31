@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { CartDrawer } from '@/components/cart-drawer';
@@ -9,8 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, Truck, Shield, RotateCcw } from 'lucide-react';
 import { getFeaturedProducts, CATEGORIES } from '@/lib/products';
 
+// Skip static generation
+export const dynamic = 'force-dynamic';
+
 // Lazy load 3D scene (client-only)
-const HeroScene = dynamic(
+const HeroScene = dynamicImport(
   () => import('@/components/3d/hero-scene').then((m) => m.HeroScene),
   { ssr: false }
 );

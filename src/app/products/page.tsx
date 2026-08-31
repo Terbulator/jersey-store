@@ -5,6 +5,9 @@ import { CartDrawer } from '@/components/cart-drawer';
 import { getAllProducts, CATEGORIES, Product } from '@/lib/products';
 import { ProductsFilter } from './products-filter';
 
+// Skip static generation
+export const dynamic = 'force-dynamic';
+
 export default async function ProductsPage() {
   const products = await getAllProducts();
   const teams = ['All', ...new Set(products.map((p) => p.team).filter(Boolean))];
