@@ -29,7 +29,78 @@ Legend used throughout:
 
 ---
 
-## 2. Role Model (Target)
+## 2. System Architecture
+
+From `ecommerce-architecture-role-plan.md` §1 — the target deployment shape.
+
+```
+                              ┌─────────────────────────┐
+                              │        CDN / WAF         │
+                              └────────────┬─────────────┘
+                                           │
+                              ┌────────────▼─────────────┐
+                              │      Load Balancer        │
+                              └────────────┬─────────────┘
+                 ┌───────────────────────┬─┴───────────────────────┐
+                 │                       │                         │
+        ┌────────▼────────┐   ┌─────────▼─────────┐     ┌─────────▼─────────┐
+        │  Storefront Web  │   │   Admin/Owner      │     │  Reseller Portal   │
+        │  (Customer App)  │   │   Dashboard (SPA)  │     │  (Worker + Reseller│
+        │                  │   │                    │     │  share this shell) │
+        └────────┬─────────┘   └─────────┬──────────┘     └─────────┬─────────┘
+                 │                       │                         │
+                 └───────────────┬───────┴──────────┬──────────────┘
+                                 │                  │
+                        ┌────────▼──────────────────▼────────┐
+                        │        API Gateway (REST/GraphQL)   │
+                        │   Auth, Rate limiting, RBAC checks  │
+                        └────────┬─────────────────┬──────────┘
+             ┌───────────────────┼─────────────────┼───────────────────┐
+             │                   │                 │                   │
+     ┌───────▼──────┐   ┌────────▼───────┐  ┌───────▼───────┐  ┌────────▼───────┐
+     │  Auth Service  │   │ Catalog Service │  │ Order Service │  │ Payment Service│
+     │ (Users/Roles)  │   │ (Products/Stock)│  │ (Cart/Checkout)│  │ (Gateway/Wallet)│
+     └───────┬──────┘   └────────┬───────┘  └───────┬───────┘  └────────┬───────┘
+             │                   │                 │                   │
+     ┌───────▼──────┐   ┌────────▼───────┐  ┌───────▼───────┐  ┌────────▼───────┐
+     │ Notification   │   │ Inventory/WMS  │  │ Shipping/     │  │ Reporting &    │
+     │ Service (Email/ │   │ Service         │  │ Logistics Svc │  │ Analytics Svc  │
+     │ SMS/Push)       │   │                │  │               │  │                │
+     └────────────────┘   └────────────────┘  └───────────────┘  └────────────────┘
+                                 │
+                        ┌────────▼────────┐
+                        │   Database Layer │
+                        │ (Primary + Read  │
+                        │  Replicas + Cache│
+                        │  + Search Index) │
+                        └──────────────────┘
+```
+
+**Current reality (deployed).** The live app is a Next.js 14 (App Router) monolith on Vercel:
+one server (middleware auth gate + API routes) backed by PostgreSQL (Prisma) + Supabase auth,
+Stripe payments, Zustand client state. It is **not** microservices — the target diagram above is
+the aspirational split.
+
+| Layer | Target | Today (deployed) |
+|-------|--------|------------------|
+| Frontends | Storefront + Admin/Owner SPA + Reseller portal | Same Next.js app (RSC) for all three |
+| API | Gateway → auth/catalog/order/payment/notification/inventory/shipping/reporting services | Next.js API routes under `/api/*` |
+| Database | Postgres + Redis + Elasticsearch | PostgreSQL (Prisma) only |
+| Auth | JWT + refresh, RBAC/ABAC middleware | Supabase SSR cookies + `rbac.ts` `can()` map |
+| Payments | Stripe/Razorpay/PayPal layer | Stripe (PaymentIntents) |
+| Queue | RabbitMQ/Kafka for order events, stock sync, notifications | none |
+| Search | Elasticsearch | SQL queries |
+| Hosting | Docker + Kubernetes (or PaaS) | Vercel (serverless) |
+
+> `ponytail:` the target is a multi-service architecture. Do **not** migrate to microservices
+> until the monolith is a real bottleneck. The deployed monolith already closes the core loop;
+> split services only when a team/scale needs it, and keep Postgres + SQL search until then.
+
+---
+
+## 3. Role Model (Target)
+
+
 
 ```
         OWNER          (top of business: finances, staff, gateway keys, macro controls)
@@ -56,7 +127,7 @@ Legend used throughout:
 
 ---
 
-## 3. Deployed Admin Panel — Feature Inventory (What Exists Today ✅)
+## 4. Deployed Admin Panel — Feature Inventory (What Exists Today ✅)
 
 `/admin` (9 sections). Guarded by `getAdminUser()` (session + `role === ADMIN`); mutations
 audited via `logAudit()`.
@@ -79,7 +150,7 @@ audited via `logAudit()`.
 
 ---
 
-## 4. Spec-vs-Built Gap Matrix
+## 5. Spec-vs-Built Gap Matrix
 
 Each spec capability, its deployed status, and where it belongs. *This is the "what's missing" answer.*
 
@@ -110,7 +181,7 @@ Each spec capability, its deployed status, and where it belongs. *This is the "w
 
 ---
 
-## 5. Unified Role → Permission Matrix (Target)
+## 6. Unified Role → Permission Matrix (Target)
 
 Merged from both source specs. `G`=🟢, `L`=🔴, `U`=🟡 (unlock mode in brackets).
 
@@ -138,7 +209,7 @@ duration; **One-time** — a single pending action approved once.
 
 ---
 
-## 6. The Unlock Model ("Locked by Default, Unlockable by Owner")
+## 7. The Unlock Model ("Locked by Default, Unlockable by Owner")
 
 The core per-role philosophy. Every 🟡 capability can be unlocked by the Owner in one of
 three modes (permanent / temporary / one-time). Every grant, revoke, and expiry is written
@@ -156,7 +227,7 @@ to the Audit Log (who, to whom, what, when, optional why).
 
 ---
 
-## 7. Per-Role Dashboard Specs (Target)
+## 8. Per-Role Dashboard Specs (Target)
 
 ### OWNER
 - **Command center** — revenue/profit, order volume, AOV, live order feed, alerts (low stock, failed payments, pending refunds, payout requests, permission requests), top performers, quick actions
@@ -203,7 +274,7 @@ to the Audit Log (who, to whom, what, when, optional why).
 
 ---
 
-## 8. Module Inventory (14 core modules)
+## 9. Module Inventory (14 core modules)
 
 | # | Module | Status |
 |---|--------|--------|
@@ -224,7 +295,7 @@ to the Audit Log (who, to whom, what, when, optional why).
 
 ---
 
-## 9. MVP Launch-Gate & Build Priority
+## 10. MVP Launch-Gate & Build Priority
 
 **Build NOW** (needed to be a real store / unblock core workflows):
 - Worker task-assignment UI (Admin assigns orders/tasks to Workers)
@@ -255,7 +326,7 @@ to the Audit Log (who, to whom, what, when, optional why).
 
 ---
 
-## 10. Security & Governance
+## 11. Security & Governance
 
 - Enforce RBAC at the API layer; never trust frontend role checks alone.
 - Serverside guards (`admin/owner/worker-guard.ts`) + audit every mutation.
