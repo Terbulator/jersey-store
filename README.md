@@ -333,8 +333,9 @@ npm run dev -- -H 192.168.1.2
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Admin** | `admin@jerseystore.com` | `admin123` |
-| **Vendor** | `vendor@example.com` | `vendor123` |
+| **Admin** | `headerr0001@gmail.com` | `admin123` |
+| **Owner** | `owner@example.com` | `owner123` |
+| **Worker** | `worker@example.com` | `worker123` |
 
 > Demo credentials are also hinted on the sign-in page.
 

@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 const DEMO_USERS = [
-  { email: 'admin@jerseystore.com', name: 'Admin', password: 'admin123', role: Role.ADMIN },
+  { email: 'headerr0001@gmail.com', name: 'Admin', password: 'admin123', role: Role.ADMIN },
   { email: 'owner@example.com', name: 'Demo Owner', password: 'owner123', role: Role.OWNER },
   { email: 'worker@example.com', name: 'Demo Worker', password: 'worker123', role: Role.WORKER },
 ];
