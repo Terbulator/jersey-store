@@ -1,36 +1,56 @@
 import { PrismaClient, Role, VendorStatus, Size } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { createClient } from '@supabase/supabase-js';
 
 const prisma = new PrismaClient();
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
+
+const DEMO_USERS = [
+  { email: 'admin@jerseystore.com', name: 'Admin', password: 'admin123', role: Role.ADMIN },
+  { email: 'owner@example.com', name: 'Demo Owner', password: 'owner123', role: Role.OWNER },
+  { email: 'worker@example.com', name: 'Demo Worker', password: 'worker123', role: Role.WORKER },
+];
+
+async function ensureAuthUser(email: string, password: string, name: string, role: Role) {
+  const { data: existing } = await supabase.auth.admin.listUsers();
+  const found = existing.users.find((u) => u.email === email);
+  if (found) {
+    await supabase.auth.admin.updateUserById(found.id, {
+      password,
+      app_metadata: { role },
+      user_metadata: { name },
+    });
+    return found.id;
+  }
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    app_metadata: { role },
+    user_metadata: { name },
+  });
+  if (error) throw new Error(`Supabase auth create ${email}: ${error.message}`);
+  return data.user!.id;
+}
 
 async function main() {
   console.log('🌱 Seeding database…');
 
-  // Admin
-  const adminPassword = await bcrypt.hash('admin123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@jerseystore.com' },
-    update: {},
-    create: {
-      email: 'admin@jerseystore.com',
-      name: 'Admin',
-      password: adminPassword,
-      role: Role.ADMIN,
-    },
-  });
+  for (const u of DEMO_USERS) {
+    await ensureAuthUser(u.email, u.password, u.name, u.role);
+    await prisma.user.upsert({
+      where: { email: u.email },
+      update: { name: u.name, role: u.role },
+      create: { email: u.email, name: u.name, role: u.role },
+    });
+  }
 
-  // Owner (replaces VENDOR)
-  const ownerPassword = await bcrypt.hash('owner123', 10);
-  const ownerUser = await prisma.user.upsert({
-    where: { email: 'owner@example.com' },
-    update: {},
-    create: {
-      email: 'owner@example.com',
-      name: 'Demo Owner',
-      password: ownerPassword,
-      role: Role.OWNER,
-    },
-  });
+  const ownerUser = await prisma.user.findUniqueOrThrow({ where: { email: 'owner@example.com' } });
+  const workerUser = await prisma.user.findUniqueOrThrow({ where: { email: 'worker@example.com' } });
 
   const vendor = await prisma.vendor.upsert({
     where: { userId: ownerUser.id },
@@ -45,16 +65,15 @@ async function main() {
     },
   });
 
-  // Worker
-  const workerPassword = await bcrypt.hash('worker123', 10);
-  const workerUser = await prisma.user.upsert({
-    where: { email: 'worker@example.com' },
+  await prisma.worker.upsert({
+    where: { userId: workerUser.id },
     update: {},
     create: {
-      email: 'worker@example.com',
+      ownerId: ownerUser.id,
+      userId: workerUser.id,
       name: 'Demo Worker',
-      password: workerPassword,
-      role: Role.WORKER,
+      email: 'worker@example.com',
+      status: 'ACTIVE',
     },
   });
 

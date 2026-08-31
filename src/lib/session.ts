@@ -1,5 +1,6 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import { prisma } from '@/lib/prisma';
 import { Role } from '@prisma/client';
 
 export interface SessionUser {
@@ -9,15 +10,44 @@ export interface SessionUser {
   role: Role;
 }
 
+function getSupabase() {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // ignore in server components
+          }
+        },
+      },
+    }
+  );
+}
+
 export async function getSession(): Promise<SessionUser | null> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return null;
-  const user = session.user as { id?: string; email?: string; name?: string | null; role?: string };
-  if (!user.id || !user.email || !user.role) return null;
+  const supabase = getSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) return null;
+
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+  if (!dbUser) return null;
+
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name ?? null,
-    role: user.role as Role,
+    id: dbUser.id,
+    email: dbUser.email,
+    name: dbUser.name,
+    role: dbUser.role,
   };
 }

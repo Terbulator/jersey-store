@@ -12,7 +12,6 @@
     "postcss": "postcss"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.4.0",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.18.0",
     "@radix-ui/react-dialog": "^1.1.1",
@@ -27,14 +26,14 @@
     "@sanity/image-url": "^1.0.2",
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.1.0",
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
     "@tanstack/react-query": "^5.51.1",
-    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.2",
     "lucide-react": "^0.408.0",
     "next": "14.2.5",
-    "next-auth": "^4.24.7",
     "next-themes": "^0.3.0",
     "prisma": "^5.18.0",
     "react": "^18.3.1",
@@ -48,7 +47,6 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

@@ -1,16 +1,37 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Package, Store, LogOut, Heart as HeartIcon } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 
 export default function AccountPage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [name, setName] = useState<string | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (u) {
+        setAuthenticated(true);
+        setName((u.user_metadata?.name as string) ?? u.email ?? null);
+      }
+    });
+  }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push('/');
+  };
 
   const links = [
     { href: '/account/orders', label: 'My Orders', desc: 'Track and review your orders', icon: Package },
@@ -26,13 +47,13 @@ export default function AccountPage() {
           <div>
             <h1 className="text-3xl font-bold">My Account</h1>
             <p className="mt-1 text-muted-foreground">
-              {status === 'authenticated' && session?.user?.name
-                ? `Welcome back, ${session.user.name}`
+              {authenticated && name
+                ? `Welcome back, ${name}`
                 : 'Manage your profile, orders and preferences.'}
             </p>
           </div>
-          {status === 'authenticated' ? (
-            <Button variant="outline" onClick={() => signOut()}>
+          {authenticated ? (
+            <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </Button>
           ) : (
