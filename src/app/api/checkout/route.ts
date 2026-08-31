@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { getSession } from '@/lib/session';
+import { z } from 'zod';
+
+const checkoutSchema = z.object({
+  amount: z.number().positive().max(10_000_000),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().optional(),
+        name: z.string().optional(),
+        quantity: z.number().int().min(1).max(100).optional(),
+      })
+    )
+    .max(100)
+    .optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,11 +32,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { amount, items } = body;
-
-    if (!amount || typeof amount !== 'number' || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+    const parsed = checkoutSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+        { status: 400 }
+      );
     }
+
+    const { amount, items } = parsed.data;
 
     const metadata: Record<string, string> = {};
     if (Array.isArray(items)) {

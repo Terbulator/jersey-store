@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { rateLimitError } from '@/lib/rate-limit';
 
 const signupSchema = z.object({
-  name: z.string().min(2),
+  name: z.string().min(2).max(60),
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(8).max(128),
 });
 
 export async function POST(req: NextRequest) {
   try {
+    const tooMany = rateLimitError(req, { limit: 5, windowMs: 60_000 });
+    if (tooMany) return tooMany;
+
     const body = await req.json();
     const data = signupSchema.parse(body);
 

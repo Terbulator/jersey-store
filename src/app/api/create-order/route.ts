@@ -3,14 +3,21 @@ import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/utils';
 import { getSession } from '@/lib/session';
 import { logAudit } from '@/lib/audit';
+import { z } from 'zod';
 
-interface OrderItemInput {
-  productId: string;
-  variantId: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
+const itemSchema = z.object({
+  productId: z.string().min(1),
+  variantId: z.string().min(1),
+  name: z.string(),
+  price: z.number().nonnegative(),
+  quantity: z.number().int().min(1).max(100),
+});
+
+const orderSchema = z.object({
+  items: z.array(itemSchema).min(1),
+  shipping: z.number().nonnegative().optional(),
+  tax: z.number().nonnegative().optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,30 +27,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
-      fullName,
-      phone,
-      line1,
-      city,
-      state,
-      postalCode,
-      country,
-      items,
-      subtotal,
-      shipping,
-      tax,
-      total,
-    } = body;
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'No items in order' }, { status: 400 });
+    const parsed = orderSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid order' },
+        { status: 400 }
+      );
     }
 
-    const typedItems = items as OrderItemInput[];
+    const { items, shipping, tax } = parsed.data;
 
     // Validate prices server-side — trust DB, not client
     let validatedSubtotal = 0;
-    for (const item of typedItems) {
+    for (const item of items) {
       const variant = await prisma.productVariant.findUnique({
         where: { id: item.variantId },
         select: { price: true, stock: true },
@@ -70,7 +66,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    for (const item of typedItems) {
+    for (const item of items) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
         select: { vendorId: true },
