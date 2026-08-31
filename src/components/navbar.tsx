@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ShoppingCart, User, Search, Menu, X, Heart, Shirt } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { ShoppingCart, User, Search, Menu, X, Heart, Shirt, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -19,8 +21,19 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const totalItems = useCart((s) => s.totalItems());
   const toggleCart = useCart((s) => s.toggleCart);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = search.trim();
+    router.push(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
+    setMobileOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-lg">
@@ -39,7 +52,10 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-foreground',
+                pathname === link.href ? 'text-foreground' : 'text-muted-foreground'
+              )}
             >
               {link.label}
             </Link>
@@ -47,19 +63,30 @@ export function Navbar() {
         </nav>
 
         {/* Search (desktop) */}
-        <div className="hidden md:flex flex-1 max-w-md mx-6">
+        <form onSubmit={submitSearch} className="hidden md:flex flex-1 max-w-md mx-6">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search jerseys, teams, players…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-        </div>
+        </form>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden sm:flex"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle theme"
+          >
+            {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
           <Button variant="ghost" size="icon" className="hidden sm:flex" asChild>
             <Link href="/account/wishlist">
               <Heart className="h-5 w-5" />
@@ -102,10 +129,16 @@ export function Navbar() {
       {mobileOpen && (
         <div className="lg:hidden border-t border-border bg-background">
           <div className="container py-4 space-y-3">
-            <div className="relative">
+            <form onSubmit={submitSearch} className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input type="search" placeholder="Search…" className="pl-9" />
-            </div>
+              <Input
+                type="search"
+                placeholder="Search…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </form>
             {navLinks.map((link) => (
               <Link
                 key={link.href}

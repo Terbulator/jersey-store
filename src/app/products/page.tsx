@@ -1,118 +1,67 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { CartDrawer } from '@/components/cart-drawer';
-import { ProductCard, ProductCardData } from '@/components/product-card';
+import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PRODUCTS } from '@/lib/products';
 
-const ALL_PRODUCTS: ProductCardData[] = [
-  {
-    id: '1', slug: 'barcelona-2015-messi-home',
-    name: 'Barcelona 2014/15 Home — Messi #10',
-    basePrice: 449, comparePrice: 599,
-    image: 'https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=800&q=80',
-    team: 'Barcelona', season: '2014/15', player: '10', featured: true,
-  },
-  {
-    id: '2', slug: 'manchester-united-2008-ronaldo',
-    name: 'Manchester United 2007/08 Home — Ronaldo #7',
-    basePrice: 449, comparePrice: 599,
-    image: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
-    team: 'Manchester United', season: '2007/08', player: '7', featured: true,
-  },
-  {
-    id: '3', slug: 'ac-milan-2006-ibrahimovic',
-    name: 'AC Milan 2006/07 Home — Ibrahimović #9',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
-    team: 'AC Milan', season: '2006/07', player: '9',
-  },
-  {
-    id: '4', slug: 'argentina-2022-world-cup',
-    name: 'Argentina 2022 World Cup — Messi #10',
-    basePrice: 549,
-    image: 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=800&q=80',
-    team: 'Argentina', season: '2022', player: '10', featured: true,
-  },
-  {
-    id: '5', slug: 'arsenal-2024-home',
-    name: 'Arsenal 2024/25 Home',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1602674809970-1d8a2c4d6c8e?w=800&q=80',
-    team: 'Arsenal', season: '2024/25',
-  },
-  {
-    id: '6', slug: 'real-madrid-2024-home',
-    name: 'Real Madrid 2024/25 Home — Bellingham #5',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
-    team: 'Real Madrid', season: '2024/25', player: '5',
-  },
-  {
-    id: '7', slug: 'bayern-munich-2024-home',
-    name: 'Bayern Munich 2024/25 Home',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
-    team: 'Bayern Munich', season: '2024/25',
-  },
-  {
-    id: '8', slug: 'portugal-2024-home',
-    name: 'Portugal 2024 Home — Ronaldo #7',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=800&q=80',
-    team: 'Portugal', season: '2024', player: '7',
-  },
-  {
-    id: '9', slug: 'chelsea-2024-home',
-    name: 'Chelsea 2024/25 Home',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
-    team: 'Chelsea', season: '2024/25',
-  },
-  {
-    id: '10', slug: 'manchester-city-2024-home',
-    name: 'Manchester City 2024/25 Home — Haaland #9',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
-    team: 'Manchester City', season: '2024/25', player: '9',
-  },
-  {
-    id: '11', slug: 'spain-2024-home',
-    name: 'Spain 2024 Home',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=800&q=80',
-    team: 'Spain', season: '2024',
-  },
-  {
-    id: '12', slug: 'france-2024-home',
-    name: 'France 2024 Home — Mbappé #10',
-    basePrice: 449,
-    image: 'https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=800&q=80',
-    team: 'France', season: '2024', player: '10',
-  },
+const TEAMS = [
+  'All',
+  'Barcelona',
+  'Manchester United',
+  'AC Milan',
+  'Argentina',
+  'Arsenal',
+  'Real Madrid',
+  'Bayern Munich',
+  'Chelsea',
+  'Manchester City',
+  'Spain',
+  'France',
+  'Portugal',
 ];
-
-const TEAMS = ['All', 'Barcelona', 'Manchester United', 'AC Milan', 'Argentina', 'Arsenal', 'Real Madrid', 'Bayern Munich'];
 const SEASONS = ['All', 'Retro', '2024/25', '2024', '2022'];
 
 export default function ProductsPage() {
-  const [search, setSearch] = useState('');
+  return (
+    <Suspense>
+      <ProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsContent() {
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams?.get('q') ?? '');
   const [team, setTeam] = useState('All');
   const [season, setSeason] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    const q = searchParams?.get('q') ?? '';
+    if (q) setSearch(q);
+  }, [searchParams]);
+
   const filtered = useMemo(() => {
-    return ALL_PRODUCTS.filter((p) => {
+    return PRODUCTS.filter((p) => {
       if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (team !== 'All' && p.team !== team) return false;
-      if (season !== 'All' && p.season !== season) return false;
+      if (season !== 'All') {
+        if (season === 'Retro') {
+          if (p.category !== 'retro') return false;
+        } else if (p.season !== season) {
+          return false;
+        }
+      }
       return true;
     });
   }, [search, team, season]);
@@ -143,6 +92,7 @@ export default function ProductsPage() {
               <button
                 onClick={() => setSearch('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
               </button>

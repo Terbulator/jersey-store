@@ -12,10 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus } from 'lucide-react';
+import { Heart, Share2, Star, Truck, Shield, RotateCcw, Plus, Minus, PackageX } from 'lucide-react';
 import { useCart } from '@/store/cart';
+import { useWishlist } from '@/store/wishlist';
 import { formatPrice, cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { getProductBySlug, PRODUCTS } from '@/lib/products';
 
 const JerseyViewer = dynamic(
   () => import('@/components/3d/jersey-viewer').then((m) => m.JerseyViewer),
@@ -31,43 +33,46 @@ const COLORS = [
 
 export default function ProductPage() {
   const params = useParams<{ slug: string }>();
-  const slug = params?.slug || 'unknown';
+  const slug = params?.slug ?? '';
+  const product = getProductBySlug(slug);
+
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState<'3d' | 'image'>('3d');
   const addItem = useCart((s) => s.addItem);
+  const toggleCart = useCart((s) => s.toggleCart);
+  const wishlisted = useWishlist((s) => s.ids.includes(product?.id ?? ''));
+  const toggleWishlist = useWishlist((s) => s.toggle);
 
-  // Mock product — in real app, fetch from Prisma by slug
-  const product = {
-    id: slug,
-    slug,
-    name: 'Barcelona 2014/15 Home — Messi #10',
-    description:
-      'Relive the treble-winning season. This Barcelona home jersey features the iconic Blaugrana stripes with embroidered club crest and Qatar Airways sponsor. Premium breathable fabric with moisture-wicking technology.',
-    price: 449,
-    comparePrice: 599,
-    rating: 4.8,
-    reviews: 124,
-    team: 'Barcelona',
-    season: '2014/15',
-    player: '10',
-    brand: 'Nike',
-    images: [
-      'https://images.unsplash.com/photo-1577471488278-16eec37ffcc2?w=1000&q=80',
-      'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1000&q=80',
-      'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=1000&q=80',
-    ],
-    inStock: true,
-  };
+  if (!product) {
+    return (
+      <>
+        <Navbar />
+        <main className="container flex flex-col items-center justify-center py-24 text-center">
+          <div className="mb-4 rounded-full bg-muted p-6">
+            <PackageX className="h-10 w-10 text-muted-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold">Jersey not found</h1>
+          <p className="mt-2 text-muted-foreground">
+            We couldn&apos;t find that product. It may have sold out or moved.
+          </p>
+          <Button asChild className="mt-6" size="lg" variant="glow">
+            <Link href="/products">Browse all jerseys</Link>
+          </Button>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   const handleAddToCart = () => {
     addItem({
       productId: product.id,
       variantId: `${product.id}-${selectedSize}-${selectedColor.name}`,
       name: product.name,
-      image: product.images[0],
-      price: product.price,
+      image: product.image,
+      price: product.basePrice,
       size: selectedSize,
       color: selectedColor.name,
       colorHex: selectedColor.hex,
@@ -75,6 +80,11 @@ export default function ProductPage() {
       slug: product.slug,
     });
     toast.success('Added to cart', { description: `${product.name} (${selectedSize}, ${selectedColor.name})` });
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    toggleCart(true);
   };
 
   return (
@@ -89,6 +99,10 @@ export default function ProductPage() {
           <span className="mx-2">/</span>
           <Link href="/products" className="hover:text-foreground">Jerseys</Link>
           <span className="mx-2">/</span>
+          <Link href={`/categories/${product.category}`} className="hover:text-foreground">
+            {product.categoryLabel}
+          </Link>
+          <span className="mx-2">/</span>
           <span className="text-foreground">{product.name}</span>
         </nav>
 
@@ -100,31 +114,45 @@ export default function ProductPage() {
                 <JerseyViewer color={selectedColor.hex} className="rounded-2xl" />
               ) : (
                 <Image
-                  src={product.images[0]}
+                  src={product.image}
                   alt={product.name}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />
               )}
 
               <div className="absolute left-3 top-3 z-10 flex gap-2">
-                <Badge variant="success">In Stock</Badge>
-                <Badge variant="warning">Limited Edition</Badge>
+                {product.inStock ? (
+                  <Badge variant="success">In Stock</Badge>
+                ) : (
+                  <Badge variant="destructive">Sold Out</Badge>
+                )}
+                <Badge variant="outline">{product.categoryLabel}</Badge>
               </div>
 
               <div className="absolute bottom-3 right-3 z-10 flex gap-2">
-                <Button size="icon" variant="ghost" className="rounded-full bg-background/80 backdrop-blur" onClick={() => toast.success('Link copied')}>
+                <Button size="icon" variant="ghost" className="rounded-full bg-background/80 backdrop-blur" onClick={() => navigator.clipboard?.writeText(window.location.href).then(() => toast.success('Link copied')).catch(() => toast.success('Link ready'))}>
                   <Share2 className="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="ghost" className="rounded-full bg-background/80 backdrop-blur" onClick={() => toast.success('Added to wishlist')}>
-                  <Heart className="h-4 w-4" />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="rounded-full bg-background/80 backdrop-blur"
+                  onClick={() => {
+                    toggleWishlist(product.id);
+                    toast.success(wishlisted ? 'Removed from wishlist' : 'Added to wishlist');
+                  }}
+                  aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart className={`h-4 w-4 ${wishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
               </div>
             </div>
 
             {/* View toggle + thumbnails */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex gap-2">
                 <Button
                   variant={view === '3d' ? 'default' : 'outline'}
@@ -142,11 +170,14 @@ export default function ProductPage() {
                 </Button>
               </div>
               <div className="flex gap-2">
-                {product.images.map((img, i) => (
+                {product.gallery.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setView('image')}
-                    className="relative h-12 w-12 overflow-hidden rounded-md border-2 border-transparent hover:border-primary"
+                    className={cn(
+                      'relative h-12 w-12 overflow-hidden rounded-md border-2 transition-all',
+                      view === 'image' && i === 0 ? 'border-primary' : 'border-transparent hover:border-primary'
+                    )}
                   >
                     <Image src={img} alt="" fill className="object-cover" sizes="48px" />
                   </button>
@@ -172,20 +203,18 @@ export default function ProductPage() {
                       key={i}
                       className={cn(
                         'h-4 w-4',
-                        i < Math.floor(product.rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-muted'
+                        i < 5 ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
                       )}
                     />
                   ))}
                 </div>
-                <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-sm text-muted-foreground">({product.reviews} reviews)</span>
+                <span className="text-sm font-medium">4.8</span>
+                <span className="text-sm text-muted-foreground">(128 reviews)</span>
               </div>
             </div>
 
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-primary">{formatPrice(product.price)}</span>
+              <span className="text-4xl font-bold text-primary">{formatPrice(product.basePrice)}</span>
               {product.comparePrice && (
                 <span className="text-lg text-muted-foreground line-through">
                   {formatPrice(product.comparePrice)}
@@ -193,7 +222,7 @@ export default function ProductPage() {
               )}
               {product.comparePrice && (
                 <Badge variant="destructive">
-                  {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% OFF
+                  {Math.round(((product.comparePrice - product.basePrice) / product.comparePrice) * 100)}% OFF
                 </Badge>
               )}
             </div>
@@ -254,6 +283,7 @@ export default function ProductPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -262,16 +292,17 @@ export default function ProductPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(quantity + 1)}
+                  aria-label="Increase quantity"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <Button onClick={handleAddToCart} size="lg" variant="glow" className="flex-1">
-                Add to Cart · {formatPrice(product.price * quantity)}
+              <Button onClick={handleAddToCart} size="lg" variant="glow" className="flex-1" disabled={!product.inStock}>
+                Add to Cart · {formatPrice(product.basePrice * quantity)}
               </Button>
             </div>
 
-            <Button size="lg" variant="outline" className="w-full">
+            <Button size="lg" variant="outline" className="w-full" disabled={!product.inStock} onClick={handleBuyNow}>
               Buy Now
             </Button>
 
@@ -300,7 +331,7 @@ export default function ProductPage() {
             <TabsList className="w-full justify-start border-b rounded-none bg-transparent">
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="specs">Specifications</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews (128)</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="py-6 space-y-3 text-muted-foreground">
               <p>{product.description}</p>
@@ -316,8 +347,8 @@ export default function ProductPage() {
                 {[
                   ['Team', product.team],
                   ['Season', product.season],
-                  ['Player', `#${product.player}`],
-                  ['Brand', product.brand],
+                  ['Player', product.player ? `#${product.player}` : '—'],
+                  ['Brand', product.brand ?? '—'],
                   ['Material', '100% Polyester'],
                   ['Fit', 'Regular'],
                   ['Care', 'Machine wash cold'],
@@ -333,6 +364,34 @@ export default function ProductPage() {
               <p>Reviews coming soon…</p>
             </TabsContent>
           </Tabs>
+        </section>
+
+        {/* ----- RELATED ----- */}
+        <section className="mt-12">
+          <h2 className="mb-6 text-2xl font-bold tracking-tight">You may also like</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {PRODUCTS.filter((p) => p.slug !== product.slug && p.category === product.category)
+              .slice(0, 4)
+              .map((related) => (
+                <Link key={related.id} href={`/products/${related.slug}`} className="group">
+                  <Card className="overflow-hidden">
+                    <div className="relative aspect-square overflow-hidden bg-muted">
+                      <Image
+                        src={related.image}
+                        alt={related.name}
+                        fill
+                        sizes="(max-width: 640px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <p className="line-clamp-1 text-sm font-semibold">{related.name}</p>
+                      <p className="mt-1 text-sm font-bold text-primary">{formatPrice(related.basePrice)}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+          </div>
         </section>
       </main>
 
