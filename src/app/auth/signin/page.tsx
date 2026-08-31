@@ -82,10 +82,6 @@ export default function SignInPage() {
               Create one
             </Link>
           </div>
-
-          <p className="text-center text-xs text-muted-foreground">
-            Demo: admin@jerseystore.com / admin123
-          </p>
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateOrderNumber } from '@/lib/utils';
+import { getSession } from '@/lib/session';
+import { logAudit } from '@/lib/audit';
 
 interface OrderItemInput {
   productId: string;
@@ -12,9 +14,13 @@ interface OrderItemInput {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getSession();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
-      email,
       fullName,
       phone,
       line1,
@@ -35,59 +41,77 @@ export async function POST(req: NextRequest) {
 
     const typedItems = items as OrderItemInput[];
 
-    // Persist to the database. If the DB isn't configured yet (no real
-    // DATABASE_URL), we gracefully accept the order so the demo still works.
-    try {
-      // Orders are tied to a user in the schema. For this guest checkout we
-      // attach the order to an existing account (e.g. the seeded admin). Once
-      // a real authenticated checkout exists, pass the true userId.
-      const user = await prisma.user.findFirst();
-      if (!user) throw new Error('No user available to attach order');
+    // Validate prices server-side — trust DB, not client
+    let validatedSubtotal = 0;
+    for (const item of typedItems) {
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+        select: { price: true, stock: true },
+      });
+      if (!variant) {
+        return NextResponse.json({ error: `Invalid variant: ${item.variantId}` }, { status: 400 });
+      }
+      if (variant.stock < item.quantity) {
+        return NextResponse.json({ error: `Insufficient stock for variant ${item.variantId}` }, { status: 400 });
+      }
+      validatedSubtotal += Number(variant.price) * item.quantity;
+    }
 
-      const order = await prisma.order.create({
+    const order = await prisma.order.create({
+      data: {
+        userId: user.id,
+        orderNumber: generateOrderNumber(),
+        status: 'PROCESSING',
+        paymentStatus: 'PAID',
+        subtotal: validatedSubtotal,
+        shipping: shipping ?? 0,
+        tax: tax ?? 0,
+        total: validatedSubtotal + (shipping ?? 0) + (tax ?? 0),
+      },
+    });
+
+    for (const item of typedItems) {
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: { vendorId: true },
+      });
+      if (!product) throw new Error(`Product not found: ${item.productId}`);
+
+      const variant = await prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+        select: { price: true },
+      });
+
+      await prisma.orderItem.create({
         data: {
-          userId: user.id,
-          orderNumber: generateOrderNumber(),
-          status: 'PROCESSING',
-          paymentStatus: 'PAID',
-          subtotal,
-          shipping,
-          tax,
-          total,
-          notes: `Payer: ${email}`,
+          orderId: order.id,
+          productId: item.productId,
+          variantId: item.variantId,
+          vendorId: product.vendorId,
+          quantity: item.quantity,
+          price: variant?.price ?? item.price,
+          total: Number(variant?.price ?? item.price) * item.quantity,
         },
       });
 
-      for (const item of typedItems) {
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId },
-          select: { vendorId: true },
-        });
-        if (!product) throw new Error(`Product not found: ${item.productId}`);
-
-        await prisma.orderItem.create({
-          data: {
-            orderId: order.id,
-            productId: item.productId,
-            variantId: item.variantId,
-            vendorId: product.vendorId,
-            quantity: item.quantity,
-            price: item.price,
-            total: item.price * item.quantity,
-          },
-        });
-      }
-
-      return NextResponse.json({ ok: true, orderNumber: order.orderNumber }, { status: 201 });
-    } catch (dbError) {
-      // Database not configured or product not seeded — return a demo order
-      // number so checkout completes. Persist once DB + seed are live.
-      console.warn('Order persisted in demo mode (DB not configured):', dbError);
-      return NextResponse.json(
-        { ok: true, orderNumber: generateOrderNumber(), demo: true },
-        { status: 201 }
-      );
+      // Decrement stock
+      await prisma.productVariant.update({
+        where: { id: item.variantId },
+        data: { stock: { decrement: item.quantity } },
+      });
     }
+
+    await logAudit({
+      actorId: user.id,
+      actorEmail: user.email,
+      actorRole: user.role,
+      action: 'order.create',
+      resource: 'order',
+      resourceId: order.id,
+      newValues: { orderNumber: order.orderNumber, total: order.total },
+    });
+
+    return NextResponse.json({ ok: true, orderNumber: order.orderNumber }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: 'Failed to place order' }, { status: 500 });

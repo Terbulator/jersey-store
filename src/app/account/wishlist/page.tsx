@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/navbar';
@@ -10,15 +11,37 @@ import { Button } from '@/components/ui/button';
 import { Heart, ArrowLeft, Trash2 } from 'lucide-react';
 import { useWishlist } from '@/store/wishlist';
 import { useCart } from '@/store/cart';
-import { PRODUCTS } from '@/lib/products';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
+
+interface WishlistProduct {
+  id: string;
+  slug: string;
+  name: string;
+  basePrice: number;
+  image: string;
+}
 
 export default function WishlistPage() {
   const ids = useWishlist((s) => s.ids);
   const remove = useWishlist((s) => s.remove);
   const addItem = useCart((s) => s.addItem);
-  const items = PRODUCTS.filter((p) => ids.includes(p.id));
+  const [products, setProducts] = useState<WishlistProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (ids.length === 0) {
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch(`/api/products?ids=${ids.join(',')}`)
+      .then((r) => r.json())
+      .then((data) => setProducts(data.products ?? []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoading(false));
+  }, [ids]);
 
   return (
     <>
@@ -32,7 +55,13 @@ export default function WishlistPage() {
         </Button>
         <h1 className="text-3xl font-bold">Wishlist</h1>
 
-        {items.length === 0 ? (
+        {loading ? (
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}><div className="h-64 skeleton" /></Card>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
           <Card className="mt-8">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
               <div className="rounded-full bg-muted p-6">
@@ -49,7 +78,7 @@ export default function WishlistPage() {
           </Card>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((product) => (
+            {products.map((product) => (
               <Card key={product.id} className="group overflow-hidden">
                 <div className="relative aspect-[4/5] overflow-hidden bg-muted">
                   <Link href={`/products/${product.slug}`}>

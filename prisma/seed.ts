@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database…');
 
-  // Admin user
+  // Admin
   const adminPassword = await bcrypt.hash('admin123', 10);
   await prisma.user.upsert({
     where: { email: 'admin@jerseystore.com' },
@@ -19,29 +19,54 @@ async function main() {
     },
   });
 
-  // Vendor
-  const vendorPassword = await bcrypt.hash('vendor123', 10);
-  const vendorUser = await prisma.user.upsert({
-    where: { email: 'vendor@example.com' },
+  // Owner (replaces VENDOR)
+  const ownerPassword = await bcrypt.hash('owner123', 10);
+  const ownerUser = await prisma.user.upsert({
+    where: { email: 'owner@example.com' },
     update: {},
     create: {
-      email: 'vendor@example.com',
-      name: 'Demo Vendor',
-      password: vendorPassword,
-      role: Role.VENDOR,
+      email: 'owner@example.com',
+      name: 'Demo Owner',
+      password: ownerPassword,
+      role: Role.OWNER,
     },
   });
 
   const vendor = await prisma.vendor.upsert({
-    where: { userId: vendorUser.id },
+    where: { userId: ownerUser.id },
     update: {},
     create: {
-      userId: vendorUser.id,
-      storeName: 'Demo Vendor Store',
-      slug: 'demo-vendor',
+      userId: ownerUser.id,
+      storeName: 'Demo Store',
+      slug: 'demo-store',
       description: 'Authentic retro and current football jerseys',
       commissionRate: 0.15,
       status: VendorStatus.APPROVED,
+    },
+  });
+
+  // Worker
+  const workerPassword = await bcrypt.hash('worker123', 10);
+  const workerUser = await prisma.user.upsert({
+    where: { email: 'worker@example.com' },
+    update: {},
+    create: {
+      email: 'worker@example.com',
+      name: 'Demo Worker',
+      password: workerPassword,
+      role: Role.WORKER,
+    },
+  });
+
+  await prisma.worker.upsert({
+    where: { userId: workerUser.id },
+    update: {},
+    create: {
+      ownerId: ownerUser.id,
+      userId: workerUser.id,
+      name: 'Demo Worker',
+      email: 'worker@example.com',
+      status: 'ACTIVE',
     },
   });
 
@@ -71,7 +96,6 @@ async function main() {
     { color: 'Third Green', hex: '#16a34a' },
   ];
 
-  // Sample products
   const products = [
     {
       name: 'Barcelona 2014/15 Home — Messi #10',
@@ -135,28 +159,34 @@ async function main() {
       },
     });
 
-    await prisma.productImage.create({
-      data: { productId: product.id, url: p.image, alt: p.name, isPrimary: true, position: 0 },
-    });
+    // Upsert image (avoid duplicates on re-seed)
+    const existingImage = await prisma.productImage.findFirst({ where: { productId: product.id } });
+    if (!existingImage) {
+      await prisma.productImage.create({
+        data: { productId: product.id, url: p.image, alt: p.name, isPrimary: true, position: 0 },
+      });
+    }
 
-    for (const size of SIZES) {
-      for (const color of COLORS) {
-        await prisma.productVariant.create({
-          data: {
-            productId: product.id,
-            sku: `${product.slug}-${size}-${color.color}`.toUpperCase(),
-            size, color: color.color, colorHex: color.hex,
-            price: p.basePrice,
-            stock: 20,
-          },
-        });
+    // Upsert variants (avoid duplicates on re-seed)
+    const existingVariant = await prisma.productVariant.findFirst({ where: { productId: product.id } });
+    if (!existingVariant) {
+      for (const size of SIZES) {
+        for (const color of COLORS) {
+          await prisma.productVariant.create({
+            data: {
+              productId: product.id,
+              sku: `${product.slug}-${size}-${color.color}`.toUpperCase(),
+              size, color: color.color, colorHex: color.hex,
+              price: p.basePrice,
+              stock: 20,
+            },
+          });
+        }
       }
     }
   }
 
   console.log('✅ Seeding complete!');
-  console.log('Admin: admin@jerseystore.com / admin123');
-  console.log('Vendor: vendor@example.com / vendor123');
 }
 
 main()

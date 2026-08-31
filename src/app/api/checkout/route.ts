@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getSession();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     if (!stripe) {
       return NextResponse.json(
         { error: 'Stripe is not configured. Add your STRIPE_SECRET_KEY.', demo: true },
@@ -24,6 +30,7 @@ export async function POST(req: NextRequest) {
         if (item.productId) metadata[`productId_${i}`] = String(item.productId);
       });
     }
+    metadata.userId = user.id;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount),

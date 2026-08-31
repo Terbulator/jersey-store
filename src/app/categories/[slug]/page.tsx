@@ -1,20 +1,21 @@
-'use client';
-
-import { useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { CartDrawer } from '@/components/cart-drawer';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
-import { CATEGORIES, getProductsByCategory } from '@/lib/products';
+import { getProductsByCategory, CATEGORIES } from '@/lib/products';
 import { ArrowLeft } from 'lucide-react';
 
-export default function CategoryPage() {
-  const params = useParams<{ slug: string }>();
-  const slug = (params?.slug ?? '') as string;
+interface Props {
+  params: { slug: string };
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const slug = params.slug;
   const category = CATEGORIES.find((c) => c.slug === slug);
-  const products = getProductsByCategory(slug as 'retro' | 'current' | 'world-cup');
+  const products = await getProductsByCategory(slug);
 
   return (
     <>

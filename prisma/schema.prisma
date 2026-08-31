@@ -13,8 +13,9 @@ datasource db {
 // ============ Auth & Users ============
 enum Role {
   CUSTOMER
-  VENDOR
-  ADMIN
+  OWNER    // Store owner (replaces VENDOR)
+  WORKER   // Owner's employee
+  ADMIN    // Site administrator
 }
 
 model User {
@@ -36,6 +37,9 @@ model User {
   wishlistItems   WishlistItem[]
   vendor          Vendor?
   cartItems       CartItem[]
+  notifications   Notification[]
+  workerProfile   Worker?        @relation("WorkerUser")
+  ownedWorkers    Worker[]       @relation("OwnerWorkers")
 }
 
 model Account {
@@ -244,6 +248,7 @@ model Order {
   updatedAt       DateTime      @updatedAt
 
   items OrderItem[]
+  tasks Task[]
 
   @@index([userId])
   @@index([status])
@@ -317,4 +322,105 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, productId])
+}
+
+// ============ Workers ============
+enum WorkerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Worker {
+  id        String       @id @default(cuid())
+  ownerId   String       // User.id of the OWNER
+  owner     User         @relation("OwnerWorkers", fields: [ownerId], references: [id], onDelete: Cascade)
+  userId    String       @unique // The worker's own User account
+  user      User         @relation("WorkerUser", fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  phone     String?
+  status    WorkerStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tasks Task[]
+
+  @@index([ownerId])
+}
+
+// ============ Tasks ============
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  workerId    String?
+  worker      Worker?      @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  orderId     String?
+  order       Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  dueDate     DateTime?
+  notes       String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([workerId])
+  @@index([status])
+}
+
+// ============ Audit Log ============
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actorEmail String
+  actorRole  Role
+  action     String   // e.g. "product.create", "order.update_status"
+  resource   String   // e.g. "product", "order", "user"
+  resourceId String?
+  oldValues  Json?
+  newValues  Json?
+  ip         String?
+  result     String   @default("success")
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}
+
+// ============ Notifications ============
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String   @default("info") // info, warning, success, error
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+// ============ Settings ============
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
 }

@@ -15,10 +15,9 @@ const HeroScene = dynamic(
   { ssr: false }
 );
 
-const featuredProducts = getFeaturedProducts();
-const heroCtaSlug = featuredProducts[0]?.slug ?? 'barcelona-2015-messi-home';
-
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts();
+  const heroCtaSlug = featuredProducts[0]?.slug ?? 'barcelona-2015-messi-home';
   return (
     <>
       <Navbar />
