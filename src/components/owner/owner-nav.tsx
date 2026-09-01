@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingCart, HardHat, ListChecks, Settings,
-  Store, LogOut, Menu, X,
+  Store, LogOut, Menu, X, KeyRound,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/owner/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/owner/workers', label: 'Workers', icon: HardHat },
   { href: '/owner/tasks', label: 'Tasks', icon: ListChecks },
+  { href: '/owner/permissions', label: 'Permissions', icon: KeyRound },
   { href: '/owner/settings', label: 'Settings', icon: Settings },
 ];
 

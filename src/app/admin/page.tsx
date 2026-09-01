@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Users, Package, ShoppingCart, Building2, IndianRupee, ScrollText, FileClock,
+  LifeBuoy, Megaphone, Tag,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,9 @@ interface Stats {
   orderCount: number;
   revenue: number;
   auditCount: number;
+  openTicketCount: number;
+  pendingResellerCount: number;
+  activeCouponCount: number;
   recentOrders: {
     id: string;
     orderNumber: string;
@@ -63,6 +67,9 @@ export default function AdminDashboard() {
     { label: 'Products', value: stats.productCount, icon: Package, href: '/admin/products' },
     { label: 'Orders', value: stats.orderCount, icon: ShoppingCart, href: '/admin/orders' },
     { label: 'Revenue', value: formatPrice(stats.revenue), icon: IndianRupee, href: '/admin/orders' },
+    { label: 'Open tickets', value: stats.openTicketCount, icon: LifeBuoy, href: '/admin/tickets' },
+    { label: 'Pending resellers', value: stats.pendingResellerCount, icon: Megaphone, href: '/admin/resellers' },
+    { label: 'Active coupons', value: stats.activeCouponCount, icon: Tag, href: '/admin/coupons' },
     { label: 'Audit events', value: stats.auditCount, icon: ScrollText, href: '/admin/audit' },
   ];
 
@@ -70,7 +77,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <Link key={c.label} href={c.href}>
             <Card className="transition-shadow hover:shadow-md">

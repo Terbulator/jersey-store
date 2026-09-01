@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingCart, Users, FolderTree, Building2, ShieldCheck,
-  LogOut, Menu, X, Settings, ScrollText, HardHat,
+  LogOut, Menu, X, Settings, ScrollText, HardHat, ListTodo, BarChart3, TicketPercent, LifeBuoy, Store,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
@@ -17,8 +17,13 @@ const navItems = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/owners', label: 'Owners', icon: Building2 },
   { href: '/admin/workers', label: 'Workers', icon: HardHat },
+  { href: '/admin/tasks', label: 'Tasks', icon: ListTodo },
+  { href: '/admin/tickets', label: 'Tickets', icon: LifeBuoy },
+  { href: '/admin/resellers', label: 'Resellers', icon: Store },
   { href: '/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/admin/audit', label: 'Audit Log', icon: ScrollText },
+  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/admin/coupons', label: 'Coupons', icon: TicketPercent },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 

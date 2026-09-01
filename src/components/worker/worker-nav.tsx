@@ -3,13 +3,15 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutDashboard, ListChecks, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ListChecks, LogOut, Menu, X, Boxes, LifeBuoy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/worker', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/worker/tasks', label: 'Tasks', icon: ListChecks },
+  { href: '/worker/stock', label: 'Stock', icon: Boxes },
+  { href: '/worker/tickets', label: 'Tickets', icon: LifeBuoy },
 ];
 
 export function WorkerNav({ userName }: { userName: string | null }) {

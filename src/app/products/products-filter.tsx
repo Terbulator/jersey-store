@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/lib/products';
+import { useCart } from '@/store/cart';
 
 interface Props {
   products: Product[];
@@ -19,6 +20,7 @@ interface Props {
 
 export function ProductsFilter({ products, teams, categories }: Props) {
   const searchParams = useSearchParams();
+  const setReferral = useCart((s) => s.setReferral);
   const [search, setSearch] = useState(searchParams?.get('q') ?? '');
   const [team, setTeam] = useState('All');
   const [category, setCategory] = useState('All');
@@ -27,7 +29,9 @@ export function ProductsFilter({ products, teams, categories }: Props) {
   useEffect(() => {
     const q = searchParams?.get('q') ?? '';
     if (q) setSearch(q);
-  }, [searchParams]);
+    const ref = searchParams?.get('ref')?.trim() ?? '';
+    if (ref) setReferral(ref.toUpperCase());
+  }, [searchParams, setReferral]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {

@@ -71,12 +71,14 @@ function PaymentForm({
 }
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, referralCode } = useCart();
   const router = useRouter();
   const [step, setStep] = useState<Step>('Shipping');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [stripeReady, setStripeReady] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
   const [form, setForm] = useState({
     email: '',
     fullName: '',
@@ -109,6 +111,8 @@ export default function CheckoutPage() {
           country: form.country,
           items,
           subtotal: totalPrice(),
+          couponCode: couponCode || undefined,
+          referralCode: referralCode || undefined,
           shipping,
           tax,
           total,
@@ -124,6 +128,23 @@ export default function CheckoutPage() {
     } catch (err: any) {
       toast.error(err.message || 'Failed to place order');
       setSubmitting(false);
+    }
+  };
+
+  const applyCouponCode = async () => {
+    if (!couponCode.trim()) return;
+    const res = await fetch('/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: couponCode, subtotal: totalPrice() }),
+    });
+    const d = await res.json();
+    if (d.valid) {
+      setCouponDiscount(d.discount);
+      toast.success(`Coupon ${d.code} applied (−${formatPrice(d.discount)})`);
+    } else {
+      setCouponDiscount(0);
+      toast.error('Invalid or expired coupon');
     }
   };
 
@@ -316,9 +337,21 @@ export default function CheckoutPage() {
                   <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(totalPrice())}</span></div>
                   <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span></div>
                   <div className="flex justify-between"><span>Tax (5%)</span><span>{formatPrice(tax)}</span></div>
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-green-600"><span>Coupon</span><span>−{formatPrice(couponDiscount)}</span></div>
+                  )}
                   <div className="flex justify-between font-bold text-base pt-2 border-t mt-2">
                     <span>Total</span>
-                    <span className="text-primary">{formatPrice(total)}</span>
+                    <span className="text-primary">{formatPrice(total - couponDiscount)}</span>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Input
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value); setCouponDiscount(0); }}
+                      className="h-9"
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={applyCouponCode}>Apply</Button>
                   </div>
                 </div>
               </CardContent>

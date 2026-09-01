@@ -17,6 +17,7 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
+  referralCode: string;
   addItem: (item: CartItem) => void;
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
@@ -24,6 +25,7 @@ interface CartState {
   toggleCart: (open?: boolean) => void;
   totalItems: () => number;
   totalPrice: () => number;
+  setReferral: (code: string) => void;
 }
 
 export const useCart = create<CartState>()(
@@ -31,6 +33,7 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      referralCode: '',
 
       addItem: (item) => {
         const existing = get().items.find((i) => i.variantId === item.variantId);
@@ -64,15 +67,17 @@ export const useCart = create<CartState>()(
         });
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], referralCode: '' }),
       toggleCart: (open) => set({ isOpen: open ?? !get().isOpen }),
 
       totalItems: () => get().items.reduce((acc, i) => acc + i.quantity, 0),
       totalPrice: () => get().items.reduce((acc, i) => acc + i.price * i.quantity, 0),
+
+      setReferral: (code) => set({ referralCode: code }),
     }),
     {
       name: 'jersey-store-cart',
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({ items: state.items, referralCode: state.referralCode }),
     }
   )
 );

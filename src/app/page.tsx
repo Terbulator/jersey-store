@@ -4,9 +4,10 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { CartDrawer } from '@/components/cart-drawer';
 import { ProductCard } from '@/components/product-card';
+import { ReferralHydrator } from '@/components/referral-hydrator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Sparkles, Truck, Shield, RotateCcw } from 'lucide-react';
+import { ArrowRight, Sparkles, Truck, Shield, RotateCcw, Megaphone } from 'lucide-react';
 import { getFeaturedProducts, CATEGORIES } from '@/lib/products';
 
 // Skip static generation
@@ -25,6 +26,7 @@ export default async function HomePage() {
     <>
       <Navbar />
       <CartDrawer />
+      <ReferralHydrator />
 
       <main>
         {/* ---------------- HERO with 3D ---------------- */}
@@ -153,8 +155,28 @@ export default async function HomePage() {
                 </Link>
               </Button>
             </div>
-            <div className="absolute right-0 top-0 h-full w-1/2 opacity-20 pointer-events-none">
-              <HeroScene />
+          </div>
+        </section>
+
+        {/* ---------------- RESELLER CTA ---------------- */}
+        <section className="container py-12">
+          <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-pitch-50 to-background p-6 md:p-10 dark:from-pitch-900/20">
+            <div className="relative z-10 flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  <Megaphone className="h-3 w-3" /> Reseller Program
+                </div>
+                <h2 className="text-2xl font-bold md:text-3xl">Refer a friend & earn on every order</h2>
+                <p className="max-w-xl text-sm text-muted-foreground md:text-base">
+                  Share your unique referral link. When a friend buys a jersey, you earn
+                  commission — tracked automatically on every order they place.
+                </p>
+              </div>
+              <Button asChild size="lg" variant="glow">
+                <Link href="/reseller/apply">
+                  Become a reseller <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
