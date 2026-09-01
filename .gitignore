@@ -39,3 +39,6 @@ next-env.d.ts
 
 # generated prisma client (rebuilt via `prisma generate` during install/build)
 /src/generated/
+
+# generated prisma 8 contract artifacts (rebuilt via `prisma contract emit`)
+/generated/
