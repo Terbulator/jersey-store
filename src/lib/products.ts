@@ -17,6 +17,7 @@ export interface Product {
   categoryLabel: string;
   featured?: boolean;
   inStock: boolean;
+  variants: { id: string; size: string; color: string; colorHex: string; stock: number }[];
 }
 
 const img = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
@@ -32,7 +33,7 @@ export const CATEGORIES = [
   {
     slug: 'current',
     title: 'Current Season',
-    description: '2024/25 official kits',
+    description: '2025/26 official kits',
     accent: 'from-blue-500/80 to-cyan-500/80',
     image: img('photo-1552346154-21d32810aba3'),
   },
@@ -58,7 +59,7 @@ function mapProduct(p: {
   brand: string | null;
   featured: boolean;
   images: { url: string; isPrimary: boolean }[];
-  variants: { stock: number }[];
+  variants: { id: string; size: string; color: string; colorHex: string; stock: number }[];
   category: { slug: string; name: string } | null;
 }): Product {
   const images = p.images ?? [];
@@ -84,6 +85,7 @@ function mapProduct(p: {
     categoryLabel: p.category?.name ?? '',
     featured: p.featured,
     inStock,
+    variants: variants.map((v) => ({ id: v.id, size: v.size, color: v.color, colorHex: v.colorHex, stock: v.stock })),
   };
 }
 
@@ -102,12 +104,18 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   return products.map(mapProduct);
 }
 
-export async function getAllProducts(): Promise<Product[]> {
-  const products = await prisma.product.findMany({
-    where: { published: true },
-    include: productInclude,
-  });
-  return products.map(mapProduct);
+export async function getAllProducts({ page = 1, pageSize = 50 }: { page?: number; pageSize?: number } = {}): Promise<{ products: Product[]; total: number }> {
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where: { published: true },
+      include: productInclude,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.product.count({ where: { published: true } }),
+  ]);
+  return { products: products.map(mapProduct), total };
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {

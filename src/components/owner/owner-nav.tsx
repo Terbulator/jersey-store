@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingCart, HardHat, ListChecks, Settings,
-  Store, LogOut, Menu, X, KeyRound,
+  Store, LogOut, Menu, X, KeyRound, ShieldCheck, Users2, ScrollText,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,9 @@ const navItems = [
   { href: '/owner/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/owner/workers', label: 'Workers', icon: HardHat },
   { href: '/owner/tasks', label: 'Tasks', icon: ListChecks },
+  { href: '/owner/staff', label: 'Staff', icon: ShieldCheck },
+  { href: '/owner/resellers', label: 'Resellers', icon: Users2 },
+  { href: '/owner/audit', label: 'Audit Log', icon: ScrollText },
   { href: '/owner/permissions', label: 'Permissions', icon: KeyRound },
   { href: '/owner/settings', label: 'Settings', icon: Settings },
 ];
@@ -35,7 +38,7 @@ export function OwnerNav({ userName, userEmail }: { userName: string | null; use
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <nav className="space-y-1">
       {navItems.map((item) => {
-        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href + '/') || pathname === item.href;
         return (
           <Link
             key={item.href}

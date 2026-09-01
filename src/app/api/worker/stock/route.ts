@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getWorkerUser } from '@/lib/worker-guard';
 import { logAudit } from '@/lib/audit';
+import { z } from 'zod';
+
+const stockUpdateSchema = z.object({
+  variantId: z.string().min(1),
+  stock: z.number().int().min(0).max(10000),
+});
 
 export async function GET() {
   const guarded = await getWorkerUser();
@@ -38,10 +44,11 @@ export async function PATCH(req: NextRequest) {
   const { user, worker } = guarded;
 
   const body = await req.json();
-  const { variantId, stock } = body;
-  if (!variantId || !Number.isInteger(stock) || stock < 0) {
-    return NextResponse.json({ error: 'Invalid stock update' }, { status: 400 });
+  const parsed = stockUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid stock update' }, { status: 400 });
   }
+  const { variantId, stock } = parsed.data;
 
   const vendor = await prisma.vendor.findUnique({ where: { userId: worker.ownerId } });
   if (!vendor) return NextResponse.json({ error: 'No vendor found' }, { status: 404 });

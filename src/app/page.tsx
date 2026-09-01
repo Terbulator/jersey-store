@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import dynamicImport from 'next/dynamic';
+import { cookies } from 'next/headers';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { CartDrawer } from '@/components/cart-drawer';
@@ -22,11 +23,12 @@ const HeroScene = dynamicImport(
 export default async function HomePage() {
   const featuredProducts = await getFeaturedProducts();
   const heroCtaSlug = featuredProducts[0]?.slug ?? 'barcelona-2015-messi-home';
+  const refCookie = (await cookies()).get('jersey-ref')?.value;
   return (
     <>
       <Navbar />
       <CartDrawer />
-      <ReferralHydrator />
+      <ReferralHydrator referralCode={refCookie} />
 
       <main>
         {/* ---------------- HERO with 3D ---------------- */}

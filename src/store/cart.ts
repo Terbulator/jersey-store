@@ -60,9 +60,10 @@ export const useCart = create<CartState>()(
           get().removeItem(variantId);
           return;
         }
+        const clamped = Math.min(quantity, 100);
         set({
           items: get().items.map((i) =>
-            i.variantId === variantId ? { ...i, quantity } : i
+            i.variantId === variantId ? { ...i, quantity: clamped } : i
           ),
         });
       },

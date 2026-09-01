@@ -15,6 +15,9 @@ export async function getResellerUser(): Promise<GuardResult> {
   if (!user) {
     return { ok: false, user: null, reseller: null, error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
   }
+  if (user.role === 'OWNER' || user.role === 'WORKER' || user.role === 'ADMIN') {
+    return { ok: false, user: null, reseller: null, error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
+  }
   const reseller = await prisma.reseller.findUnique({ where: { userId: user.id } });
   if (!reseller) {
     return { ok: false, user: null, reseller: null, error: NextResponse.json({ error: 'Reseller profile not found' }, { status: 404 }) };

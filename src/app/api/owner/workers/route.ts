@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET(req: NextRequest) {
   const guarded = await getOwnerUser();
@@ -49,14 +50,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // link to existing user by email or create a minimal account
+    // link to existing user by email or create a Supabase auth user + DB record
     let userId = (await prisma.user.findUnique({ where: { email } }))?.id;
     if (!userId) {
-      const created = await prisma.user.create({ data: { email, name } });
+      const tempPassword = `Worker${Date.now()}!`;
+      const supabase = createAdminClient();
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        app_metadata: { role: 'WORKER' },
+        user_metadata: { name },
+      });
+      if (authError) {
+        return NextResponse.json({ error: authError.message }, { status: 400 });
+      }
+      const created = await prisma.user.create({
+        data: { email, name, role: 'WORKER' },
+      });
       userId = created.id;
+    } else {
+      // promote existing user to WORKER
+      await prisma.user.update({ where: { id: userId }, data: { role: 'WORKER' } });
     }
-    // promote that user to WORKER
-    await prisma.user.update({ where: { id: userId }, data: { role: 'WORKER' } });
 
     const worker = await prisma.worker.create({
       data: { ownerId: user.id, userId, name, email, phone: phone ?? null },

@@ -77,18 +77,6 @@ async function main() {
     },
   });
 
-  await prisma.worker.upsert({
-    where: { userId: workerUser.id },
-    update: {},
-    create: {
-      ownerId: ownerUser.id,
-      userId: workerUser.id,
-      name: 'Demo Worker',
-      email: 'worker@example.com',
-      status: 'ACTIVE',
-    },
-  });
-
   // Categories
   const categories = await Promise.all([
     prisma.category.upsert({

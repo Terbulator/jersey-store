@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import {
   OrbitControls,
@@ -120,34 +120,36 @@ export function HeroScene({ className }: { className?: string }) {
 
         <Environment preset="city" environmentIntensity={0.5} />
 
-        <AnimatedJersey
-          position={[-2.5, 0.3, 0]}
-          color="#dc2626"
-          rotation={[0, 0.4, 0]}
-          scale={0.85}
-          delay={0}
-        />
-        <AnimatedJersey
-          position={[0, 0, 0]}
-          color="#16a34a"
-          scale={1}
-          delay={1.5}
-        />
-        <AnimatedJersey
-          position={[2.5, 0.3, 0]}
-          rotation={[0, -0.4, 0]}
-          color="#2563eb"
-          scale={0.85}
-          delay={3}
-        />
+        <Suspense fallback={<Loader />}>
+          <AnimatedJersey
+            position={[-2.5, 0.3, 0]}
+            color="#dc2626"
+            rotation={[0, 0.4, 0]}
+            scale={0.85}
+            delay={0}
+          />
+          <AnimatedJersey
+            position={[0, 0, 0]}
+            color="#16a34a"
+            scale={1}
+            delay={1.5}
+          />
+          <AnimatedJersey
+            position={[2.5, 0.3, 0]}
+            rotation={[0, -0.4, 0]}
+            color="#2563eb"
+            scale={0.85}
+            delay={3}
+          />
 
-        <ContactShadows
-          position={[0, -1.5, 0]}
-          opacity={0.3}
-          scale={12}
-          blur={3}
-          far={3}
-        />
+          <ContactShadows
+            position={[0, -1.5, 0]}
+            opacity={0.3}
+            scale={12}
+            blur={3}
+            far={3}
+          />
+        </Suspense>
 
         <OrbitControls
           enablePan={false}

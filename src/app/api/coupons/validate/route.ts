@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { applyCoupon } from '@/lib/coupon';
+import { rateLimitError } from '@/lib/rate-limit';
+import { assertSameOrigin } from '@/lib/csrf';
 
 export async function POST(req: NextRequest) {
+  const csrf = assertSameOrigin(req);
+  if (csrf) return csrf;
+
+  const rateLimited = rateLimitError(req, { limit: 10, windowMs: 60_000 });
+  if (rateLimited) return rateLimited;
+
   const body = await req.json().catch(() => ({}));
   const { code, subtotal } = body;
   if (!code || typeof subtotal !== 'number') {

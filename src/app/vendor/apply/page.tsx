@@ -17,6 +17,10 @@ export default function VendorApplyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.storeName || !form.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
     setSent(true);
     toast.success('Application received!', { description: 'Our team will review your store.' });
   };

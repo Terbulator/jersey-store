@@ -75,6 +75,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('Shipping');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [stripeReady, setStripeReady] = useState<boolean | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState('');
@@ -95,27 +96,17 @@ export default function CheckoutPage() {
   const total = totalPrice() + shipping + tax;
 
   const placeOrder = async () => {
+    if (submitting) return;
     setSubmitting(true);
     try {
       const res = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: form.email,
-          fullName: form.fullName,
-          phone: form.phone,
-          line1: form.line1,
-          city: form.city,
-          state: form.state,
-          postalCode: form.postalCode,
-          country: form.country,
           items,
-          subtotal: totalPrice(),
           couponCode: couponCode || undefined,
           referralCode: referralCode || undefined,
-          shipping,
-          tax,
-          total,
+          paymentIntentId: paymentIntentId ?? undefined,
         }),
       });
       const data = await res.json();
@@ -165,13 +156,18 @@ export default function CheckoutPage() {
           const res = await fetch('/api/checkout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: Math.round(total * 100), items }),
+            body: JSON.stringify({
+              items: items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity })),
+              couponCode: couponCode || undefined,
+              referralCode: referralCode || undefined,
+            }),
           });
           const data = await res.json();
           if (!res.ok) {
             setStripeReady(false);
           } else {
             setClientSecret(data.clientSecret);
+            setPaymentIntentId(data.paymentIntentId ?? null);
           }
         } catch {
           setStripeReady(false);

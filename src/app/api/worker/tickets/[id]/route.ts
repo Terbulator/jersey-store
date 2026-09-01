@@ -37,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (status && status !== ticket.status) {
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { status: status === 'IN_PROGRESS' ? 'IN_PROGRESS' : status === 'RESOLVED' ? 'RESOLVED' : status === 'CLOSED' ? 'CLOSED' : 'OPEN' },
+      data: { status },
     });
   }
 

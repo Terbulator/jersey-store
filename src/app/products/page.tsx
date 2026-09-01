@@ -9,7 +9,7 @@ import { ProductsFilter } from './products-filter';
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
-  const products = await getAllProducts();
+  const { products } = await getAllProducts();
   const teams = ['All', ...new Set(products.map((p) => p.team).filter(Boolean))];
   const categories = CATEGORIES.map((c) => c.slug);
 

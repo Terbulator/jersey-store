@@ -160,9 +160,9 @@ Each spec capability, its deployed status, and where it belongs. *This is the "w
 | Product CRUD + catalog | ✅ | admin/owner | — |
 | Order processing + status | ✅ | admin | — |
 | Worker list | ✅ | admin | — |
-| **Worker task assignment (Admin→Worker)** | ❌ | admin | **NOW** |
+| **Worker task assignment (Admin→Worker)** | ✅ | admin (`/admin/tasks`) | — |
 | **Coupons / discounts** | ❌ | admin/owner | **NOW** |
-| **Sales / traffic reports** (numbers-only) | ❌ | admin | **NOW** |
+| **Sales / traffic reports** (numbers-only) | ✅ | admin (`/admin/reports`) | — |
 | **Support tickets / queue** | ❌ | admin/worker | NOW |
 | **Reseller model + referral links** | ❌ | new | NOW |
 | **Commission ledger + payouts** | ❌ | new | NOW |
@@ -243,12 +243,12 @@ to the Audit Log (who, to whom, what, when, optional why).
 - **Macro controls** — maintenance mode, feature flags, gateway/courier kill-switch, multi-store, rate-limit/fraud rules, locale rollout, staging toggle, announcement & emergency broadcast
 
 ### ADMIN (daily ops)
-- **Orders queue** — all orders, assign to Workers, bulk actions; **admin assigns tasks** (gap)
+- **Orders queue** — all orders, assign to Workers, bulk actions; **admin assigns tasks** (build ✅ via `/admin/tasks`)
 - **Catalog** — CRUD, categories, stock levels
 - **Coupons** — create/manage within Owner-set max % (gap)
 - **Support queue** — tickets; refunds below Owner-set threshold (gap)
 - **Workers** — create, assign tasks, view performance
-- **Reports** — sales/traffic numbers only, no cost/profit unless unlocked (gap)
+- **Reports** — sales/traffic numbers only, no cost/profit unless unlocked (build ✅ via `/admin/reports`)
 - **Reseller applications** — review/approve, route to Owner if configured (gap)
 - **"Request Access"** button next to every 🔴/🟡 feature → pings Owner (gap)
 

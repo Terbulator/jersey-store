@@ -30,6 +30,6 @@ export function truncate(text: string, length = 100) {
 
 export function generateOrderNumber() {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const random = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
   return `JS-${timestamp}-${random}`;
 }

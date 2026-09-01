@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Store, LayoutDashboard, LogOut, Menu, X, Share2 } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X, Share2, Package, ShoppingCart } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/reseller', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { href: '/products', label: 'Catalog', icon: Store },
+  { href: '/reseller/products', label: 'Products', icon: Package },
+  { href: '/reseller/orders', label: 'Orders', icon: ShoppingCart },
 ];
 
 export function ResellerNav({ userName, userEmail }: { userName: string | null; userEmail: string }) {
@@ -33,7 +34,7 @@ export function ResellerNav({ userName, userEmail }: { userName: string | null; 
         </div>
         <nav className="space-y-1">
           {navItems.map((item) => {
-            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href + '/') || pathname === item.href;
             return (
               <Link
                 key={item.href}

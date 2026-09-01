@@ -11,9 +11,15 @@ export async function GET() {
   if (!guarded.ok) return guarded.error;
   const { user } = guarded;
 
+  const workers = await prisma.worker.findMany({
+    where: { ownerId: user.id },
+    select: { userId: true },
+  });
+  const workerUserIds = workers.map((w) => w.userId);
+
   const staff = await prisma.user.findMany({
     where: {
-      OR: [{ role: { in: ['ADMIN', 'WORKER'] } }, { reseller: { isNot: null } }],
+      id: { in: workerUserIds },
     },
     include: {
       permissionOverrides: true,

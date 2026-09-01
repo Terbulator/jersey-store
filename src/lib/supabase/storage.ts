@@ -25,7 +25,12 @@ export async function uploadProductImage(
   return { path, url: data.publicUrl };
 }
 
-export async function deleteImage(path: string) {
+export async function deleteImage(path: string): Promise<{ error?: string }> {
   const supabase = createAdminClient();
-  await supabase.storage.from(BUCKET).remove([path]);
+  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+  if (error) {
+    console.error('Failed to delete image:', error.message);
+    return { error: error.message };
+  }
+  return {};
 }

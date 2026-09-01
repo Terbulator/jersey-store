@@ -25,8 +25,10 @@ Desktop: `w-64` left sidebar. Mobile (<md): hamburger top bar + dropdown.
 | Users | Users | prefix |
 | Owners | Building2 | prefix |
 | Workers | HardHat | prefix |
+| Tasks | ListTodo | prefix |
 | Categories | FolderTree | prefix |
 | Audit Log | ScrollText | prefix |
+| Reports | BarChart3 | prefix |
 | Settings | Settings | prefix |
 
 Footer shows signed-in user name + email and a **Sign out** button (Supabase signOut → `/`).
@@ -98,6 +100,40 @@ Empty → "No owners found."
 **Table columns:** Name, Email, Owner, Tasks (count), Status (badge).
 Status badge: ACTIVE green / else gray.
 Empty → "No workers found." No pagination.
+
+---
+
+## Tasks (`/admin/tasks`)
+
+**API:** `GET /api/admin/tasks?status=` · `POST /api/admin/tasks`
+
+**Controls:** Status filter (All / PENDING / IN_PROGRESS / COMPLETED / CANCELLED) · **"New task"** button (opens inline create form).
+
+**New task form:**
+| Field | Type | Required |
+|-------|------|----------|
+| Title | text | Yes |
+| Description | textarea | No |
+| Assign to worker | select (from `/api/admin/workers`) | No (defaults unassigned) |
+| Priority | select (LOW/MEDIUM/HIGH/URGENT) | No (default MEDIUM) |
+
+**Task cards:** Title + priority badge, description, status badge (color-coded), assignee, linked order (if any), created date.
+Status colors: PENDING yellow / IN_PROGRESS blue / COMPLETED green / CANCELLED gray.
+
+Creates audit entry (`task.create`). Fills the "Admin → Worker task assignment" build gap.
+
+---
+
+## Reports (`/admin/reports`)
+
+**API:** `GET /api/admin/reports?days=`
+
+**Controls:** Range buttons (Last 7 / 30 / 90 days).
+
+**Stat cards:** Revenue, Orders, Avg order value, Live products, Customers.
+**Revenue by day:** bar list (date, proportional bar, revenue, order count) for the selected range.
+Numbers-only (no cost/profit) — matches the "Admin → numbers-only sales report" build gap.
+Fills the "Sales / traffic reports (numbers-only)" build gap.
 
 ---
 
@@ -212,6 +248,8 @@ All fields optional; empty fields are omitted from the PATCH body. **Save settin
 | GET | `/api/admin/owners` | Owners |
 | PATCH | `/api/admin/owners` | Owners (status) |
 | GET | `/api/admin/workers` | Workers |
+| GET | `/api/admin/tasks` | Tasks (list) |
+| POST | `/api/admin/tasks` | Tasks (create) |
 | GET | `/api/admin/products` | Products |
 | POST | `/api/admin/products` | Products (create) |
 | PATCH | `/api/admin/products/{id}` | Products (edit) |
@@ -223,6 +261,7 @@ All fields optional; empty fields are omitted from the PATCH body. **Save settin
 | GET | `/api/admin/orders` | Orders |
 | PATCH | `/api/admin/orders` | Orders (status) |
 | GET | `/api/admin/audit` | Audit Log |
+| GET | `/api/admin/reports` | Reports |
 | GET | `/api/admin/settings` | Settings |
 | PATCH | `/api/admin/settings` | Settings |
 

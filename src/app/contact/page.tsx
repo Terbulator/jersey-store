@@ -16,6 +16,10 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name || !form.email || !form.message) {
+      toast.error('Please fill in all fields');
+      return;
+    }
     setSent(true);
     toast.success('Message sent!', { description: 'We will reply within 24 hours.' });
   };

@@ -10,6 +10,7 @@ import {
   Html,
   useProgress,
   Preload,
+  useGLTF,
 } from '@react-three/drei';
 import * as THREE from 'three';
 import { cn } from '@/lib/utils';
@@ -108,10 +109,22 @@ function Loader() {
 /* ------------------------------------------------------------------ */
 /* Floating wrapper for the jersey model                              */
 /* ------------------------------------------------------------------ */
+function GltfModel({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} />;
+}
+
+function ModelOrProcedural({ modelUrl, color }: { modelUrl?: string; color?: string }) {
+  if (modelUrl) {
+    return <GltfModel url={modelUrl} />;
+  }
+  return <ProceduralJersey color={color} />;
+}
+
 function FloatingJersey({ modelUrl, color }: { modelUrl?: string; color?: string }) {
   return (
     <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.5}>
-      <ProceduralJersey color={color} />
+      <ModelOrProcedural modelUrl={modelUrl} color={color} />
     </Float>
   );
 }
@@ -120,6 +133,7 @@ function FloatingJersey({ modelUrl, color }: { modelUrl?: string; color?: string
 /* Public viewer component                                            */
 /* ------------------------------------------------------------------ */
 export function JerseyViewer({
+  modelUrl,
   color = '#16a34a',
   autoRotate = true,
   enableZoom = true,
@@ -170,7 +184,7 @@ export function JerseyViewer({
         )}
 
         <Suspense fallback={<Loader />}>
-          <FloatingJersey color={color} />
+          <FloatingJersey modelUrl={modelUrl} color={color} />
           <ContactShadows
             position={[0, -1.5, 0]}
             opacity={0.4}

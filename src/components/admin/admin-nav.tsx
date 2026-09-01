@@ -42,7 +42,7 @@ export function AdminNav({ userName, userEmail }: { userName: string | null; use
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <nav className="space-y-1">
       {navItems.map((item) => {
-        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+        const active = item.exact ? pathname === item.href : pathname.startsWith(item.href + '/') || pathname === item.href;
         return (
           <Link
             key={item.href}

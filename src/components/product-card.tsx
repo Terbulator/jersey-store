@@ -2,19 +2,19 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
-import { Heart, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/store/cart';
+import { Heart, Eye } from 'lucide-react';
 import { useWishlist } from '@/store/wishlist';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import type { Product } from '@/lib/products';
 
 export function ProductCard({ product }: { product: Product }) {
-  const addItem = useCart((s) => s.addItem);
+  const router = useRouter();
   const wishlisted = useWishlist((s) => s.ids.includes(product.id));
   const toggleWishlist = useWishlist((s) => s.toggle);
 
@@ -25,20 +25,10 @@ export function ProductCard({ product }: { product: Product }) {
     });
   };
 
-  const handleAddToCart = () => {
-    addItem({
-      productId: product.id,
-      variantId: `${product.id}-default`,
-      name: product.name,
-      image: product.image,
-      price: product.basePrice,
-      size: 'M',
-      color: 'Default',
-      colorHex: '#000000',
-      quantity: 1,
-      slug: product.slug,
-    });
-    toast.success(`${product.name} added to cart`);
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/products/${product.slug}`);
   };
 
   return (
@@ -108,9 +98,9 @@ export function ProductCard({ product }: { product: Product }) {
               variant="ghost"
               className="h-8 w-8"
               onClick={handleAddToCart}
-              aria-label="Add to cart"
+              aria-label="View product"
             >
-              <ShoppingCart className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>

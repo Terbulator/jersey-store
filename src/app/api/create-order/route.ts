@@ -4,6 +4,8 @@ import { generateOrderNumber } from '@/lib/utils';
 import { getSession } from '@/lib/session';
 import { logAudit } from '@/lib/audit';
 import { applyCoupon } from '@/lib/coupon';
+import { stripe } from '@/lib/stripe';
+import { assertSameOrigin } from '@/lib/csrf';
 import { z } from 'zod';
 
 const itemSchema = z.object({
@@ -18,10 +20,14 @@ const orderSchema = z.object({
   items: z.array(itemSchema).min(1),
   couponCode: z.string().max(50).optional(),
   referralCode: z.string().max(50).optional(),
+  paymentIntentId: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
+    const csrf = assertSameOrigin(req);
+    if (csrf) return csrf;
+
     const user = await getSession();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -36,7 +42,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { items, couponCode, referralCode } = parsed.data;
+    const { items, couponCode, referralCode, paymentIntentId } = parsed.data;
+
+    // Verify Stripe payment if a PaymentIntent was provided
+    let paymentStatus: 'PAID' | 'PENDING' = 'PENDING';
+    if (paymentIntentId && stripe) {
+      try {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (pi.status === 'succeeded' && pi.metadata?.userId === user.id) {
+          paymentStatus = 'PAID';
+        }
+      } catch {
+        return NextResponse.json({ error: 'Invalid payment intent' }, { status: 400 });
+      }
+    }
 
     // Compute the order atomically — price, stock check + decrement, and totals
     // are all server-side so the client can never under-pay or oversell.
@@ -86,7 +105,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           orderNumber: generateOrderNumber(),
           status: 'PROCESSING',
-          paymentStatus: 'PAID',
+          paymentStatus,
           couponId,
           resellerId,
           discount,

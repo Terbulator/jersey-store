@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 
+// NOTE: This is an in-memory rate limiter. It resets on cold starts and does not
+// share state across serverless instances. For production, consider upgrading to
+// a Redis-backed solution (e.g., Upstash Rate Limit).
+
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
 function keyFor(req: Request): string {

@@ -26,8 +26,11 @@ interface Props {
 }
 
 export function ProductDetail({ product, related }: Props) {
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [selectedColor, setSelectedColor] = useState({ name: 'Home', hex: '#dc2626' });
+  const SIZES = [...new Set(product.variants.map((v) => v.size))] as string[];
+  const COLORS = [...new Map(product.variants.map((v) => [v.color, { name: v.color, hex: v.colorHex }])).values()];
+
+  const [selectedSize, setSelectedSize] = useState<string>(SIZES[0] ?? 'M');
+  const [selectedColor, setSelectedColor] = useState<{ name: string; hex: string }>(COLORS[0] ?? { name: 'Home', hex: '#dc2626' });
   const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState<'3d' | 'image'>('3d');
   const addItem = useCart((s) => s.addItem);
@@ -35,17 +38,18 @@ export function ProductDetail({ product, related }: Props) {
   const wishlisted = useWishlist((s) => s.ids.includes(product.id));
   const toggleWishlist = useWishlist((s) => s.toggle);
 
-  const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
-  const COLORS = [
-    { name: 'Home', hex: '#dc2626' },
-    { name: 'Away', hex: '#1e40af' },
-    { name: 'Third', hex: '#16a34a' },
-  ];
+  const selectedVariant = product.variants.find(
+    (v) => v.size === selectedSize && v.color === selectedColor.name
+  );
 
   const handleAddToCart = () => {
+    if (!selectedVariant) {
+      toast.error('Selected size/color is not available');
+      return;
+    }
     addItem({
       productId: product.id,
-      variantId: `${product.id}-${selectedSize}-${selectedColor.name}`,
+      variantId: selectedVariant.id,
       name: product.name,
       image: product.image,
       price: product.basePrice,
@@ -232,12 +236,12 @@ export function ProductDetail({ product, related }: Props) {
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <Button onClick={handleAddToCart} size="lg" variant="glow" className="flex-1" disabled={!product.inStock}>
+            <Button onClick={handleAddToCart} size="lg" variant="glow" className="flex-1" disabled={!product.inStock || !selectedVariant || selectedVariant.stock <= 0}>
               Add to Cart · {formatPrice(product.basePrice * quantity)}
             </Button>
           </div>
 
-          <Button size="lg" variant="outline" className="w-full" disabled={!product.inStock} onClick={handleBuyNow}>
+          <Button size="lg" variant="outline" className="w-full" disabled={!product.inStock || !selectedVariant || selectedVariant.stock <= 0} onClick={handleBuyNow}>
             Buy Now
           </Button>
 
