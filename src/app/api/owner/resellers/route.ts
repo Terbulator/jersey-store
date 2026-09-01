@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
-import { ResellerStatus } from '@prisma/client';
+import { ResellerStatus } from '@/generated/prisma/client';
 
 export async function GET() {
   const guarded = await getOwnerUser();

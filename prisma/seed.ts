@@ -1,7 +1,11 @@
-import { PrismaClient, Role, VendorStatus, Size } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../src/generated/prisma/client';
+import { Role, VendorStatus, Size } from '../src/generated/prisma/client';
 import { createClient } from '@supabase/supabase-js';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

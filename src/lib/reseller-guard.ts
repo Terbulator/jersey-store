@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession, SessionUser } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
-import { Reseller } from '@prisma/client';
+import { Reseller } from '@/generated/prisma/client';
 
 type GuardResult =
   | { ok: true; user: SessionUser; reseller: Reseller; error: null }

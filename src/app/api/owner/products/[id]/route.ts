@@ -1,68 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, OrderStatus } from '@/generated/prisma/client';
 import { getOwnerUser } from '@/lib/owner-guard';
-import { logAudit } from '@/lib/audit';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
   const guarded = await getOwnerUser();
   if (!guarded.ok) return guarded.error;
-  const { vendor, user } = guarded;
+  const { vendor } = guarded;
 
-  const existing = await prisma.product.findFirst({ where: { id: params.id, vendorId: vendor.id } });
-  if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+  const status = req.nextUrl.searchParams.get('status') ?? '';
+  const search = req.nextUrl.searchParams.get('search') ?? '';
+  const page = parseInt(req.nextUrl.searchParams.get('page') ?? '1', 10);
+  const pageSize = parseInt(req.nextUrl.searchParams.get('size') ?? '20', 10);
 
-  const body = await req.json();
-  const data: Prisma.ProductUpdateInput = {};
-  for (const field of ['name', 'description', 'basePrice', 'comparePrice', 'team', 'season', 'player', 'brand', 'published', 'featured', 'categoryId'] as const) {
-    if (body[field] !== undefined) {
-      if (field === 'basePrice' || field === 'comparePrice') {
-        (data as Record<string, unknown>)[field] = body[field] ? Number(body[field]) : null;
-      } else {
-        (data as Record<string, unknown>)[field] = body[field];
-      }
-    }
-  }
-  if (data.name && typeof data.name === 'string') {
-    (data as { slug?: string }).slug = data.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-') + '-' + Date.now().toString(36);
-  }
-  if (Object.keys(data).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
-
-  const updated = await prisma.product.update({ where: { id: params.id }, data });
-
-  await logAudit({
-    actorId: user.id,
-    actorEmail: user.email,
-    actorRole: user.role,
-    action: 'product.update',
-    resource: 'product',
-    resourceId: params.id,
-    oldValues: { name: existing.name },
-    newValues: { name: updated.name },
+  // distinct orders that contain this vendor's products
+  const orderIds = await prisma.orderItem.findMany({
+    where: { vendorId: vendor.id },
+    select: { orderId: true },
+    distinct: ['orderId'],
   });
+  const where: Prisma.OrderWhereInput = {
+    id: { in: orderIds.map((o) => o.orderId) },
+  };
+  if (status) where.status = status as OrderStatus;
+  if (search) where.orderNumber = { contains: search, mode: 'insensitive' };
 
-  return NextResponse.json({ product: updated });
-}
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: {
+        user: { select: { name: true, email: true } },
+        items: {
+          where: { vendorId: vendor.id },
+          include: { product: { select: { name: true, slug: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.order.count({ where }),
+  ]);
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const guarded = await getOwnerUser();
-  if (!guarded.ok) return guarded.error;
-  const { vendor, user } = guarded;
+  const mapped = orders.map((o) => ({
+    id: o.id,
+    orderNumber: o.orderNumber,
+    status: o.status,
+    paymentStatus: o.paymentStatus,
+    customer: o.user?.name ?? 'Guest',
+    email: o.user?.email,
+    itemCount: o.items.length,
+    items: o.items.map((it) => ({ name: it.product.name, qty: it.quantity, price: Number(it.price) })),
+    total: Number(o.total),
+    createdAt: o.createdAt,
+  }));
 
-  const existing = await prisma.product.findFirst({ where: { id: params.id, vendorId: vendor.id } });
-  if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-
-  await prisma.product.delete({ where: { id: params.id } });
-
-  await logAudit({
-    actorId: user.id,
-    actorEmail: user.email,
-    actorRole: user.role,
-    action: 'product.delete',
-    resource: 'product',
-    resourceId: params.id,
-    oldValues: { name: existing.name },
-  });
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ orders: mapped, total, page, pageSize });
 }

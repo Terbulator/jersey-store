@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAdminUser } from '@/lib/admin-guard';
 import { logAudit } from '@/lib/audit';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 
 export async function GET(req: NextRequest) {
   const guarded = await getAdminUser();

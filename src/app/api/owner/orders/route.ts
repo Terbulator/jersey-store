@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { Prisma, OrderStatus } from '@prisma/client';
+import { Prisma, OrderStatus } from '@/generated/prisma/client';
 import { getOwnerUser } from '@/lib/owner-guard';
 
 export async function GET(req: NextRequest) {

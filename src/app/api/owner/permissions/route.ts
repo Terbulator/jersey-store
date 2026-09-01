@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
-import { GrantType } from '@prisma/client';
+import { GrantType } from '@/generated/prisma/client';
 
 const GRANT_TYPES: GrantType[] = ['PERMANENT', 'TEMPORARY', 'ONE_TIME'];
 

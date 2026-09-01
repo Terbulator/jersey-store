@@ -1,4 +1,4 @@
-import { Role, GrantAccess } from '@prisma/client';
+import { Role, GrantAccess } from '@/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
 const PERMISSIONS: Record<Role, string[]> = {

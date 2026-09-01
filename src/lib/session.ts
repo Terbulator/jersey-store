@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { prisma } from '@/lib/prisma';
-import { Role } from '@prisma/client';
+import { Role } from '@/generated/prisma/client';
 
 export interface SessionUser {
   id: string;
