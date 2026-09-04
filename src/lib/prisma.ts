@@ -7,8 +7,8 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefi
 // ponytail: session-mode pooler caps at 15 clients; cap each instance's pool low and recycle idle sockets so a few warm functions can't exhaust the cap. Transaction pooler (6543) would fix this outright but would break the interactive $transaction in create-order.
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
-  max: 4,
-  idleTimeoutMillis: 30_000,
+  max: 2,
+  idleTimeoutMillis: 20_000,
   connectionTimeoutMillis: 5_000,
 });
 
