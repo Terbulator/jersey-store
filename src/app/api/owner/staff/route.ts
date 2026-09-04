@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
 import { createAdminClient } from '@/lib/supabase/admin';
+export const dynamic = 'force-dynamic';
 
 const createSchema = z.object({
   name: z.string().min(2).max(60),

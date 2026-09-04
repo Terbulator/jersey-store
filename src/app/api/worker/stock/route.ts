@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getWorkerUser } from '@/lib/worker-guard';
 import { logAudit } from '@/lib/audit';
 import { z } from 'zod';
+export const dynamic = 'force-dynamic';
 
 const stockUpdateSchema = z.object({
   variantId: z.string().min(1),

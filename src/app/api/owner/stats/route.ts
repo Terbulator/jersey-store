@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const guarded = await getOwnerUser();

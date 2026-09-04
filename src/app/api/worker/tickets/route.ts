@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getWorkerUser } from '@/lib/worker-guard';
 import { logAudit } from '@/lib/audit';
+export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/worker/tickets — claim an unassigned OPEN ticket.

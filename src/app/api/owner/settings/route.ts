@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
 import { slugify } from '@/lib/utils';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

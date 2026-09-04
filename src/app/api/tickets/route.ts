@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/session';
 import { z } from 'zod';
+export const dynamic = 'force-dynamic';
 
 const ticketSchema = z.object({
   subject: z.string().min(1).max(200),

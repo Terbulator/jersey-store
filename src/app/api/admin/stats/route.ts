@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAdminUser } from '@/lib/admin-guard';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const guarded = await getAdminUser();

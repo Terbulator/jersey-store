@@ -4,6 +4,7 @@ import { getAdminUser } from '@/lib/admin-guard';
 import { checkPermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { z } from 'zod';
+export const dynamic = 'force-dynamic';
 
 const couponSchema = z.object({
   code: z.string().min(1).max(50),

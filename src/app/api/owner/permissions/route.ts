@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getOwnerUser } from '@/lib/owner-guard';
 import { logAudit } from '@/lib/audit';
 import { GrantType } from '@/generated/prisma/client';
+export const dynamic = 'force-dynamic';
 
 const GRANT_TYPES: GrantType[] = ['PERMANENT', 'TEMPORARY', 'ONE_TIME'];
 

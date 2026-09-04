@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getAdminUser } from '@/lib/admin-guard';
 import { logAudit } from '@/lib/audit';
 import { ResellerStatus } from '@/generated/prisma/client';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const guarded = await getAdminUser();

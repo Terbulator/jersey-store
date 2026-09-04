@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getResellerUser } from '@/lib/reseller-guard';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const guarded = await getResellerUser();
