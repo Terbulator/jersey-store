@@ -8,12 +8,13 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Package, Store, LogOut, Heart as HeartIcon } from 'lucide-react';
+import { User, Package, Store, LogOut, Heart as HeartIcon, LayoutDashboard } from 'lucide-react';
 
 export default function AccountPage() {
   const router = useRouter();
   const [name, setName] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -22,6 +23,7 @@ export default function AccountPage() {
       if (u) {
         setAuthenticated(true);
         setName((u.user_metadata?.name as string) ?? u.email ?? null);
+        setIsAdmin(u.app_metadata?.role === 'ADMIN');
       }
     });
   }, []);
@@ -34,6 +36,9 @@ export default function AccountPage() {
   };
 
   const links = [
+    ...(isAdmin
+      ? [{ href: '/admin', label: 'Admin Dashboard', desc: 'Manage users, orders, products & reports', icon: LayoutDashboard }]
+      : []),
     { href: '/account/orders', label: 'My Orders', desc: 'Track and review your orders', icon: Package },
     { href: '/account/wishlist', label: 'Wishlist', desc: 'Jerseys you saved for later', icon: HeartIcon },
     { href: '/vendor/apply', label: 'Sell on Jersey Store', desc: 'Become a vendor', icon: Store },

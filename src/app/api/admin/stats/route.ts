@@ -8,29 +8,18 @@ export async function GET() {
   if (!guarded.ok) return guarded.error;
 
   try {
-    const [
-      userCount,
-      ownerCount,
-      workerCount,
-      productCount,
-      orderCount,
-      revenue,
-      auditCount,
-      openTicketCount,
-      pendingResellerCount,
-      activeCouponCount,
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { role: 'OWNER' } }),
-      prisma.worker.count(),
-      prisma.product.count(),
-      prisma.order.count(),
-      prisma.order.aggregate({ _sum: { total: true } }),
-      prisma.auditLog.count(),
-      prisma.ticket.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
-      prisma.reseller.count({ where: { status: 'PENDING' } }),
-      prisma.coupon.count({ where: { active: true } }),
-    ]);
+    const userCount = await prisma.user.count();
+    const ownerCount = await prisma.user.count({ where: { role: 'OWNER' } });
+    const workerCount = await prisma.worker.count();
+    const productCount = await prisma.product.count();
+    const orderCount = await prisma.order.count();
+    const revenue = await prisma.order.aggregate({ _sum: { total: true } });
+    const auditCount = await prisma.auditLog.count();
+    const openTicketCount = await prisma.ticket.count({
+      where: { status: { in: ['OPEN', 'IN_PROGRESS'] } },
+    });
+    const pendingResellerCount = await prisma.reseller.count({ where: { status: 'PENDING' } });
+    const activeCouponCount = await prisma.coupon.count({ where: { active: true } });
 
     const recentOrders = await prisma.order.findMany({
       orderBy: { createdAt: 'desc' },

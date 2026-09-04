@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { ShoppingCart, User, Search, Menu, X, Heart, Shirt, Moon, Sun } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, Heart, Shirt, Moon, Sun, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/store/cart';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
@@ -22,11 +23,22 @@ const navLinks = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const totalItems = useCart((s) => s.totalItems());
   const toggleCart = useCart((s) => s.toggleCart);
   const router = useRouter();
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setIsAdmin(data.user?.app_metadata?.role === 'ADMIN'));
+  }, []);
+
+  const links = isAdmin
+    ? [...navLinks, { href: '/admin', label: 'Dashboard' }]
+    : navLinks;
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +60,7 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-6">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -97,6 +109,13 @@ export function Navbar() {
               <User className="h-5 w-5" />
             </Link>
           </Button>
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="hidden sm:flex" asChild>
+              <Link href="/admin" aria-label="Admin dashboard">
+                <LayoutDashboard className="h-5 w-5" />
+              </Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -139,7 +158,7 @@ export function Navbar() {
                 className="pl-9"
               />
             </form>
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
