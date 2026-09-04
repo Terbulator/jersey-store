@@ -10,17 +10,17 @@ export async function GET() {
     if (!guarded.ok) return guarded.error;
     const { vendor } = guarded;
 
-    const [productCount, publishedCount, workerCount, taskCount, pendingTasks, orderCount, revenue] =
-      await Promise.all([
-        prisma.product.count({ where: { vendorId: vendor.id } }),
-        prisma.product.count({ where: { vendorId: vendor.id, published: true } }),
-        prisma.worker.count({ where: { ownerId: guarded.user.id } }),
-        prisma.task.count({ where: { worker: { ownerId: guarded.user.id } } }),
-        prisma.task.count({ where: { worker: { ownerId: guarded.user.id }, status: 'PENDING' } }),
-        prisma.orderItem.count({ where: { vendorId: vendor.id } }),
-        // ponytail: revenue = sum of order item totals for this vendor
-        prisma.orderItem.aggregate({ where: { vendorId: vendor.id }, _sum: { total: true } }),
-      ]);
+    // sequential awaits: session-mode pooler caps at 15 clients, bursts hit EMAXCONNSESSION
+    const productCount = await prisma.product.count({ where: { vendorId: vendor.id } });
+    const publishedCount = await prisma.product.count({ where: { vendorId: vendor.id, published: true } });
+    const workerCount = await prisma.worker.count({ where: { ownerId: guarded.user.id } });
+    const taskCount = await prisma.task.count({ where: { worker: { ownerId: guarded.user.id } } });
+    const pendingTasks = await prisma.task.count({
+      where: { worker: { ownerId: guarded.user.id }, status: 'PENDING' },
+    });
+    const orderCount = await prisma.orderItem.count({ where: { vendorId: vendor.id } });
+    // ponytail: revenue = sum of order item totals for this vendor
+    const revenue = await prisma.orderItem.aggregate({ where: { vendorId: vendor.id }, _sum: { total: true } });
 
     const recentOrders = await prisma.orderItem.findMany({
       where: { vendorId: vendor.id },
