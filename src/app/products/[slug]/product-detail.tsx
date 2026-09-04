@@ -206,7 +206,9 @@ export function ProductDetail({ product, related }: Props) {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">Size</h3>
-              <Button variant="link" size="sm" className="h-auto p-0">Size guide</Button>
+              <Button asChild variant="link" size="sm" className="h-auto p-0">
+                <Link href="/size-chart">Size guide</Link>
+              </Button>
             </div>
             <div className="grid grid-cols-6 gap-2">
               {SIZES.map((size) => (

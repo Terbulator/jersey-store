@@ -39,19 +39,31 @@ export function ProductCard({ product }: { product: Product }) {
     >
       <Card className="group relative h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
-          {product.featured && (
-            <Badge className="absolute left-3 top-3 z-10" variant="success">
-              Featured
-            </Badge>
-          )}
+          <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
+            {product.isNew && (
+              <Badge className="w-fit" variant="warning">
+                New
+              </Badge>
+            )}
+            {product.featured && (
+              <Badge className="w-fit" variant="success">
+                Featured
+              </Badge>
+            )}
+          </div>
           <Link href={`/products/${product.slug}`} aria-label={product.name}>
             <Image
               src={product.image}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              className={`object-cover transition-transform duration-500 group-hover:scale-110 ${!product.inStock ? 'opacity-40' : ''}`}
             />
+            {!product.inStock && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Badge variant="destructive" className="px-3 py-1">Sold out</Badge>
+              </div>
+            )}
           </Link>
 
           <Button

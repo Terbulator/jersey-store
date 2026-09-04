@@ -16,6 +16,7 @@ export interface Product {
   category: string;
   categoryLabel: string;
   featured?: boolean;
+  isNew: boolean;
   inStock: boolean;
   variants: { id: string; size: string; color: string; colorHex: string; stock: number }[];
 }
@@ -58,6 +59,7 @@ function mapProduct(p: {
   player: string | null;
   brand: string | null;
   featured: boolean;
+  createdAt: Date | string;
   images: { url: string; isPrimary: boolean }[];
   variants: { id: string; size: string; color: string; colorHex: string; stock: number }[];
   category: { slug: string; name: string } | null;
@@ -84,6 +86,7 @@ function mapProduct(p: {
     category: p.category?.slug ?? '',
     categoryLabel: p.category?.name ?? '',
     featured: p.featured,
+    isNew: Date.now() - new Date(p.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000,
     inStock,
     variants: variants.map((v) => ({ id: v.id, size: v.size, color: v.color, colorHex: v.colorHex, stock: v.stock })),
   };
