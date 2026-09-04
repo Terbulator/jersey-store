@@ -14,7 +14,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [name, setName] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -23,7 +23,7 @@ export default function AccountPage() {
       if (u) {
         setAuthenticated(true);
         setName((u.user_metadata?.name as string) ?? u.email ?? null);
-        setIsAdmin(u.app_metadata?.role === 'ADMIN');
+        setRole((u.app_metadata?.role as string) ?? null);
       }
     });
   }, []);
@@ -35,9 +35,15 @@ export default function AccountPage() {
     router.push('/');
   };
 
+  const dashboardLink: Record<string, { href: string; label: string }> = {
+    ADMIN: { href: '/admin', label: 'Admin Dashboard' },
+    OWNER: { href: '/owner', label: 'Owner Dashboard' },
+    WORKER: { href: '/worker', label: 'Worker Dashboard' },
+  };
+
   const links = [
-    ...(isAdmin
-      ? [{ href: '/admin', label: 'Admin Dashboard', desc: 'Manage users, orders, products & reports', icon: LayoutDashboard }]
+    ...(role && dashboardLink[role]
+      ? [{ href: dashboardLink[role].href, label: dashboardLink[role].label, desc: 'Manage your store, orders & reports', icon: LayoutDashboard }]
       : []),
     { href: '/account/orders', label: 'My Orders', desc: 'Track and review your orders', icon: Package },
     { href: '/account/wishlist', label: 'Wishlist', desc: 'Jerseys you saved for later', icon: HeartIcon },
