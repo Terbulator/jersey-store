@@ -17,6 +17,7 @@ const DEMO_USERS = [
   { email: 'headerr0001@gmail.com', name: 'Admin', password: 'admin123', role: Role.ADMIN },
   { email: 'owner@example.com', name: 'Demo Owner', password: 'owner123', role: Role.OWNER },
   { email: 'worker@example.com', name: 'Demo Worker', password: 'worker123', role: Role.WORKER },
+  { email: 'reseller@example.com', name: 'Demo Reseller', password: 'reseller123', role: Role.CUSTOMER },
 ];
 
 async function ensureAuthUser(email: string, password: string, name: string, role: Role) {
@@ -78,6 +79,21 @@ async function main() {
       name: 'Demo Worker',
       email: 'worker@example.com',
       status: 'ACTIVE',
+    },
+  });
+
+  const resellerUser = await prisma.user.findUniqueOrThrow({ where: { email: 'reseller@example.com' } });
+  await prisma.reseller.upsert({
+    where: { userId: resellerUser.id },
+    update: {},
+    create: {
+      userId: resellerUser.id,
+      referralCode: 'DEMORSLR',
+      commissionRate: 0.1,
+      priceFloor: 400,
+      priceCeiling: 700,
+      status: 'APPROVED',
+      tier: 'Bronze',
     },
   });
 
