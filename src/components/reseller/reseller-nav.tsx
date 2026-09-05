@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { LayoutDashboard, LogOut, Menu, X, Share2, Package, ShoppingCart } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -19,8 +18,7 @@ export function ResellerNav({ userName, userEmail }: { userName: string | null; 
   const [open, setOpen] = useState(false);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.push('/');
     router.refresh();
   };

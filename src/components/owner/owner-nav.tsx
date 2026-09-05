@@ -7,7 +7,6 @@ import {
   LayoutDashboard, Package, ShoppingCart, HardHat, ListChecks, Settings,
   Store, LogOut, Menu, X, KeyRound, ShieldCheck, Users2, ScrollText,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -29,8 +28,7 @@ export function OwnerNav({ userName, userEmail }: { userName: string | null; use
   const [open, setOpen] = useState(false);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.push('/');
     router.refresh();
   };

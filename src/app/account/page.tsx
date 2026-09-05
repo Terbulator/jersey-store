@@ -33,8 +33,7 @@ export default function AccountPage() {
   }, []);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.refresh();
     router.push('/');
   };

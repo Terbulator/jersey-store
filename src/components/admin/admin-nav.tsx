@@ -7,7 +7,6 @@ import {
   LayoutDashboard, Package, ShoppingCart, Users, FolderTree, Building2, ShieldCheck,
   LogOut, Menu, X, Settings, ScrollText, HardHat, ListTodo, BarChart3, TicketPercent, LifeBuoy, Store,
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -33,8 +32,7 @@ export function AdminNav({ userName, userEmail }: { userName: string | null; use
   const [open, setOpen] = useState(false);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch('/api/auth/signout', { method: 'POST' });
     router.push('/');
     router.refresh();
   };
