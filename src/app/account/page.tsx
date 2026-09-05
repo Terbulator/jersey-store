@@ -8,13 +8,14 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Package, Store, LogOut, Heart as HeartIcon, LayoutDashboard } from 'lucide-react';
+import { User, Package, Store, LogOut, Heart as HeartIcon, LayoutDashboard, BadgePercent } from 'lucide-react';
 
 export default function AccountPage() {
   const router = useRouter();
   const [name, setName] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [isReseller, setIsReseller] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -26,6 +27,9 @@ export default function AccountPage() {
         setRole((u.app_metadata?.role as string) ?? null);
       }
     });
+    fetch('/api/reseller', { cache: 'no-store' })
+      .then((res) => { if (res.ok) setIsReseller(true); })
+      .catch(() => {});
   }, []);
 
   const handleSignOut = async () => {
@@ -42,6 +46,9 @@ export default function AccountPage() {
   };
 
   const links = [
+    ...(isReseller
+      ? [{ href: '/reseller', label: 'Reseller Dashboard', desc: 'Referral link, commissions & payouts', icon: BadgePercent }]
+      : []),
     ...(role && dashboardLink[role]
       ? [{ href: dashboardLink[role].href, label: dashboardLink[role].label, desc: 'Manage your store, orders & reports', icon: LayoutDashboard }]
       : []),
