@@ -1,57 +1,59 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { useInView } from '@/hooks/use-in-view';
+import { ROUTES } from '@/lib/utils';
 
 interface CategoryTileProps {
   name: string;
   slug: string;
   image: string;
-  label: string;
-  description: string;
+  label?: string;
+  description?: string;
 }
 
 export function CategoryTile({ name, slug, image, label, description }: CategoryTileProps) {
-  const [hovered, setHovered] = useState(false);
+  const { ref, isInView } = useInView({ margin: '-60px' });
+  const href = slug === 'football' ? ROUTES.FOOTBALL : slug === 'cricket' ? ROUTES.CRICKET : ROUTES.STREETWEAR;
 
   return (
-    <Link
-      href={`/shop/${slug}`}
-      className="group relative block h-[60vh] sm:h-[70vh] overflow-hidden bg-charcoal"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="absolute inset-0 img-zoom">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-700"
-        />
+    <Link href={href} className="group block relative overflow-hidden">
+      <div ref={ref}>
+        <motion.div
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+          className="aspect-[3/4] sm:aspect-[4/5] overflow-hidden"
+        >
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+        </motion.div>
       </div>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-        <p className="text-blood-red text-[10px] tracking-[0.3em] uppercase mb-2">{label}</p>
-        <h3 className="text-3xl sm:text-5xl font-bold tracking-wider uppercase text-off-white mb-2">
+      <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
+        {label && (
+          <p className="text-[10px] tracking-[0.2em] uppercase text-off-white/50 mb-2 font-medium">
+            {label}
+          </p>
+        )}
+        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-off-white uppercase">
           {name}
         </h3>
-        <p className="text-off-white/60 text-sm tracking-wide mb-4">{description}</p>
-        <span className={cn(
-          'inline-flex items-center gap-2 text-xs tracking-widest uppercase text-off-white border-b border-off-white/40 pb-1 transition-all',
-          hovered ? 'border-blood-red text-blood-red' : ''
-        )}>
-          SHOP {name}
-          <svg className={cn(
-            'w-4 h-4 transition-transform',
-            hovered ? 'translate-x-1' : ''
-          )} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        {description && (
+          <p className="text-xs text-off-white/50 mt-1.5">{description}</p>
+        )}
+        <div className="mt-4 flex items-center gap-2 text-off-white text-[11px] tracking-[0.15em] uppercase font-medium group-hover:gap-3 transition-all duration-300">
+          Shop Now
+          <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
           </svg>
-        </span>
+        </div>
       </div>
     </Link>
   );

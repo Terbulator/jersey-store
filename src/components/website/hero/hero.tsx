@@ -1,136 +1,107 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
-
-interface HeroSlide {
-  image: string;
-  mobileImage: string;
-  title: string;
-  subtitle: string;
-  primaryCTA: string;
-  secondaryCTA: string;
-  primaryHref: string;
-  secondaryHref: string;
-}
-
-const slides: HeroSlide[] = [
-  {
-    image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=1600&q=80',
-    mobileImage: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80',
-    title: 'THE NEW SEASON',
-    subtitle: '2026 COLLECTION',
-    primaryCTA: 'SHOP FOOTBALL',
-    secondaryCTA: 'SHOP CRICKET',
-    primaryHref: '/shop/football',
-    secondaryHref: '/shop/cricket',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1531014992611-d9c4f5d4b4fd?w=1600&q=80',
-    mobileImage: 'https://images.unsplash.com/photo-1531014992611-d9c4f5d4b4fd?w=800&q=80',
-    title: 'IPL DROPS',
-    subtitle: 'LIVE NOW',
-    primaryCTA: 'SHOP IPL',
-    secondaryCTA: 'VIEW ALL',
-    primaryHref: '/shop/cricket?team=ipl',
-    secondaryHref: '/shop',
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1600&q=80',
-    mobileImage: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80',
-    title: 'STREETWEAR',
-    subtitle: 'THE EVERYDAY',
-    primaryCTA: 'SHOP STREET',
-    secondaryCTA: 'NEW ARRIVALS',
-    primaryHref: '/shop/streetwear',
-    secondaryHref: '/shop/new-arrivals',
-  },
-];
+import { motion } from 'framer-motion';
+import { ROUTES } from '@/lib/utils';
 
 export function Hero() {
-  const [current, setCurrent] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, []);
-
-  const goTo = (i: number) => {
-    setCurrent(i);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => setCurrent((p) => (p + 1) % slides.length), 6000);
-  };
-
-  const slide = slides[current];
-
   return (
-    <section className="relative h-[70vh] sm:h-[80vh] lg:h-[90vh] overflow-hidden bg-charcoal">
-      {/* Desktop image */}
-      <div className="absolute inset-0 hidden sm:block">
+    <section className="relative h-[100svh] min-h-[600px] max-h-[900px] overflow-hidden">
+      {/* Background image */}
+      <motion.div
+        initial={{ opacity: 0, scale: 1.06 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.4, ease: [0.25, 0.1, 0.25, 1] }}
+        className="absolute inset-0"
+      >
         <img
-          src={slide.image}
-          alt={slide.title}
-          className="w-full h-full object-cover opacity-60 transition-opacity duration-700"
-          loading="eager"
+          src="https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=85"
+          alt="Football culture"
+          className="w-full h-full object-cover"
         />
-      </div>
-      {/* Mobile image */}
-      <div className="absolute inset-0 sm:hidden">
-        <img
-          src={slide.mobileImage}
-          alt={slide.title}
-          className="w-full h-full object-cover opacity-60 transition-opacity duration-700"
-          loading="eager"
-        />
-      </div>
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+      </motion.div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
+      {/* Content — bottom-left aligned */}
+      <div className="absolute inset-0 flex items-end">
+        <div className="max-w-[1400px] mx-auto w-full px-6 sm:px-8 lg:px-12 pb-16 sm:pb-20 lg:pb-24">
+          <div className="max-w-2xl">
+            {/* Label */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-off-white/70 mb-4 sm:mb-5 font-medium"
+            >
+              2026 Collection
+            </motion.p>
 
-      {/* Content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <p className="text-blood-red text-[10px] sm:text-xs tracking-[0.3em] uppercase mb-4 animate-fade-in">
-          {slide.subtitle}
-        </p>
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-wider uppercase text-off-white leading-none animate-slide-up">
-          {slide.title}
-        </h1>
-        <div className="flex flex-col sm:flex-row gap-3 mt-8 animate-slide-up">
-          <Link
-            href={slide.primaryHref}
-            onClick={() => goTo(current)}
-            className="px-8 py-3 bg-blood-red text-off-white text-xs tracking-widest uppercase hover:bg-charcoal transition-colors"
-          >
-            {slide.primaryCTA}
-          </Link>
-          <Link
-            href={slide.secondaryHref}
-            onClick={() => goTo(current)}
-            className="px-8 py-3 border border-off-white/40 text-off-white text-xs tracking-widest uppercase hover:bg-off-white hover:text-charcoal transition-colors"
-          >
-            {slide.secondaryCTA}
-          </Link>
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-off-white leading-[0.95]"
+            >
+              WEAR
+              <br />
+              THE GAME.
+            </motion.h1>
+
+            {/* Subtext */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-sm sm:text-base text-off-white/60 mt-5 sm:mt-6 max-w-md leading-relaxed"
+            >
+              Premium football &amp; cricket jerseys built for the culture.
+              <br className="hidden sm:block" />
+              From the stands to the street.
+            </motion.p>
+
+            {/* CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.05, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              className="mt-8 sm:mt-10"
+            >
+              <Link
+                href={ROUTES.SHOP}
+                className="inline-flex items-center gap-3 bg-off-white text-charcoal px-7 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-blood-red hover:text-off-white transition-all duration-500 group"
+              >
+                Shop Collection
+                <svg
+                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+                </svg>
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={cn(
-              'w-2 h-2 rounded-full transition-colors',
-              i === current ? 'bg-blood-red' : 'bg-off-white/40'
-            )}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.4, duration: 0.6 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-[1px] h-8 bg-off-white/30"
+        />
+      </motion.div>
     </section>
   );
 }

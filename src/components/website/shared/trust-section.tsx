@@ -1,27 +1,31 @@
-import Link from 'next/link';
-import { ROUTES } from '@/lib/utils';
+'use client';
+
+import { Reveal, RevealLine } from './reveal';
 
 const TRUST_ITEMS = [
-  { label: 'PREMIUM MATERIALS', desc: 'High-quality fabrics & prints' },
-  { label: 'QUALITY PRINTING', desc: 'Vibrant, durable designs' },
-  { label: 'CAREFULLY PACKED', desc: 'Protected for shipping' },
-  { label: 'DELIVERED ACROSS INDIA', desc: 'Fast & reliable delivery' },
+  { label: 'PREMIUM MATERIALS', description: 'Recycled polyester, heavy cotton, breathable knit.' },
+  { label: 'QUALITY PRINTING', description: 'Sublimation print that won\'t fade or crack.' },
+  { label: 'CAREFULLY PACKED', description: 'Each jersey packed with care for delivery.' },
+  { label: 'DELIVERED ACROSS INDIA', description: 'Free shipping on orders above ₹999.' },
 ];
 
 export function TrustSection() {
   return (
-    <section className="py-12 px-4 sm:px-6 lg:px-8 border-y border-charcoal/10">
-      <div className="max-w-7xl mx-auto">
-        <h3 className="text-xs tracking-widest uppercase text-blood-red text-center mb-8">BUILT FOR THE CULTURE.</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {TRUST_ITEMS.map((item) => (
-            <div key={item.label} className="text-center">
-              <h4 className="text-xs tracking-widest uppercase text-charcoal mb-1">{item.label}</h4>
-              <p className="text-xs text-chrome">{item.desc}</p>
+    <section className="py-16 sm:py-20 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+      <RevealLine className="mb-12" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+        {TRUST_ITEMS.map((item, i) => (
+          <Reveal key={item.label} delay={i * 0.08}>
+            <div>
+              <p className="text-[10px] tracking-[0.2em] uppercase text-charcoal font-medium mb-2">
+                {item.label}
+              </p>
+              <p className="text-xs text-chrome leading-relaxed">{item.description}</p>
             </div>
-          ))}
-        </div>
+          </Reveal>
+        ))}
       </div>
+      <RevealLine className="mt-12" />
     </section>
   );
 }

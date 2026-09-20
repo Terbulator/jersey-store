@@ -1,68 +1,106 @@
 'use client';
 
-import { useRef } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PRODUCTS } from '@/data/products';
 import { ProductCard } from '../product/product-card';
+import { Reveal } from './reveal';
 import { ROUTES } from '@/lib/utils';
 
-const NEW_ARRIVALS = PRODUCTS.filter((p) => p.badge === 'NEW' || p.badge === 'LIMITED').slice(0, 8);
-const BEST_SELLERS = PRODUCTS.filter((p) => p.badge === 'SALE').slice(0, 8);
-
 export function NewArrivalsSection() {
+  const products = PRODUCTS.filter((p) => p.badge === 'NEW' || p.badge === 'LIMITED').slice(0, 8);
+
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-8">
+    <section className="py-20 sm:py-28 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+      <Reveal>
+        <div className="flex items-end justify-between mb-10 sm:mb-14">
           <div>
-            <h2 className="text-xs tracking-widest uppercase text-blood-red mb-1">JUST LANDED</h2>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-charcoal">New Arrivals</h3>
-            <p className="text-sm text-chrome mt-2">Fresh from the drop.</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-2 font-medium">
+              Just Dropped
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              THE LATEST
+            </h2>
           </div>
-          <Link href={`${ROUTES.SHOP}?sort=newest`} className="hidden sm:inline-flex items-center gap-2 text-xs tracking-widest uppercase text-charcoal hover:text-blood-red transition-colors">
-            VIEW ALL →
+          <Link
+            href={ROUTES.SHOP}
+            className="hidden sm:inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300 border-b border-charcoal/20 pb-0.5 hover:border-blood-red/40"
+          >
+            View All
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+            </svg>
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {NEW_ARRIVALS.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-        <div className="sm:hidden text-center mt-6">
-          <Link href={`${ROUTES.SHOP}?sort=newest`} className="text-xs tracking-widest uppercase text-blood-red hover:underline">
-            VIEW ALL →
-          </Link>
-        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+        {products.map((product, i) => (
+          <Reveal key={product.id} delay={i * 0.06}>
+            <ProductCard product={product} />
+          </Reveal>
+        ))}
+      </div>
+
+      <div className="mt-8 sm:hidden text-center">
+        <Link
+          href={ROUTES.SHOP}
+          className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300"
+        >
+          View All
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+          </svg>
+        </Link>
       </div>
     </section>
   );
 }
 
 export function BestSellersSection() {
+  const products = PRODUCTS.filter((p) => p.badge === 'SALE').slice(0, 8);
+
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-8">
+    <section className="py-20 sm:py-28 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+      <Reveal>
+        <div className="flex items-end justify-between mb-10 sm:mb-14">
           <div>
-            <h2 className="text-xs tracking-widest uppercase text-blood-red mb-1">THE ONES EVERYONE WANTS</h2>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-charcoal">Best Sellers</h3>
-            <p className="text-sm text-chrome mt-2">Most worn. Most wanted.</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-2 font-medium">
+              Crowd Favorites
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+              BESTSELLERS
+            </h2>
           </div>
-          <Link href={`${ROUTES.SHOP}?sort=best-selling`} className="hidden sm:inline-flex items-center gap-2 text-xs tracking-widest uppercase text-charcoal hover:text-blood-red transition-colors">
-            VIEW ALL →
+          <Link
+            href={`${ROUTES.SHOP}?sort=best-selling`}
+            className="hidden sm:inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300 border-b border-charcoal/20 pb-0.5 hover:border-blood-red/40"
+          >
+            View All
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+            </svg>
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {BEST_SELLERS.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-        <div className="sm:hidden text-center mt-6">
-          <Link href={`${ROUTES.SHOP}?sort=best-selling`} className="text-xs tracking-widest uppercase text-blood-red hover:underline">
-            VIEW ALL →
-          </Link>
-        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+        {products.map((product, i) => (
+          <Reveal key={product.id} delay={i * 0.06}>
+            <ProductCard product={product} />
+          </Reveal>
+        ))}
+      </div>
+
+      <div className="mt-8 sm:hidden text-center">
+        <Link
+          href={`${ROUTES.SHOP}?sort=best-selling`}
+          className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300"
+        >
+          View All
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+          </svg>
+        </Link>
       </div>
     </section>
   );

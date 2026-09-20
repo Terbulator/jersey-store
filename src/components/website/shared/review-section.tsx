@@ -1,39 +1,58 @@
+'use client';
+
+import { Reveal, StaggerChildren, StaggerItem } from './reveal';
+
+const REVIEWS = [
+  {
+    text: 'THE FIT IS INSANE.',
+    detail: 'Player Version Brazil 2026. Feels like wearing the real thing.',
+    author: 'ARJUN M.',
+    product: 'Brazil 2026 — Player Version',
+  },
+  {
+    text: 'QUALITY YOU CAN FEEL.',
+    detail: 'Master Edition Real Madrid. The knit is premium, the badge is perfect.',
+    author: 'PRIYA S.',
+    product: 'Real Madrid 2026 — Master Edition',
+  },
+  {
+    text: 'WEAR THE GAME.',
+    detail: 'Ordered for match day, now I wear it everywhere. Culture piece.',
+    author: 'RAHUL K.',
+    product: 'Argentina 2026 — Player Version',
+  },
+];
+
 export function ReviewSection() {
-  const reviews = [
-    { name: 'Arjun M.', product: 'Brazil 2026 Player', rating: 5, text: 'Product quality exceeded expectations. Fit is perfect.' },
-    { name: 'Priya S.', product: 'India Cricket Master', rating: 5, text: 'The print quality is outstanding. Highly recommend.' },
-    { name: 'Rahul K.', product: 'Real Madrid Master Edition', rating: 4, text: 'Great jersey. Shipping was fast. Will buy again.' },
-  ];
-
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-xs tracking-widest uppercase text-blood-red mb-2">WHAT THE COMMUNITY SAYS</h2>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl font-bold text-charcoal">4.9</span>
-            <span className="text-blood-red">★</span>
-          </div>
-          <p className="text-sm text-chrome">LOVED BY HEADERR CUSTOMERS</p>
+    <section className="py-24 sm:py-32 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+      <Reveal>
+        <div className="text-center mb-14 sm:mb-18">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-2 font-medium">
+            What the community says
+          </p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+            FOLLOW THE CULTURE.
+          </h2>
         </div>
+      </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {reviews.map((review) => (
-            <div key={review.name} className="p-6 border border-charcoal/10">
-              <div className="flex gap-1 mb-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} className={i < review.rating ? 'text-blood-red' : 'text-chrome'}>★</span>
-                ))}
-              </div>
-              <p className="text-sm text-charcoal/80 italic mb-4">{review.text}</p>
-              <div className="text-xs text-chrome">
-                <p className="font-medium text-charcoal">{review.name}</p>
-                <p>{review.product}</p>
+      <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10" stagger={0.1}>
+        {REVIEWS.map((review) => (
+          <StaggerItem key={review.author}>
+            <div className="group">
+              <p className="text-xl sm:text-2xl font-bold tracking-tight leading-tight">
+                &ldquo;{review.text}&rdquo;
+              </p>
+              <p className="text-sm text-chrome mt-3 leading-relaxed">{review.detail}</p>
+              <div className="mt-5 pt-4 border-t border-charcoal/8">
+                <p className="text-[10px] tracking-[0.2em] uppercase font-medium">{review.author}</p>
+                <p className="text-[10px] tracking-[0.15em] uppercase text-chrome mt-1">{review.product}</p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </StaggerItem>
+        ))}
+      </StaggerChildren>
     </section>
   );
 }
