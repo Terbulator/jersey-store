@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, Plus } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
@@ -17,6 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedSize, setSelectedSize] = useState('');
   const [added, setAdded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
@@ -47,38 +49,40 @@ export function ProductCard({ product }: ProductCardProps) {
       }}
     >
       <Link href={`/shop/products/${product.slug}`} className="block">
-        <div className="relative aspect-[3/4] overflow-hidden bg-white border border-charcoal/5">
+        <div className="relative aspect-[3/4] overflow-hidden bg-off-white">
+          {/* Skeleton placeholder */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-charcoal/4 animate-pulse" />
+          )}
+
           {/* Primary Image */}
           <img
             src={product.image}
             alt={product.imageAlt || product.name}
+            onLoad={() => setImageLoaded(true)}
             className={cn(
-              'absolute inset-0 w-full h-full object-cover transition-opacity duration-500',
-              hovered && secondImage ? 'opacity-0' : 'opacity-100'
+              'absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out',
+              hovered && secondImage ? 'opacity-0 scale-100' : 'opacity-100 scale-100',
+              !hovered && 'group-hover:scale-[1.03]'
             )}
           />
-          {/* Second Image */}
+          {/* Second Image — crossfade */}
           {secondImage && (
             <img
               src={secondImage}
               alt={`${product.name} alternate view`}
               className={cn(
-                'absolute inset-0 w-full h-full object-cover transition-opacity duration-500',
-                hovered ? 'opacity-100' : 'opacity-0'
+                'absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out',
+                hovered ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.03]'
               )}
             />
           )}
           {/* Badge */}
           {product.badge && (
-            <span className="absolute top-3 left-3 px-2.5 py-1 bg-blood-red text-off-white text-[10px] tracking-widest uppercase">
+            <span className="absolute top-3 left-3 px-2.5 py-1 bg-blood-red text-off-white text-[9px] tracking-[0.15em] uppercase font-medium">
               {product.badge}
             </span>
           )}
-          {/* Zoom hint on hover */}
-          <div className={cn(
-            'absolute inset-0 bg-black/0 transition-colors duration-300',
-            hovered && !showQuickAdd && 'bg-black/5'
-          )} />
         </div>
       </Link>
 
@@ -89,14 +93,14 @@ export function ProductCard({ product }: ProductCardProps) {
           toggleWishlist(product);
         }}
         className={cn(
-          'absolute top-3 right-3 w-8 h-8 flex items-center justify-center transition-all duration-200',
+          'absolute top-3 right-3 w-8 h-8 flex items-center justify-center transition-all duration-300',
           isWishlisted
-            ? 'text-blood-red'
+            ? 'text-blood-red opacity-100'
             : 'text-charcoal/40 opacity-0 group-hover:opacity-100 hover:text-blood-red'
         )}
         aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
       >
-        <Heart className={cn('w-4 h-4', isWishlisted && 'fill-current')} />
+        <Heart className={cn('w-4 h-4', isWishlisted && 'fill-current')} strokeWidth={1.5} />
       </button>
 
       {/* Product Info */}
@@ -106,8 +110,12 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
         </Link>
-        <p className="text-[11px] text-chrome tracking-wider uppercase mt-0.5">
-          {product.edition === 'player' ? 'Player Version' : product.edition === 'master' ? 'Master Edition' : 'Special Edition'}
+        <p className="text-[10px] text-chrome tracking-[0.12em] uppercase mt-0.5">
+          {product.edition === 'player'
+            ? 'Player Version'
+            : product.edition === 'master'
+              ? 'Master Edition'
+              : 'Special Edition'}
         </p>
         <div className="flex items-baseline gap-2 mt-1.5">
           <span className="text-sm font-bold text-charcoal">{formatPrice(product.basePrice)}</span>
@@ -118,17 +126,19 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Quick Add */}
-      <div className={cn(
-        'absolute bottom-0 left-0 right-0 bg-white border-t border-charcoal/10 transition-all duration-250 overflow-hidden',
-        showQuickAdd ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100'
-      )}>
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 right-0 bg-white border-t border-charcoal/8 transition-all duration-300 overflow-hidden',
+          showQuickAdd ? 'max-h-44 opacity-100' : 'max-h-0 opacity-0 group-hover:max-h-11 group-hover:opacity-100'
+        )}
+      >
         {!showQuickAdd ? (
           <button
             onClick={(e) => {
               e.preventDefault();
               setShowQuickAdd(true);
             }}
-            className="w-full py-3 text-[11px] tracking-widest uppercase text-charcoal hover:text-blood-red transition-colors"
+            className="w-full py-3 text-[10px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-200"
           >
             Quick Add
           </button>
@@ -140,10 +150,10 @@ export function ProductCard({ product }: ProductCardProps) {
                   key={size}
                   onClick={() => setSelectedSize(size)}
                   className={cn(
-                    'flex-1 py-1.5 text-[11px] tracking-wider border transition-colors',
+                    'flex-1 py-1.5 text-[10px] tracking-wider border transition-all duration-200',
                     selectedSize === size
                       ? 'border-blood-red bg-blood-red text-off-white'
-                      : 'border-charcoal/20 text-charcoal hover:border-charcoal'
+                      : 'border-charcoal/15 text-charcoal hover:border-charcoal/40'
                   )}
                 >
                   {size}
@@ -157,15 +167,15 @@ export function ProductCard({ product }: ProductCardProps) {
               }}
               disabled={!selectedSize || added}
               className={cn(
-                'w-full py-2.5 text-[11px] tracking-widest uppercase transition-colors',
+                'w-full py-2.5 text-[10px] tracking-[0.15em] uppercase transition-all duration-300',
                 added
                   ? 'bg-green-600 text-white'
                   : selectedSize
-                  ? 'bg-blood-red text-off-white hover:bg-charcoal'
-                  : 'bg-charcoal/10 text-charcoal/40 cursor-not-allowed'
+                    ? 'bg-blood-red text-off-white hover:bg-charcoal'
+                    : 'bg-charcoal/8 text-charcoal/30 cursor-not-allowed'
               )}
             >
-              {added ? '✓ Added' : 'Add to Cart'}
+              {added ? 'Added' : 'Add to Bag'}
             </button>
           </div>
         )}

@@ -5,15 +5,16 @@ import Link from 'next/link';
 import { Search, User, Heart, ShoppingBag, Menu } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { SearchOverlay } from '../search/search-overlay';
-import { MegaMenu } from './mega-menu';
+import { MegaNav } from './mega-nav';
 import { MobileMenu } from './mobile-menu';
 import { useCartStore } from '@/store/cart-store';
-import { ROUTES, cn } from '@/lib/utils';
+import { ROUTES } from '@/lib/utils';
+import type { MenuId } from '@/data/menu-data';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [megaActive, setMegaActive] = useState<MenuId>(null);
   const itemCount = useCartStore((s) => s.itemCount());
   const openCart = useCartStore((s) => s.openCart);
 
@@ -22,10 +23,23 @@ export function Navbar() {
   const headerBorder = useTransform(scrollY, [0, 120], ['rgba(35,35,35,0)', 'rgba(35,35,35,0.08)']);
   const headerBlur = useTransform(scrollY, [0, 120], [0, 12]);
 
+  // Close mega menu on route change or scroll
   useEffect(() => {
-    const unsubscribe = scrollY.on('change', (v) => setScrolled(v > 60));
+    const unsubscribe = scrollY.on('change', () => setMegaActive(null));
     return unsubscribe;
   }, [scrollY]);
+
+  // Close mega menu on escape
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMegaActive(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  const handleMegaEnter = (id: MenuId) => setMegaActive(id);
+  const handleMegaLeave = () => setMegaActive(null);
 
   return (
     <>
@@ -48,18 +62,10 @@ export function Navbar() {
               <Menu className="w-5 h-5" strokeWidth={1.5} />
             </button>
 
-            {/* Desktop left nav */}
-            <nav className="hidden lg:flex items-center gap-8 text-[11px] tracking-[0.15em] uppercase font-medium">
-              <Link
-                href={ROUTES.SHOP}
-                className="relative py-1 hover:text-blood-red transition-colors duration-300"
-              >
-                Shop
-              </Link>
-              <MegaMenu id="football" label="Football" href={ROUTES.FOOTBALL} />
-              <MegaMenu id="cricket" label="Cricket" href={ROUTES.CRICKET} />
-              <MegaMenu id="streetwear" label="Streetwear" href={ROUTES.STREETWEAR} />
-            </nav>
+            {/* Desktop left nav + mega menu */}
+            <div className="hidden lg:block">
+              <MegaNav active={megaActive} onEnter={handleMegaEnter} onLeave={handleMegaLeave} />
+            </div>
 
             {/* Center logo */}
             <Link
