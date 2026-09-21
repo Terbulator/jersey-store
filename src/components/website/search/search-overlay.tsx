@@ -70,41 +70,46 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.3 }}
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
           {/* Panel */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative max-w-2xl mx-auto mt-[12vh] sm:mt-[16vh] px-4"
+            initial={{ opacity: 0, y: -30, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative max-w-3xl mx-auto mt-[10vh] sm:mt-[14vh] px-4"
           >
             <div
-              className="bg-off-white shadow-2xl border border-charcoal/8"
+              className="bg-off-white shadow-2xl border border-charcoal/8 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Search Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-charcoal/8">
+                <span className="text-[11px] tracking-[0.2em] uppercase font-medium text-charcoal">Search</span>
+                <button
+                  onClick={onClose}
+                  aria-label="Close search"
+                  className="text-chrome hover:text-charcoal transition-colors duration-200 p-1"
+                >
+                  <X className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+              </div>
+
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-6 py-5 border-b border-charcoal/8">
-                <Search className="w-4 h-4 text-chrome flex-shrink-0" strokeWidth={1.5} />
+              <div className="flex items-center gap-4 px-6 py-5 border-b border-charcoal/8">
+                <Search className="w-5 h-5 text-chrome flex-shrink-0" strokeWidth={1.5} />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search jerseys, teams, editions..."
-                  className="flex-1 bg-transparent text-sm text-charcoal outline-none placeholder:text-chrome"
+                  className="flex-1 bg-transparent text-base text-charcoal outline-none placeholder:text-chrome"
                 />
-                <button
-                  onClick={onClose}
-                  aria-label="Close search"
-                  className="text-chrome hover:text-charcoal transition-colors duration-200 p-1"
-                >
-                  <X className="w-4 h-4" strokeWidth={1.5} />
-                </button>
               </div>
 
               {/* Results */}
@@ -127,26 +132,26 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                         <Link
                           href={`/shop/products/${product.slug}`}
                           onClick={onClose}
-                          className="flex items-center gap-4 px-6 py-3.5 hover:bg-charcoal/4 transition-colors duration-200 group"
+                          className="flex items-center gap-4 px-6 py-4 hover:bg-charcoal/4 transition-colors duration-200 group"
                         >
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-11 h-13 object-cover flex-shrink-0"
+                            className="w-12 h-14 object-cover flex-shrink-0"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-charcoal truncate">
+                            <p className="text-sm font-medium text-charcoal truncate">
                               {product.name}
                             </p>
                             <p className="text-[10px] text-chrome uppercase tracking-[0.15em] mt-0.5">
                               {product.edition === 'player'
                                 ? 'Player Version'
                                 : product.edition === 'master'
-                                  ? 'Master Edition'
-                                  : 'Special Edition'}
+                                ? 'Master Edition'
+                                : 'Special Edition'}
                             </p>
                           </div>
-                          <span className="text-xs font-bold text-charcoal flex-shrink-0">
+                          <span className="text-sm font-bold text-charcoal flex-shrink-0">
                             {formatPrice(product.basePrice)}
                           </span>
                           <ArrowRight className="w-3 h-3 text-chrome opacity-0 group-hover:opacity-100 transition-opacity duration-200" strokeWidth={1.5} />
@@ -156,7 +161,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     <Link
                       href={`/shop?search=${encodeURIComponent(query)}`}
                       onClick={onClose}
-                      className="flex items-center justify-between px-6 py-3.5 text-[10px] tracking-[0.15em] uppercase text-blood-red hover:bg-charcoal/4 transition-colors duration-200 border-t border-charcoal/6"
+                      className="flex items-center justify-between px-6 py-4 text-[10px] tracking-[0.15em] uppercase text-blood-red hover:bg-charcoal/4 transition-colors duration-200 border-t border-charcoal/6"
                     >
                       View all results
                       <ArrowRight className="w-3 h-3" strokeWidth={1.5} />
@@ -169,7 +174,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     key="empty"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="px-6 py-10 text-center"
+                    className="px-6 py-12 text-center"
                   >
                     <p className="text-sm text-chrome">No results for &ldquo;{query}&rdquo;</p>
                     <p className="text-xs text-chrome/50 mt-1.5">Try a different search term.</p>
@@ -181,9 +186,9 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     key="popular"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="px-6 py-5"
+                    className="px-6 py-6"
                   >
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-chrome mb-3.5 font-medium">
+                    <p className="text-[10px] tracking-[0.15em] uppercase text-chrome mb-4 font-medium">
                       Popular Searches
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -194,7 +199,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: i * 0.03 }}
                           onClick={() => setQuery(hint)}
-                          className="px-3.5 py-2 text-[11px] tracking-wider border border-charcoal/12 text-chrome hover:border-charcoal/30 hover:text-charcoal transition-all duration-200"
+                          className="px-4 py-2.5 text-[11px] tracking-wider border border-charcoal/12 text-chrome hover:border-charcoal/30 hover:text-charcoal hover:bg-charcoal/4 transition-all duration-200"
                         >
                           {hint}
                         </motion.button>

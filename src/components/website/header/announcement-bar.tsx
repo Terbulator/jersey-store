@@ -20,7 +20,13 @@ export function AnnouncementBar() {
   }, []);
 
   return (
-    <div className="bg-charcoal text-off-white text-[10px] tracking-[0.2em] uppercase text-center py-2 px-4 relative overflow-hidden h-8 flex items-center justify-center">
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+      className="bg-charcoal text-off-white text-[10px] tracking-[0.2em] uppercase text-center py-2 px-4 relative overflow-hidden h-8 flex items-center justify-center"
+    >
       <AnimatePresence mode="wait">
         <motion.span
           key={index}
@@ -33,6 +39,6 @@ export function AnnouncementBar() {
           {MESSAGES[index]}
         </motion.span>
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
