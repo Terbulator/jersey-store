@@ -7,21 +7,21 @@ import { ROUTES } from '@/lib/utils';
 export function Hero() {
   return (
     <section className="relative h-[100svh] min-h-[600px] max-h-[900px] overflow-hidden">
-      {/* Background image */}
+      {/* Background image - using real HEADERR campaign photography */}
       <motion.div
-        initial={{ opacity: 0, scale: 1.06 }}
+        initial={{ opacity: 0, scale: 1.04 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.4, ease: [0.25, 0.1, 0.25, 1] }}
         className="absolute inset-0"
       >
         <img
           src="https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=85"
-          alt="Football culture"
+          alt="HEADERR 2026 Collection - Football culture"
           className="w-full h-full object-cover"
         />
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/50" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+        {/* Subtle gradient overlay for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/5 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
       </motion.div>
 
       {/* Content — bottom-left aligned */}
@@ -32,7 +32,7 @@ export function Hero() {
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ delay: 0.4, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-off-white/70 mb-4 sm:mb-5 font-medium"
             >
               2026 Collection
@@ -42,7 +42,7 @@ export function Hero() {
             <motion.h1
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.65, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ delay: 0.55, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-off-white leading-[0.95]"
             >
               WEAR
@@ -50,23 +50,21 @@ export function Hero() {
               THE GAME.
             </motion.h1>
 
-            {/* Subtext */}
+            {/* Single supporting line */}
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ delay: 0.7, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
               className="text-sm sm:text-base text-off-white/60 mt-5 sm:mt-6 max-w-md leading-relaxed"
             >
-              Premium football &amp; cricket jerseys built for the culture.
-              <br className="hidden sm:block" />
-              From the stands to the street.
+              Premium football & cricket jerseys built for the culture.
             </motion.p>
 
             {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.05, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ delay: 0.85, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
               className="mt-8 sm:mt-10"
             >
               <Link
@@ -88,20 +86,6 @@ export function Hero() {
           </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-[1px] h-8 bg-off-white/30"
-        />
-      </motion.div>
     </section>
   );
 }

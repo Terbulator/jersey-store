@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Reveal } from './reveal';
+import { motion } from 'framer-motion';
+import { useInView } from '@/hooks/use-in-view';
 
 export function NewsletterSection() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const { ref, isInView } = useInView({ margin: '-100px' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,48 +18,46 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="py-24 sm:py-32 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+    <section ref={ref} className="py-16 sm:py-24 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto border-y border-charcoal/8">
       <div className="max-w-xl mx-auto text-center">
-        <Reveal>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-3 font-medium">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          <p className="text-[10px] tracking-[0.2em] uppercase text-chrome font-medium mb-4">
             Stay in the game
           </p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-            GET IN THE GAME.
-          </h2>
-        </Reveal>
-        <Reveal delay={0.2}>
-          <p className="text-sm text-chrome mt-4 leading-relaxed">
-            Be first to know about new drops, limited editions and HEADERR releases.
-          </p>
-        </Reveal>
+        </motion.div>
 
-        <Reveal delay={0.3}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.1, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+        >
           {submitted ? (
-            <p className="mt-8 text-sm text-blood-red font-medium tracking-wide">
+            <p className="text-sm text-blood-red font-medium tracking-wide">
               You&apos;re in. Welcome to HEADERR.
             </p>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-8 flex gap-0 max-w-md mx-auto">
+            <form onSubmit={handleSubmit} className="mt-6 flex gap-3 max-w-md mx-auto">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ENTER YOUR EMAIL"
                 required
-                className="flex-1 px-5 py-3.5 text-[11px] tracking-widest uppercase bg-transparent border border-charcoal/15 text-charcoal outline-none placeholder:text-chrome focus:border-charcoal/40 transition-colors duration-300"
+                className="flex-1 px-5 py-3 text-[11px] tracking-widest uppercase bg-transparent border border-charcoal/15 text-charcoal outline-none placeholder:text-chrome focus:border-charcoal/40 transition-colors duration-300"
               />
               <button
                 type="submit"
-                className="px-6 py-3.5 bg-charcoal text-off-white text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-blood-red transition-colors duration-500 flex-shrink-0"
+                className="px-6 py-3 bg-charcoal text-off-white text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-blood-red transition-colors duration-500 flex-shrink-0 whitespace-nowrap"
               >
                 Join
               </button>
             </form>
           )}
-        </Reveal>
+        </motion.div>
       </div>
     </section>
   );

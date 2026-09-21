@@ -10,15 +10,15 @@ export function NewArrivalsSection() {
   const products = PRODUCTS.filter((p) => p.badge === 'NEW' || p.badge === 'LIMITED').slice(0, 8);
 
   return (
-    <section className="py-20 sm:py-28 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+    <section className="py-16 sm:py-24 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
       <Reveal>
-        <div className="flex items-end justify-between mb-10 sm:mb-14">
+        <div className="flex items-end justify-between mb-8 sm:mb-12">
           <div>
             <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-2 font-medium">
               Just Dropped
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
-              THE LATEST
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
+              NEW ARRIVALS
             </h2>
           </div>
           <Link
@@ -33,15 +33,15 @@ export function NewArrivalsSection() {
         </div>
       </Reveal>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-6 sm:gap-x-5 sm:gap-y-8">
         {products.map((product, i) => (
-          <Reveal key={product.id} delay={i * 0.06}>
+          <Reveal key={product.id} delay={i * 0.05}>
             <ProductCard product={product} />
           </Reveal>
         ))}
       </div>
 
-      <div className="mt-8 sm:hidden text-center">
+      <div className="mt-6 sm:hidden text-center">
         <Link
           href={ROUTES.SHOP}
           className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300"
@@ -60,14 +60,14 @@ export function BestSellersSection() {
   const products = PRODUCTS.filter((p) => p.badge === 'SALE').slice(0, 8);
 
   return (
-    <section className="py-20 sm:py-28 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
+    <section className="py-16 sm:py-24 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto">
       <Reveal>
-        <div className="flex items-end justify-between mb-10 sm:mb-14">
+        <div className="flex items-end justify-between mb-8 sm:mb-12">
           <div>
             <p className="text-[10px] tracking-[0.2em] uppercase text-blood-red mb-2 font-medium">
               Crowd Favorites
             </p>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
               BESTSELLERS
             </h2>
           </div>
@@ -83,15 +83,15 @@ export function BestSellersSection() {
         </div>
       </Reveal>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8 sm:gap-x-6 sm:gap-y-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-6 sm:gap-x-5 sm:gap-y-8">
         {products.map((product, i) => (
-          <Reveal key={product.id} delay={i * 0.06}>
+          <Reveal key={product.id} delay={i * 0.05}>
             <ProductCard product={product} />
           </Reveal>
         ))}
       </div>
 
-      <div className="mt-8 sm:hidden text-center">
+      <div className="mt-6 sm:hidden text-center">
         <Link
           href={`${ROUTES.SHOP}?sort=best-selling`}
           className="inline-flex items-center gap-2 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:text-blood-red transition-colors duration-300"

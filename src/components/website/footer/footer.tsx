@@ -45,33 +45,33 @@ const FOOTER_LINKS = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-charcoal/8">
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-24">
+    <footer className="border-t border-charcoal/8 bg-off-white">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-12 sm:py-16 lg:py-20">
         <Reveal>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 sm:gap-12">
-            {/* Brand column — lg only */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-10">
+            {/* Brand column */}
             <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
-              <Link href={ROUTES.HOME} className="text-lg font-bold tracking-[0.25em] uppercase">
+              <Link href={ROUTES.HOME} className="text-base font-bold tracking-[0.25em] uppercase text-charcoal">
                 HEADERR
               </Link>
-              <p className="text-xs text-chrome mt-3 leading-relaxed max-w-[200px]">
-                Premium football &amp; cricket jerseys. Built for the culture.
+              <p className="text-[11px] text-chrome mt-2 leading-relaxed max-w-[200px]">
+                Premium football & cricket jerseys. Built for the culture.
               </p>
             </div>
 
             {/* Link columns */}
             {Object.values(FOOTER_LINKS).map((col) => (
               <div key={col.title}>
-                <p className="text-[10px] tracking-[0.2em] uppercase font-medium mb-4">
+                <p className="text-[10px] tracking-[0.2em] uppercase font-medium text-charcoal mb-3">
                   {col.title}
                 </p>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {col.links.map((link) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
                         {...('external' in link && link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                        className="text-xs text-chrome hover:text-charcoal transition-colors duration-200"
+                        className="text-[12px] text-chrome hover:text-charcoal transition-colors duration-200"
                       >
                         {link.label}
                       </Link>
@@ -86,11 +86,11 @@ export function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-charcoal/8">
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[10px] text-chrome tracking-wider">
             &copy; 2026 HEADERR INDIA. ALL RIGHTS RESERVED.
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <Link
               href="https://instagram.com/headerr.in"
               target="_blank"
