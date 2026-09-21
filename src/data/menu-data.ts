@@ -60,22 +60,22 @@ export const MENUS: Record<string, MenuData> = {
     ],
     imageCards: [
       {
-        image: 'https://images.unsplash.com/photo-1509027572446-af8401acfdc3?w=800&q=85',
-        imageAlt: 'HEADERR latest collection',
-        eyebrow: 'NEW ARRIVALS',
-        title: 'LATEST CAMPAIGN',
-        cta: { label: 'SHOP NEW →', href: ROUTES.NEW_ARRIVALS },
-      },
-      {
         image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=800&q=85',
-        imageAlt: 'Football jersey collection',
+        imageAlt: 'HEADERR football jersey collection',
         eyebrow: 'FOOTBALL',
         title: 'CLUBS & NATIONALS',
         cta: { label: 'SHOP FOOTBALL →', href: ROUTES.FOOTBALL },
       },
       {
+        image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=85',
+        imageAlt: 'HEADERR Player Version jersey',
+        eyebrow: 'PLAYER VERSION',
+        title: 'MATCH READY',
+        cta: { label: 'SHOP PLAYER →', href: ROUTES.FOOTBALL + '?edition=player' },
+      },
+      {
         image: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&q=85',
-        imageAlt: 'Streetwear collection',
+        imageAlt: 'HEADERR streetwear collection',
         eyebrow: 'STREETWEAR',
         title: 'OVERSIZED ESSENTIALS',
         cta: { label: 'SHOP STREETWEAR →', href: ROUTES.STREETWEAR },
@@ -116,21 +116,21 @@ export const MENUS: Record<string, MenuData> = {
     imageCards: [
       {
         image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=800&q=85',
-        imageAlt: 'Football jersey collection',
+        imageAlt: 'HEADERR football jersey collection',
         eyebrow: 'COLLECTION',
         title: 'CLUBS & NATIONALS',
         cta: { label: 'SHOP FOOTBALL →', href: ROUTES.FOOTBALL },
       },
       {
         image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=85',
-        imageAlt: 'Player Version jersey',
+        imageAlt: 'HEADERR Player Version football jersey',
         eyebrow: 'PLAYER VERSION',
         title: 'MATCH READY',
         cta: { label: 'SHOP PLAYER →', href: ROUTES.FOOTBALL + '?edition=player' },
       },
       {
         image: 'https://images.unsplash.com/photo-1598221428011-33ef7e864d49?w=800&q=85',
-        imageAlt: 'Master Edition jersey',
+        imageAlt: 'HEADERR Master Edition football jersey',
         eyebrow: 'MASTER EDITION',
         title: 'PREMIUM KNITS',
         cta: { label: 'SHOP MASTER →', href: ROUTES.FOOTBALL + '?edition=master' },

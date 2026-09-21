@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PRODUCTS, CATEGORIES, EDITION_TYPES } from '@/data/products';
@@ -21,9 +22,11 @@ const ALL_FILTER_CATEGORIES = [
 const TEAMS = [...new Set(PRODUCTS.map((p) => p.team))];
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-export default function ShopPage() {
+function ShopPageContent() {
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams?.get('category') || 'all';
 
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeEdition, setActiveEdition] = useState('');
   const [activeTeam, setActiveTeam] = useState('');
   const [activeSize, setActiveSize] = useState('');
@@ -294,5 +297,13 @@ export default function ShopPage() {
         </div>
       )}
     </section>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="py-8" />}>
+      <ShopPageContent />
+    </Suspense>
   );
 }
