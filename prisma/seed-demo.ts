@@ -1,11 +1,13 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { OrderStatus, PaymentStatus, Role, TaskPriority } from '../src/generated/prisma/client';
-import { generateOrderNumber } from '../src/lib/utils';
+import { PrismaClient, OrderStatus, PaymentStatus, Role, TaskPriority } from '@prisma/client';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
+
+function generateOrderNumber() {
+  return `HDR-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
+}
 
 async function main() {
   const customer = await prisma.user.findUnique({ where: { email: 'haldararitra40@gmail.com' } });

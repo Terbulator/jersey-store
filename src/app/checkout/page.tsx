@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, ChevronRight, Lock } from 'lucide-react';
-import { cn, formatPrice, generateOrderNumber } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 
 type Step = 1 | 2 | 3;
@@ -208,13 +208,14 @@ export default function CheckoutPage() {
                   >
                     Back
                   </button>
-                  <button
-                    onClick={() => {
-                      clearCart();
-                      window.location.href = `/checkout/success?order=${generateOrderNumber()}`;
-                    }}
-                    className="flex-1 py-3.5 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors"
-                  >
+<button
+                      onClick={() => {
+                        clearCart();
+                        const orderNumber = `HDR-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
+                        window.location.href = `/checkout/success?order=${orderNumber}`;
+                      }}
+                      className="flex-1 py-3.5 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors"
+                    >
                     Place Order · {formatPrice(total)}
                   </button>
                 </div>

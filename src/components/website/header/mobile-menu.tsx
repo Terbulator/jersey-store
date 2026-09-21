@@ -4,13 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { X, ArrowRight, User, Heart, ShoppingBag, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MENUS, NAV_ITEMS, type MenuId } from '@/data/menu-data';
+import { MENUS, NAV_Items, type MenuId } from '@/data/menu-data';
 import { ROUTES } from '@/lib/utils';
 
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
-  onOpenCanvas: (id: MenuId) => void;
 }
 
 const ACCOUNT_ITEMS = [
@@ -21,7 +20,7 @@ const ACCOUNT_ITEMS = [
 
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
-export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
+export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const [expandedSection, setExpandedSection] = useState<MenuId>(null);
   const [headerImage, setHeaderImage] = useState<string>('');
   const [headerTagline, setHeaderTagline] = useState<string>('');
@@ -30,10 +29,9 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
     if (open) {
       document.body.style.overflow = 'hidden';
       setExpandedSection(null);
-      // Set default header image to shop
       const shopMenu = MENUS.shop;
       if (shopMenu) {
-        setHeaderImage(shopMenu.canvasImage);
+        setHeaderImage(shopMenu.imageCards[0]?.image || shopMenu.imageCards[0]?.image);
         setHeaderTagline(shopMenu.tagline);
       }
     } else {
@@ -46,14 +44,18 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
 
   useEffect(() => {
     if (expandedSection && MENUS[expandedSection]) {
-      setHeaderImage(MENUS[expandedSection].canvasImage);
-      setHeaderTagline(MENUS[expandedSection].tagline);
+      const menu = MENUS[expandedSection];
+      setHeaderImage(menu.imageCards[0]?.image || menu.imageCards[0]?.image);
+      setHeaderTagline(menu.tagline);
     }
   }, [expandedSection]);
 
   const handleSectionTap = (id: MenuId) => {
-    onClose();
-    setTimeout(() => onOpenCanvas(id), 150);
+    if (id && MENUS[id]?.sections.length) {
+      setExpandedSection(id);
+    } else if (id) {
+      window.location.href = NAV_Items.find(n => n.id === id)?.href || '/';
+    }
   };
 
   const toggleExpand = (id: MenuId) => {
@@ -94,7 +96,7 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
                   className="absolute inset-0"
                 >
                   <img
-                    src={headerImage || MENUS.shop.canvasImage}
+                    src={headerImage || MENUS.shop.imageCards[0]?.image}
                     alt={headerTagline || MENUS.shop.tagline}
                     className="w-full h-full object-cover"
                   />
@@ -118,7 +120,7 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
 
             <nav className="flex-1 overflow-y-auto px-6 py-6">
               <ul className="space-y-0 mb-8">
-                {NAV_ITEMS.map((item, i) => {
+                {NAV_Items.map((item, i) => {
                   const menu = MENUS[item.id];
                   const isExpanded = expandedSection === item.id;
                   return (
@@ -140,20 +142,22 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
                             {item.label}
                           </span>
                         </button>
-                        <button
-                          onClick={() => toggleExpand(item.id)}
-                          className="p-2 -mr-2 text-chrome hover:text-blood-red transition-colors duration-200"
-                          aria-label={`Expand ${item.label}`}
-                          aria-expanded={isExpanded}
-                        >
-                          <motion.span
-                            animate={{ rotate: isExpanded ? 45 : 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="block"
+                        {menu?.sections.length && (
+                          <button
+                            onClick={() => toggleExpand(item.id)}
+                            className="p-2 -mr-2 text-chrome hover:text-blood-red transition-colors duration-200"
+                            aria-label={`Expand ${item.label}`}
+                            aria-expanded={isExpanded}
                           >
-                            <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
-                          </motion.span>
-                        </button>
+                            <motion.span
+                              animate={{ rotate: isExpanded ? 45 : 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="block"
+                            >
+                              <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
+                            </motion.span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Expandable sub-links */}
@@ -184,8 +188,53 @@ export function MobileMenu({ open, onClose, onOpenCanvas }: MobileMenuProps) {
                                   ))}
                                 </div>
                               ))}
+                              {/* Image cards in mobile */}
+                              <div className="grid grid-cols-1 gap-4 pt-2">
+                                {menu.imageCards.map((card, cIdx) => (
+                                  <motion.div
+                                    key={card.title}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ delay: cIdx * 0.04, duration: 0.3, ease: EASE }}
+                                    className="relative overflow-hidden group cursor-pointer rounded-lg"
+                                  >
+                                    <Link
+                                      href={card.cta.href}
+                                      className="block h-[160px] sm:h-[180px]"
+                                    >
+                                      <img
+                                        src={card.image}
+                                        alt={card.imageAlt}
+                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                                        loading="lazy"
+                                      />
+                                    </Link>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-400" />
+                                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                                      <p className="text-white/50 text-[8px] tracking-[0.25em] uppercase font-medium mb-1">
+                                        {card.eyebrow}
+                                      </p>
+                                      <p className="text-white font-semibold text-[13px] sm:text-[14px] leading-tight mb-2">
+                                        {card.title}
+                                      </p>
+                                      <Link
+                                        href={card.cta.href}
+                                        className="inline-flex items-center gap-1.5 text-off-white text-[10px] tracking-[0.15em] uppercase font-medium hover:gap-2.5 transition-all duration-200"
+                                      >
+                                        {card.cta.label}
+                                      </Link>
+                                    </div>
+                                  </motion.div>
+                                ))}
+                              </div>
                               <button
-                                onClick={() => handleSectionTap(item.id)}
+                                onClick={() => {
+                                  const navItem = NAV_Items.find(n => n.id === item.id);
+                                  if (navItem) window.location.href = navItem.href;
+                                  onClose();
+                                }}
                                 className="mt-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase text-blood-red font-medium"
                               >
                                 View full {item.label}

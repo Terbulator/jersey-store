@@ -16,25 +16,6 @@ export function formatPrice(price: number | string, currency = 'INR') {
   }).format(num);
 }
 
-export function cx(...inputs: (string | boolean | undefined | null)[]) {
-  return inputs.filter(Boolean).join(' ');
-}
-
-export function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
-export function clamp(val: number, min: number, max: number) {
-  return Math.min(Math.max(val, min), max);
-}
-
-export function generateOrderNumber() {
-  return `HDR-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
-}
-
 export const ROUTES = {
   HOME: '/',
   SHOP: '/shop',

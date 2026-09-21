@@ -12,14 +12,19 @@ export interface MenuSection {
   items: MenuItem[];
 }
 
-export interface MenuData {
-  sections: MenuSection[];
+export interface ImageCard {
   image: string;
   imageAlt: string;
+  eyebrow: string;
+  title: string;
   cta: { label: string; href: string };
-  canvasImage: string;
+}
+
+export interface MenuData {
+  sections: MenuSection[];
+  imageCards: ImageCard[];
+  cta: { label: string; href: string };
   tagline: string;
-  accentColor: string;
 }
 
 export const MENUS: Record<string, MenuData> = {
@@ -53,12 +58,31 @@ export const MENUS: Record<string, MenuData> = {
         ],
       },
     ],
-    image: 'https://images.unsplash.com/photo-1509027572446-af8401acfdc3?w=800&q=85',
-    imageAlt: 'HEADERR latest collection',
-    cta: { label: 'SHOP ALL →', href: ROUTES.SHOP },
-    canvasImage: 'https://images.unsplash.com/photo-1509027572446-af8401acfdc3?w=1920&q=90',
+    imageCards: [
+      {
+        image: 'https://images.unsplash.com/photo-1509027572446-af8401acfdc3?w=800&q=85',
+        imageAlt: 'HEADERR latest collection',
+        eyebrow: 'NEW ARRIVALS',
+        title: 'LATEST CAMPAIGN',
+        cta: { label: 'SHOP NEW →', href: ROUTES.NEW_ARRIVALS },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=800&q=85',
+        imageAlt: 'Football jersey collection',
+        eyebrow: 'FOOTBALL',
+        title: 'CLUBS & NATIONALS',
+        cta: { label: 'SHOP FOOTBALL →', href: ROUTES.FOOTBALL },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&q=85',
+        imageAlt: 'Streetwear collection',
+        eyebrow: 'STREETWEAR',
+        title: 'OVERSIZED ESSENTIALS',
+        cta: { label: 'SHOP STREETWEAR →', href: ROUTES.STREETWEAR },
+      },
+    ],
+    cta: { label: 'VIEW ALL PRODUCTS →', href: ROUTES.SHOP },
     tagline: 'THE FULL COLLECTION.',
-    accentColor: 'rgba(0,0,0,0.45)',
   },
   football: {
     sections: [
@@ -68,6 +92,7 @@ export const MENUS: Record<string, MenuData> = {
           { label: 'All Football', href: ROUTES.FOOTBALL },
           { label: 'New Arrivals', href: ROUTES.FOOTBALL + '?sort=newest' },
           { label: 'Best Sellers', href: ROUTES.FOOTBALL + '?sort=best-selling' },
+          { label: 'Limited Drops', href: ROUTES.FOOTBALL + '?sort=limited' },
         ],
       },
       {
@@ -88,12 +113,31 @@ export const MENUS: Record<string, MenuData> = {
         ],
       },
     ],
-    image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=800&q=85',
-    imageAlt: 'Football jersey collection',
+    imageCards: [
+      {
+        image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=800&q=85',
+        imageAlt: 'Football jersey collection',
+        eyebrow: 'COLLECTION',
+        title: 'CLUBS & NATIONALS',
+        cta: { label: 'SHOP FOOTBALL →', href: ROUTES.FOOTBALL },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=85',
+        imageAlt: 'Player Version jersey',
+        eyebrow: 'PLAYER VERSION',
+        title: 'MATCH READY',
+        cta: { label: 'SHOP PLAYER →', href: ROUTES.FOOTBALL + '?edition=player' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1598221428011-33ef7e864d49?w=800&q=85',
+        imageAlt: 'Master Edition jersey',
+        eyebrow: 'MASTER EDITION',
+        title: 'PREMIUM KNITS',
+        cta: { label: 'SHOP MASTER →', href: ROUTES.FOOTBALL + '?edition=master' },
+      },
+    ],
     cta: { label: 'SHOP FOOTBALL →', href: ROUTES.FOOTBALL },
-    canvasImage: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1920&q=90',
     tagline: 'THE GAME IS EVERYTHING.',
-    accentColor: 'rgba(8,0,0,0.55)',
   },
   cricket: {
     sections: [
@@ -103,6 +147,7 @@ export const MENUS: Record<string, MenuData> = {
           { label: 'All Cricket', href: ROUTES.CRICKET },
           { label: 'New Arrivals', href: ROUTES.CRICKET + '?sort=newest' },
           { label: 'Best Sellers', href: ROUTES.CRICKET + '?sort=best-selling' },
+          { label: 'Limited Drops', href: ROUTES.CRICKET + '?sort=limited' },
         ],
       },
       {
@@ -123,12 +168,31 @@ export const MENUS: Record<string, MenuData> = {
         ],
       },
     ],
-    image: 'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=85',
-    imageAlt: 'Cricket jersey collection',
+    imageCards: [
+      {
+        image: 'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=85',
+        imageAlt: 'Cricket jersey collection',
+        eyebrow: 'COLLECTION',
+        title: 'TEAM & INTERNATIONAL',
+        cta: { label: 'SHOP CRICKET →', href: ROUTES.CRICKET },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=85',
+        imageAlt: 'Player Version cricket jersey',
+        eyebrow: 'PLAYER VERSION',
+        title: 'MATCH READY',
+        cta: { label: 'SHOP PLAYER →', href: ROUTES.CRICKET + '?edition=player' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1531014992611-d9c4f5d4b4fd?w=800&q=85',
+        imageAlt: 'IPL cricket jersey',
+        eyebrow: 'IPL',
+        title: 'FRANCHISE KITS',
+        cta: { label: 'SHOP IPL →', href: ROUTES.CRICKET + '?category=ipl' },
+      },
+    ],
     cta: { label: 'SHOP CRICKET →', href: ROUTES.CRICKET },
-    canvasImage: 'https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=1920&q=90',
     tagline: 'CRICKET CULTURE.',
-    accentColor: 'rgba(0,40,20,0.50)',
   },
   streetwear: {
     sections: [
@@ -138,10 +202,11 @@ export const MENUS: Record<string, MenuData> = {
           { label: 'All Streetwear', href: ROUTES.STREETWEAR },
           { label: 'New Arrivals', href: ROUTES.STREETWEAR + '?sort=newest' },
           { label: 'Best Sellers', href: ROUTES.STREETWEAR + '?sort=best-selling' },
+          { label: 'Limited Edition', href: ROUTES.STREETWEAR + '?sort=limited' },
         ],
       },
       {
-        title: 'Category',
+        title: 'Apparel',
         items: [
           { label: 'Tees', href: ROUTES.STREETWEAR + '?category=tees' },
           { label: 'Hoodies', href: ROUTES.STREETWEAR + '?category=hoodies' },
@@ -151,17 +216,36 @@ export const MENUS: Record<string, MenuData> = {
       {
         title: 'Collection',
         items: [
-          { label: 'Limited Edition', href: ROUTES.STREETWEAR + '?sort=limited' },
           { label: 'HEADERR Collections', href: ROUTES.STREETWEAR + '?brand=headerr' },
+          { label: 'Limited Drops', href: ROUTES.STREETWEAR + '?sort=limited' },
         ],
       },
     ],
-    image: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&q=85',
-    imageAlt: 'Streetwear collection',
+    imageCards: [
+      {
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=85',
+        imageAlt: 'HEADERR oversized tee',
+        eyebrow: 'TEES',
+        title: 'OVERSIZED ESSENTIALS',
+        cta: { label: 'SHOP TEES →', href: ROUTES.STREETWEAR + '?category=tees' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=85',
+        imageAlt: 'HEADERR hoodie',
+        eyebrow: 'HOODIES',
+        title: 'HEAVYWEIGHT FRENCH TERRY',
+        cta: { label: 'SHOP HOODIES →', href: ROUTES.STREETWEAR + '?category=hoodies' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=85',
+        imageAlt: 'HEADERR sweatshirt',
+        eyebrow: 'SWEATSHIRTS',
+        title: 'CREWNECK FLEECE',
+        cta: { label: 'SHOP SWEATS →', href: ROUTES.STREETWEAR + '?category=sweatshirts' },
+      },
+    ],
     cta: { label: 'SHOP STREETWEAR →', href: ROUTES.STREETWEAR },
-    canvasImage: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=1920&q=90',
     tagline: 'WEAR THE CULTURE.',
-    accentColor: 'rgba(20,10,30,0.50)',
   },
   culture: {
     sections: [
@@ -190,16 +274,35 @@ export const MENUS: Record<string, MenuData> = {
         ],
       },
     ],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=85',
-    imageAlt: 'HEADERR community editorial',
+    imageCards: [
+      {
+        image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=85',
+        imageAlt: 'HEADERR match day community',
+        eyebrow: 'MATCH DAY',
+        title: 'COMMUNITY STORIES',
+        cta: { label: 'READ MORE →', href: '/culture#matchday' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1574623452334-1e0ac2b3ccb4?w=800&q=85',
+        imageAlt: 'HEADERR editorial campaign',
+        eyebrow: 'EDITORIAL',
+        title: 'CAMPAIGNS & STORIES',
+        cta: { label: 'VIEW EDITORIALS →', href: '/culture#editorials' },
+      },
+      {
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=85',
+        imageAlt: 'HEADERR IRL community',
+        eyebrow: 'HEADERR IRL',
+        title: 'REAL PEOPLE',
+        cta: { label: 'FOLLOW US →', href: '/culture#irl' },
+      },
+    ],
     cta: { label: 'EXPLORE CULTURE →', href: '/culture' },
-    canvasImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1920&q=90',
     tagline: 'MORE THAN A JERSEY.',
-    accentColor: 'rgba(10,0,20,0.55)',
   },
 };
 
-export const NAV_ITEMS = [
+export const NAV_Items = [
   { id: 'shop' as const, label: 'Shop', href: ROUTES.SHOP },
   { id: 'football' as const, label: 'Football', href: ROUTES.FOOTBALL },
   { id: 'cricket' as const, label: 'Cricket', href: ROUTES.CRICKET },
