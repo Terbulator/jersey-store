@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
-
-const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
+import { FooterWordmark } from './footer-wordmark';
 
 const COLUMNS = [
   {
@@ -28,14 +26,6 @@ const COLUMNS = [
     ],
   },
   {
-    title: 'About',
-    links: [
-      { label: 'Our Story', href: '/about' },
-      { label: 'The Culture', href: '#' },
-      { label: 'FAQ', href: '#' },
-    ],
-  },
-  {
     title: 'Follow',
     links: [
       { label: 'Instagram', href: '#' },
@@ -43,12 +33,20 @@ const COLUMNS = [
       { label: 'Twitter', href: '#' },
     ],
   },
+  {
+    title: 'About',
+    links: [
+      { label: 'Our Story', href: '/about' },
+      { label: 'The Culture', href: '#' },
+      { label: 'FAQ', href: '#' },
+    ],
+  },
 ];
 
 export function Footer() {
   return (
     <footer className="relative bg-black text-off-white overflow-hidden">
-      <div className="relative min-h-[92vh] flex flex-col">
+      <div className="relative min-h-[100vh] sm:min-h-[115vh] flex flex-col">
         {/* Small information at the top */}
         <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 pt-16 sm:pt-20 lg:pt-24">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-8">
@@ -66,7 +64,6 @@ export function Footer() {
                   </a>
                 </li>
               </ul>
-              <p className="mt-5 text-[#EFECE6]">© 2026 HEADERR</p>
             </div>
 
             {/* Navigation — upper right */}
@@ -95,36 +92,35 @@ export function Footer() {
               ))}
             </nav>
           </div>
-
-          {/* Brand statement */}
-          <p className="mt-14 lg:mt-16 font-mono-meta text-[14px] leading-[1.35] tracking-[0.08em] text-[#EFECE6] max-w-[340px]">
-            More than a jersey.
-            <br />
-            A movement.
-          </p>
         </div>
 
-        {/* Large negative space */}
-        <div className="flex-1" />
+        {/* Large black negative space — all of it lives ABOVE the wordmark */}
+        <div className="flex-1 min-h-[16vh] sm:min-h-[20vh]" aria-hidden="true" />
 
-        {/* Massive HEADERR wordmark — cropped at the bottom edge */}
-        <div className="w-[88vw] max-w-[1500px] mx-auto select-none pointer-events-none">
-          <motion.h2
-            aria-hidden="true"
-            initial={{ opacity: 0.75, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10%' }}
-            transition={{ duration: 1.05, ease: EASE_EDITORIAL }}
-            className="font-display text-[20vw] sm:text-[18vw] lg:text-[17vw] leading-[0.82] tracking-[-0.035em] whitespace-nowrap text-center text-[#A8A8A8] -mb-[0.18em]"
-          >
-            HEADERR
-            <span
-              aria-hidden="true"
-              className="inline-block text-[0.15em] align-super leading-none translate-y-[0.15em]"
-            >
-              ®
-            </span>
-          </motion.h2>
+        {/* Massive HEADERR wordmark — own full-width container, lower region */}
+        <div className="relative z-[1] w-full select-none pointer-events-none overflow-hidden">
+          <FooterWordmark />
+        </div>
+      </div>
+
+      {/* Bottom legal bar */}
+      <div className="relative z-10 border-t border-[rgba(239,236,230,0.15)] bg-[#080808]">
+        <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 py-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 font-mono-meta text-[11px] tracking-[0.08em]">
+            <p className="text-[#EFECE6]">© 2026 HEADERR</p>
+            <ul className="sm:ml-auto flex flex-wrap gap-x-6 gap-y-2 text-[#A8A8A8]">
+              {['Privacy Policy', 'Terms', 'Shipping Policy', 'Refund Policy'].map((item) => (
+                <li key={item}>
+                  <a
+                    href="#"
+                    className="hover:text-[#B3001B] transition-colors duration-200"
+                  >
+                    {item.toUpperCase()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </footer>

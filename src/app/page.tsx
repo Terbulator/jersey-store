@@ -1,4 +1,5 @@
 import { SiteHero } from '@/components/website/sections/site-hero';
+import { StorySlides } from '@/components/website/sections/story-slides';
 import { TrustStrip } from '@/components/website/sections/trust-strip';
 import { CategoryNav } from '@/components/website/sections/category-nav';
 import { BestSellers } from '@/components/website/sections/best-sellers';
@@ -16,6 +17,7 @@ export default function HomePage() {
   return (
     <>
       <SiteHero />
+      <StorySlides />
       <TrustStrip />
       <CategoryNav />
       <BestSellers />
