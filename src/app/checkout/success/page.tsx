@@ -4,14 +4,33 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, Package, ArrowRight } from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
+import { trackEvent } from '@/lib/analytics';
 
 export default function CheckoutSuccessPage() {
   const [orderId, setOrderId] = useState('HDR-UNKNOWN');
+  const [orderTotal, setOrderTotal] = useState<number | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const order = params.get('order');
-    if (order) setOrderId(order);
+    if (order) {
+      setOrderId(order);
+      fetch(`/api/orders?order=${encodeURIComponent(order)}`)
+        .then(async (r) => {
+          const data = await r.json();
+          const total = data.order?.total ?? null;
+          if (total !== null) {
+            setOrderTotal(total);
+            trackEvent('purchase', {
+              product_name: `Order ${order}`,
+              category: 'checkout',
+              price: total,
+              page_url: window.location.href,
+            });
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   return (

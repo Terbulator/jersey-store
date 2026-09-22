@@ -23,6 +23,8 @@ import { useWishlistStore } from '@/store/wishlist-store';
 import { ProductGrid } from '@/components/website/product/product-grid';
 import { editionLabel, metaLine, relatedProducts } from '@/lib/catalog';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
+import { trackEvent } from '@/lib/analytics';
+import { createClient } from '@/lib/supabase/client';
 
 interface ProductPageProps {
   params: { slug: string };
@@ -30,6 +32,7 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const product = PRODUCTS.find((p) => p.slug === params.slug);
+  const [supabaseProductId, setSupabaseProductId] = useState<string | null>(null);
 
   const [currentImage, setCurrentImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
@@ -51,6 +54,36 @@ export default function ProductPage({ params }: ProductPageProps) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Fetch Supabase product ID for analytics
+  useEffect(() => {
+    if (!product?.slug) return;
+    let cancelled = false;
+    const supabase = createClient();
+    supabase
+      .from('products')
+      .select('id')
+      .eq('slug', product.slug)
+      .maybeSingle()
+      .then(({ data }: { data: { id: string } | null }) => {
+        if (!cancelled && data) setSupabaseProductId(data.id);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.slug]);
+
+  // Track product_view on mount / slug change
+  useEffect(() => {
+    if (product) {
+      trackEvent('product_view', {
+        product_id: supabaseProductId || product.id,
+        product_name: product.name,
+        category: product.category,
+        price: product.basePrice,
+      });
+    }
+  }, [product, supabaseProductId]);
 
   if (!product) {
     return (
@@ -188,28 +221,27 @@ export default function ProductPage({ params }: ProductPageProps) {
                 )}
               </div>
 
+              {/* Thumbnails */}
               {images.length > 1 && (
-                <div className="flex gap-2 mt-3 overflow-x-auto hide-scrollbar">
+                <div className="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-none">
                   {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setCurrentImage(i)}
                       className={cn(
-                        'flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border transition-all duration-200',
-                        currentImage === i
-                          ? 'border-off-white opacity-100'
-                          : 'border-transparent opacity-40 hover:opacity-80'
+                        'relative w-20 aspect-[3/4] flex-shrink-0 bg-charcoal rounded-lg overflow-hidden border transition-all duration-200',
+                        currentImage === i ? 'border-red opacity-100' : 'border-white/10 opacity-50 hover:opacity-80'
                       )}
                     >
-                      <img src={img} alt={`${product.name} view ${i + 1}`} className="w-full h-full object-cover" />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
             </motion.div>
 
-            {/* Product Info */}
-            <div className="lg:sticky lg:top-36 lg:self-start">
+            {/* Product Details */}
+            <div>
               <p className="font-mono-meta text-[10px] tracking-[0.3em] uppercase text-red mb-2">
                 {editionLabel(product.edition)}
               </p>

@@ -46,7 +46,7 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer className="relative bg-black text-off-white overflow-hidden">
-      <div className="relative min-h-[100vh] sm:min-h-[115vh] flex flex-col">
+      <div className="relative flex flex-col">
         {/* Small information at the top */}
         <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 pt-16 sm:pt-20 lg:pt-24">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-8">
@@ -94,8 +94,8 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Large black negative space — all of it lives ABOVE the wordmark */}
-        <div className="flex-1 min-h-[16vh] sm:min-h-[20vh]" aria-hidden="true" />
+        {/* Controlled negative space — reduced ~40% from previous flex-fill gap */}
+        <div className="h-[36vh] sm:h-[26vh]" aria-hidden="true" />
 
         {/* Massive HEADERR wordmark — own full-width container, lower region */}
         <div className="relative z-[1] w-full select-none pointer-events-none overflow-hidden">

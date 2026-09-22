@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product } from '@/data/products';
+import { trackEvent } from '@/lib/analytics';
 
 export interface CartItem {
   product: Product;
@@ -46,9 +47,24 @@ export const useCartStore = create<CartState>()(
           }
           return { items: [...state.items, { product, size, quantity }] };
         });
+        trackEvent('add_to_cart', {
+          product_id: product.id,
+          product_name: product.name,
+          category: product.category,
+          price: product.basePrice,
+        });
       },
 
       removeItem: (productId, size) => {
+        const item = get().items.find((i) => i.product.id === productId && i.size === size);
+        if (item) {
+          trackEvent('remove_from_cart', {
+            product_id: item.product.id,
+            product_name: item.product.name,
+            category: item.product.category,
+            price: item.product.basePrice,
+          });
+        }
         set((state) => ({
           items: state.items.filter(
             (item) => !(item.product.id === productId && item.size === size)

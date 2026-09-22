@@ -6,6 +6,8 @@ import { CartDrawer } from '@/components/website/cart/cart-drawer';
 import { AnnouncementBar } from '@/components/website/header/announcement-bar';
 import { SearchOverlay } from '@/components/website/search/search-overlay';
 import { AuthProvider } from '@/components/auth/auth-provider';
+import { StorefrontGate } from '@/components/storefront-gate';
+import { AnalyticsTracker } from '@/components/analytics-tracker';
 
 export const metadata = {
   title: 'HEADERR — Premium Football & Cricket Jerseys',
@@ -22,14 +24,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="scroll-smooth">
       <body className="bg-black text-off-white antialiased">
         <AuthProvider>
-          <AnnouncementBar />
-          <Navbar />
-          <MobileMenu />
-          <SearchOverlay />
-          <CartDrawer />
+          <StorefrontGate>
+            <AnnouncementBar />
+            <Navbar />
+            <MobileMenu />
+            <SearchOverlay />
+            <CartDrawer />
+          </StorefrontGate>
           <main>{children}</main>
+          <AnalyticsTracker />
         </AuthProvider>
-        <Footer />
+        <StorefrontGate>
+          <Footer />
+        </StorefrontGate>
       </body>
     </html>
   );

@@ -1,18 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Check, ChevronRight, Lock } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
+import { trackEvent } from '@/lib/analytics';
 
 type Step = 1 | 2 | 3;
 
 export default function CheckoutPage() {
   const [step, setStep] = useState<Step>(1);
+  const [error, setError] = useState('');
+  const [placing, setPlacing] = useState(false);
   const { items, subtotal, clearCart } = useCartStore();
   const shipping = subtotal() > 999 ? 0 : 99;
   const total = subtotal() + shipping;
+
+  useEffect(() => {
+    trackEvent('begin_checkout', { page_url: window.location.href });
+  }, []);
 
   const [form, setForm] = useState({
     email: '',
@@ -208,17 +215,47 @@ export default function CheckoutPage() {
                   >
                     Back
                   </button>
-<button
-                      onClick={() => {
+                  <button
+                    onClick={async () => {
+                      setPlacing(true);
+                      setError('');
+                      try {
+                        const res = await fetch('/api/orders', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            items: items.map((i) => ({ productId: i.product.id, size: i.size, quantity: i.quantity })),
+                            customerName: `${form.firstName} ${form.lastName}`.trim(),
+                            email: form.email,
+                            phone: form.phone,
+                            address: {
+                              line1: form.address,
+                              line2: form.apartment,
+                              city: form.city,
+                              state: form.state,
+                              pincode: form.pincode,
+                            },
+                            paymentMethod: 'COD',
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          throw new Error(data.error || 'Could not place your order.');
+                        }
                         clearCart();
-                        const orderNumber = `HDR-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`.toUpperCase();
-                        window.location.href = `/checkout/success?order=${orderNumber}`;
-                      }}
-                      className="flex-1 py-3.5 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors"
-                    >
-                    Place Order · {formatPrice(total)}
+                        window.location.href = `/checkout/success?order=${data.order.order_number}`;
+                      } catch (e) {
+                        setPlacing(false);
+                        setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+                      }
+                    }}
+                    disabled={placing || !form.email || !form.firstName || !form.lastName || !form.address || !form.city || !form.state || !form.pincode}
+                    className="flex-1 py-3.5 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors disabled:opacity-50"
+                  >
+                    {placing ? 'Placing order…' : `Place Order · ${formatPrice(total)}`}
                   </button>
                 </div>
+                {error && <p className="text-[12px] text-blood-red mt-2">{error}</p>}
               </div>
             )}
           </div>

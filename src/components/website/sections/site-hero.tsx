@@ -1,14 +1,70 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
+import { createClient } from '@/lib/supabase/client';
 
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=80';
+interface HeroSlide {
+  eyebrow: string | null;
+  headline: string;
+  subheadline: string | null;
+  desktop_image: string | null;
+  cta_text: string | null;
+  cta_url: string | null;
+}
+
+const FALLBACK: HeroSlide = {
+  eyebrow: 'VOL. 01 — THE 2026 SEASON',
+  headline: 'WEAR THE GAME.',
+  subheadline: 'Player-version football & cricket jerseys. Master-edition streetwear. Cut for the culture that never stops.',
+  desktop_image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=80',
+  cta_text: 'Shop the Drop',
+  cta_url: ROUTES.SHOP,
+};
 
 export function SiteHero() {
+  const [slide, setSlide] = useState<HeroSlide>(FALLBACK);
+
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+    supabase
+      .from('promo_slides')
+      .select('eyebrow, headline, subheadline, desktop_image, cta_text, cta_url')
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .limit(1)
+      .then(({ data }: { data: Array<{ eyebrow: string | null; headline: string; subheadline: string | null; desktop_image: string | null; cta_text: string | null; cta_url: string | null }> | null }) => {
+        if (cancelled || !data?.length) return;
+        const s = data[0];
+        if (s.headline) {
+          setSlide({
+            eyebrow: s.eyebrow ?? null,
+            headline: s.headline,
+            subheadline: s.subheadline ?? null,
+            desktop_image: s.desktop_image ?? null,
+            cta_text: s.cta_text ?? null,
+            cta_url: s.cta_url ?? null,
+          });
+        }
+      })
+      .catch(() => {
+        // fall back to hardcoded hero
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const heroImage = slide.desktop_image ?? FALLBACK.desktop_image;
+  const headlineParts = slide.headline.split('GAME.');
+  const hasGameSplit = headlineParts.length > 1;
+  const firstPart = hasGameSplit ? headlineParts[0] : slide.headline;
+  const highlight = hasGameSplit ? headlineParts.join(' ').replace(firstPart, '').trim() : '';
+
   return (
     <section className="relative h-[100svh] min-h-[640px] bg-black overflow-hidden">
       <motion.div
@@ -18,7 +74,7 @@ export function SiteHero() {
         className="absolute inset-0"
       >
         <img
-          src={HERO_IMAGE}
+          src={heroImage ?? FALLBACK.desktop_image!}
           alt=""
           className="w-full h-full object-cover opacity-50"
         />
@@ -34,22 +90,25 @@ export function SiteHero() {
           className="max-w-3xl"
         >
           <p className="font-mono-meta text-[10px] tracking-[0.35em] text-off-white/60 mb-6">
-            VOL. 01 — THE 2026 SEASON
+            {slide.eyebrow ?? FALLBACK.eyebrow}
           </p>
           <h1 className="headline text-[52px] sm:text-[76px] lg:text-[104px] leading-[0.95] text-off-white">
-            WEAR THE
-            <br />
-            <em className="text-red not-italic underline underline-offset-[0.12em] decoration-[0.5px]">
-              GAME.
-            </em>
+            {firstPart}
+            {hasGameSplit && (
+              <>
+                <br />
+                <em className="text-red not-italic underline underline-offset-[0.12em] decoration-[0.5px]">
+                  {highlight}
+                </em>
+              </>
+            )}
           </h1>
           <p className="mt-7 text-base sm:text-lg text-off-white/70 max-w-md leading-relaxed">
-            Player-version football &amp; cricket jerseys. Master-edition streetwear. Cut
-            for the culture that never stops.
+            {slide.subheadline ?? 'Player-version football & cricket jerseys. Master-edition streetwear. Cut for the culture that never stops.'}
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Link href={ROUTES.SHOP} className="btn-pill btn-pill-solid">
-              Shop the Drop
+            <Link href={slide.cta_url ?? ROUTES.SHOP} className="btn-pill btn-pill-solid">
+              {slide.cta_text ?? 'Shop the Drop'}
             </Link>
             <Link href="/bundle" className="btn-pill btn-pill-outline">
               Bundle &amp; Save
