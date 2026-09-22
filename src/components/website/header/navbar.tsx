@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Search, User, ShoppingBag, Menu } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
+import { useWishlistStore } from '@/store/wishlist-store';
 import { useUiStore } from '@/store/ui-store';
+import { useAuth } from '@/components/auth/auth-provider';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -22,6 +24,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const items = useCartStore((s) => s.items);
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);
+  const wishlistCount = useWishlistStore((s) => s.items).length;
+  const { user, firstName } = useAuth();
   const { setMenuOpen, setSearchOpen } = useUiStore();
   const router = useRouter();
 
@@ -73,18 +77,28 @@ export function Navbar() {
               <Search className="w-[18px] h-[18px]" strokeWidth={1.5} />
             </button>
             <Link
-              href={ROUTES.ACCOUNT}
+              href={user ? ROUTES.ACCOUNT : ROUTES.LOGIN}
               aria-label="Account"
-              className="hidden sm:flex p-2 text-off-white/70 hover:text-off-white transition-colors"
+              className="hidden sm:flex items-center gap-2 p-2 text-off-white/70 hover:text-off-white transition-colors"
             >
+              {firstName && (
+                <span className="hidden xl:inline font-mono-meta text-[9px] text-off-white/50">
+                  Hi, {firstName}
+                </span>
+              )}
               <User className="w-[18px] h-[18px]" strokeWidth={1.5} />
             </Link>
             <Link
               href={ROUTES.WISHLIST}
               aria-label="Wishlist"
-              className="hidden sm:flex p-2 text-off-white/70 hover:text-off-white transition-colors"
+              className="relative hidden sm:flex p-2 text-off-white/70 hover:text-off-white transition-colors"
             >
-              <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
+              <Heart className="w-[18px] h-[18px]" strokeWidth={1.5} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#B3001B] text-off-white text-[9px] font-medium flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
             <button
               onClick={() => useCartStore.getState().openCart()}

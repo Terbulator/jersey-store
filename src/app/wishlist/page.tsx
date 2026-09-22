@@ -1,80 +1,102 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, ShoppingBag, X } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { Heart, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { formatPrice, ROUTES } from '@/lib/utils';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useCartStore } from '@/store/cart-store';
 
+function editionLabel(product: { edition?: string }) {
+  if (product.edition === 'player') return 'Player Version';
+  if (product.edition === 'master') return 'Master Edition';
+  return 'Special Edition';
+}
+
 export default function WishlistPage() {
-  const { items, removeItem, toggleWishlist } = useWishlistStore();
+  const { items, removeItem } = useWishlistStore();
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
 
   return (
-    <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-charcoal mb-8 uppercase">Wishlist</h1>
+    <section className="min-h-screen bg-black text-off-white px-6 sm:px-8 lg:px-12 pt-28 lg:pt-32 pb-20">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="max-w-[680px] mb-12">
+          <p className="font-mono-meta text-[10px] text-off-white/40 mb-6">HEADERR.</p>
+          <h1 className="font-display text-5xl sm:text-7xl text-off-white leading-[0.95]">
+            YOUR WISHLIST.
+          </h1>
+          <p className="font-mono-meta text-[10px] text-off-white/45 mt-6 leading-[2]">
+            SAVE THE JERSEYS YOU WANT TO COME BACK TO.
+          </p>
+        </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-20">
-            <Heart className="w-14 h-14 text-chrome/30 mx-auto mb-4" />
-            <p className="text-sm text-chrome mb-1">Your wishlist is empty</p>
-            <p className="text-xs text-chrome/60 mb-6">Save your favorite items for later.</p>
-            <Link href="/shop" className="inline-block px-8 py-3 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors">
-              Explore Shop
+          <div className="flex flex-col items-center justify-center py-24 text-center border border-off-white/10">
+            <Heart className="w-12 h-12 text-off-white/25 mx-auto mb-6" strokeWidth={1} />
+            <p className="headline text-3xl text-off-white mb-2">NOTHING HERE YET.</p>
+            <p className="font-mono-meta text-[10px] text-off-white/45 mb-10">
+              TAP THE HEART ON ANY JERSEY TO SAVE IT HERE.
+            </p>
+            <Link href={ROUTES.SHOP} className="btn-pill btn-pill-solid">
+              Explore the Drop
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6">
             {items.map((product) => (
               <div key={product.id} className="group">
-                <Link href={`/shop/products/${product.slug}`} className="block">
-                  <div className="relative aspect-[3/4] bg-white border border-charcoal/5 overflow-hidden mb-3">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {product.badge && (
-                      <span className="absolute top-3 left-3 px-2 py-0.5 bg-blood-red text-off-white text-[9px] tracking-widest uppercase">
-                        {product.badge}
-                      </span>
-                    )}
-                  </div>
+                <Link
+                  href={`/shop/products/${product.slug}`}
+                  className="block relative aspect-[3/4] bg-off-white overflow-hidden"
+                >
+                  <img
+                    src={product.image}
+                    alt={product.imageAlt}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  {product.badge && (
+                    <span className="absolute top-3 left-3 font-mono-meta text-[9px] px-2.5 py-1 bg-red text-white">
+                      {product.badge}
+                    </span>
+                  )}
+                  <motion.button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      removeItem(product.id);
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={`Remove ${product.name} from wishlist`}
+                    className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-[#B3001B]"
+                  >
+                    <Heart className="w-4 h-4" strokeWidth={1.5} fill="currentColor" />
+                  </motion.button>
                 </Link>
 
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <Link href={`/shop/products/${product.slug}`}>
-                      <h3 className="text-xs font-medium text-charcoal truncate hover:text-blood-red transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <p className="text-[10px] text-chrome uppercase tracking-wider mt-0.5">
-                      {product.edition === 'player' ? 'Player Version' : product.edition === 'master' ? 'Master Edition' : 'Special Edition'}
-                    </p>
-                    <p className="text-xs font-bold text-charcoal mt-1">{formatPrice(product.basePrice)}</p>
-                  </div>
+                <div className="pt-3.5 px-0.5">
+                  <Link href={`/shop/products/${product.slug}`}>
+                    <h3 className="headline text-lg sm:text-xl text-off-white leading-tight hover:text-red transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
+                  <p className="font-mono-meta text-[9px] text-off-white/40 mt-1.5">
+                    {editionLabel(product)}
+                  </p>
+                  <p className="text-[15px] text-off-white/90 mt-1.5">
+                    {formatPrice(product.basePrice)}
+                  </p>
+
                   <button
-                    onClick={() => removeItem(product.id)}
-                    className="text-chrome hover:text-blood-red transition-colors flex-shrink-0"
-                    aria-label={`Remove ${product.name} from wishlist`}
+                    onClick={() => {
+                      addItem(product, product.sizes[0]);
+                      openCart();
+                    }}
+                    className="w-full mt-3 py-3 flex items-center justify-center gap-2 btn-pill btn-pill-outline h-11"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <ShoppingBag className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    Add to Cart
                   </button>
                 </div>
-
-                <button
-                  onClick={() => {
-                    addItem(product, 'M');
-                    openCart();
-                  }}
-                  className="w-full mt-2 py-2 border border-charcoal/15 text-[10px] tracking-widest uppercase text-charcoal hover:bg-charcoal hover:text-off-white transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <ShoppingBag className="w-3 h-3" />
-                  Add to Cart
-                </button>
               </div>
             ))}
           </div>

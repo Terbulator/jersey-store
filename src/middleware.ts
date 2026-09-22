@@ -51,12 +51,12 @@ export async function middleware(request: NextRequest) {
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
-    url.pathname = '/auth/signin';
-    url.searchParams.set('callbackUrl', path);
+    url.pathname = '/login';
+    url.searchParams.set('redirect', path);
     return NextResponse.redirect(url);
   }
 
-  if (user && (path === '/auth/signin' || path === '/auth/signup')) {
+  if (user && (path === '/login' || path === '/signup' || path === '/forgot-password')) {
     const url = request.nextUrl.clone();
     url.pathname = '/account';
     return NextResponse.redirect(url);
@@ -72,7 +72,8 @@ export const config = {
     '/worker/:path*',
     '/admin/:path*',
     '/reseller/:path*',
-    '/auth/signin',
-    '/auth/signup',
+    '/login',
+    '/signup',
+    '/forgot-password',
   ],
 };

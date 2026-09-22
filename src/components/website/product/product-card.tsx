@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/utils';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useCartStore } from '@/store/cart-store';
@@ -14,6 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
+  const [pulse, setPulse] = useState(0);
 
   const secondImage = product.images?.[1];
 
@@ -52,20 +55,25 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
 
-        <button
+        <motion.button
+          key={pulse}
           onClick={(e) => {
             e.preventDefault();
             toggleWishlist(product);
+            setPulse((p) => p + 1);
           }}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-black hover:scale-110 transition-transform"
+          initial={false}
+          animate={{ scale: pulse ? [1, 1.16, 1] : 1 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform"
         >
           <Heart
-            className="w-4 h-4"
+            className={cn('w-4 h-4 transition-colors', isWishlisted ? 'text-[#B3001B]' : 'text-black')}
             strokeWidth={1.5}
             fill={isWishlisted ? 'currentColor' : 'none'}
           />
-        </button>
+        </motion.button>
 
         <button
           onClick={(e) => {
