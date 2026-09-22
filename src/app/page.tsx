@@ -8,6 +8,7 @@ import { StatsSection } from '@/components/website/sections/stats-section';
 import { EditionsSection } from '@/components/website/sections/editions-section';
 import { ExpertSection } from '@/components/website/sections/expert-section';
 import { NewsletterSection } from '@/components/website/sections/newsletter-section';
+import { ReviewSection } from '@/components/website/reviews/review-section';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,7 @@ export default function HomePage() {
       <EditionsSection />
       <ExpertSection />
       <NewsletterSection />
+      <ReviewSection />
     </>
   );
 }

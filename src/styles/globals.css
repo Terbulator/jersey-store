@@ -454,4 +454,16 @@
     outline: 2px solid hsl(var(--hdr-red));
     outline-offset: 2px;
   }
+
+  /* Review cards — editorial, not rounded bubble */
+  .review-card {
+    background: hsl(var(--hdr-off-white));
+    color: hsl(var(--hdr-black));
+    border: 1px solid rgba(8, 8, 8, 0.1);
+    border-radius: 6px;
+    padding: 32px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+  }
 }

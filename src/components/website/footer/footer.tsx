@@ -1,15 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
+import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
 const COLUMNS = [
   {
     title: 'Shop',
     links: [
-      { label: 'Shop All', href: ROUTES.SHOP },
       { label: 'Football', href: ROUTES.FOOTBALL },
       { label: 'Cricket', href: ROUTES.CRICKET },
-      { label: 'Streetwear', href: ROUTES.STREETWEAR },
-      { label: 'Bundle & Save', href: '/bundle' },
+      { label: 'New Drops', href: ROUTES.SHOP },
+      { label: 'Master Edition', href: ROUTES.SHOP },
     ],
   },
   {
@@ -19,42 +22,67 @@ const COLUMNS = [
       { label: 'Shipping', href: '#' },
       { label: 'Returns', href: '#' },
       { label: 'Size Guide', href: '#' },
-      { label: 'FAQ', href: '#' },
     ],
   },
   {
-    title: 'House',
+    title: 'Follow',
     links: [
-      { label: 'About', href: '/about' },
-      { label: 'Culture', href: '/culture' },
-      { label: 'Account', href: ROUTES.ACCOUNT },
-      { label: 'Search', href: ROUTES.SEARCH },
-      { label: 'Wishlist', href: ROUTES.WISHLIST },
+      { label: 'Instagram', href: '#' },
+      { label: 'YouTube', href: '#' },
+    ],
+  },
+  {
+    title: 'About',
+    links: [
+      { label: 'Our Story', href: '/about' },
+      { label: 'FAQ', href: '#' },
     ],
   },
 ];
 
-const SOCIAL = ['Instagram', 'X', 'YouTube', 'TikTok'];
+const LEGAL = ['Privacy Policy', 'Terms', 'Shipping Policy', 'Refund Policy'];
 
 export function Footer() {
   return (
-    <footer className="footer">
-      <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12 py-16 sm:py-20">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
-          <div className="col-span-2">
-            <p className="headline text-3xl text-off-white">HEADERR.</p>
-            <p className="mt-4 text-sm text-off-white/50 max-w-[240px] leading-relaxed">
-              Premium football &amp; cricket jerseys for the culture that never stops.
-            </p>
+    <footer className="relative bg-black text-off-white overflow-hidden">
+      <div className="relative min-h-[72vh] flex flex-col">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-10%' }}
+          transition={{ duration: 1.2, ease: EASE_PREMIUM }}
+          className="flex-1 flex flex-col justify-end pt-24"
+        >
+          <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12">
+            <p className="eyebrow text-off-white/40 mb-6">Built for the Game. Built for the Street.</p>
           </div>
 
+          <div className="w-full select-none pointer-events-none">
+            <motion.h2
+              aria-hidden="true"
+              initial={{ opacity: 0.25, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-10%' }}
+              transition={{ duration: 1.4, ease: EASE_PREMIUM }}
+              className="font-display text-[22vw] leading-none text-center whitespace-nowrap text-[#A8A8A8] translate-x-[2%]"
+            >
+              HEADERR
+            </motion.h2>
+          </div>
+        </motion.div>
+
+        {/* Nav columns */}
+        <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 grid grid-cols-2 md:grid-cols-4 gap-10 pt-16 pb-12">
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="font-mono-meta text-[10px] text-off-white/40 mb-4">{col.title}</p>
-              <ul className="space-y-2.5">
+              <p className="font-mono-meta text-[10px] text-off-white/40 mb-5">{col.title}</p>
+              <ul className="space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="link">
+                    <Link
+                      href={link.href}
+                      className="text-[13px] text-off-white/70 hover:text-red transition-colors duration-200"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -62,33 +90,22 @@ export function Footer() {
               </ul>
             </div>
           ))}
-
-          <div>
-            <p className="font-mono-meta text-[10px] text-off-white/40 mb-4">Social</p>
-            <ul className="space-y-2.5">
-              {SOCIAL.map((s) => (
-                <li key={s}>
-                  <a href="#" className="link">
-                    {s}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
+      </div>
 
-        <div className="mt-16 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <p className="font-mono-meta text-[9px] text-off-white/30">
-            © 2026 HEADERR. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <span className="font-mono-meta text-[9px] text-off-white/30">
-              Free shipping over ₹999
-            </span>
-            <span className="font-mono-meta text-[9px] text-off-white/30">
-              30-day returns
-            </span>
-          </div>
+      {/* Legal row */}
+      <div className="border-t border-white/10">
+        <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <p className="font-mono-meta text-[10px] text-[#A8A8A8]">© 2026 HEADERR</p>
+          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            {LEGAL.map((item) => (
+              <li key={item}>
+                <a href="#" className="font-mono-meta text-[10px] text-[#A8A8A8] hover:text-red transition-colors duration-200">
+                  {item}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>
