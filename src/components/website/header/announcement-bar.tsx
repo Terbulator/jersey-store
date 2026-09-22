@@ -1,44 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-
-const MESSAGES = [
-  'PRE-BOOKING NOW OPEN — LIMITED STOCK',
-  'FREE SHIPPING ABOVE ₹999',
-  'NEW DROP LIVE',
-];
+import { motion } from 'framer-motion';
+import { fadeIn } from '@/components/motion/motion-variants';
 
 export function AnnouncementBar() {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % MESSAGES.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      className="bg-charcoal text-off-white text-[10px] tracking-[0.2em] uppercase text-center py-2 px-4 relative overflow-hidden h-8 flex items-center justify-center"
+      variants={fadeIn}
+      initial="hidden"
+      animate="visible"
+      className="announcement-bar w-full text-center"
     >
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={index}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3 }}
-          className="absolute"
-        >
-          {MESSAGES[index]}
-        </motion.span>
-      </AnimatePresence>
+      <span className="text-[10px] tracking-[0.2em] uppercase">FREE SHIPPING ON ORDERS OVER ₹999 — 30 DAY RETURNS — SECURE PAYMENT</span>
     </motion.div>
   );
 }

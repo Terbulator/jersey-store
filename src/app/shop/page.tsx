@@ -3,9 +3,16 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { PRODUCTS, CATEGORIES, EDITION_TYPES } from '@/data/products';
 import { ProductCard } from '@/components/website/product/product-card';
+import { CategoryMosaic } from '@/components/website/categories/category-mosaic';
+import { FeaturedDrop } from '@/components/website/hero/featured-drop';
+import { productGridStagger } from '@/components/motion/motion-variants';
+import { ROUTES } from '@/lib/utils';
+import { useScrollReveal } from '@/hooks/use-scroll-reveal';
+import { fadeUpSmall, clipReveal, EASE_PREMIUM } from '@/components/motion/motion-variants';
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
@@ -75,59 +82,83 @@ function ShopPageContent() {
 
   const activeFilterCount = [activeEdition, activeTeam, activeSize].filter(Boolean).length;
 
+  const { ref, isVisible } = useScrollReveal({ rootMargin: '-100px' });
+
   return (
-    <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Shop Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-charcoal uppercase">Shop</h1>
-          <p className="text-sm text-chrome mt-2 tracking-wide">
-            The HEADERR Collection — Football, Cricket, Streetwear.
+    <>
+      {/* Category Mosaic */}
+      <CategoryMosaic />
+
+      {/* Shop Header with Filters */}
+      <section ref={ref} className="py-16 sm:py-24 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto bg-navy">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.7, ease: EASE_PREMIUM }}
+          className="mb-12"
+        >
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-off-white uppercase">
+            THE FULL COLLECTION
+          </h1>
+          <p className="text-sm text-sage mt-2 tracking-wide max-w-lg">
+            Football, Cricket, Streetwear. Player Version, Master Edition, Special Edition.
           </p>
-        </div>
+        </motion.div>
 
         {/* Category Nav */}
-        <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar mb-6 pb-1">
-          {ALL_FILTER_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setActiveCategory(cat.id);
-              }}
-              className={cn(
-                'px-4 py-2 text-[11px] tracking-widest uppercase whitespace-nowrap border transition-all duration-200',
-                activeCategory === cat.id
-                  ? 'border-blood-red text-blood-red bg-blood-red/5'
-                  : 'border-charcoal/15 text-chrome hover:border-charcoal/40 hover:text-charcoal'
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ delay: 0.1, duration: 0.6, ease: EASE_PREMIUM }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar mb-6 pb-1">
+            {ALL_FILTER_CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setActiveCategory(cat.id);
+                }}
+                className={cn(
+                  'px-4 py-2 text-[11px] tracking-widest uppercase whitespace-nowrap border transition-all duration-200',
+                  activeCategory === cat.id
+                    ? 'border-gold text-gold bg-gold/10'
+                    : 'border-olive/20 text-sage hover:border-gold/40 hover:text-gold'
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Filter + Sort Bar */}
-        <div className="flex items-center justify-between mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ delay: 0.2, duration: 0.6, ease: EASE_PREMIUM }}
+          className="flex items-center justify-between mb-8"
+        >
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFilters(true)}
               className={cn(
                 'flex items-center gap-2 px-3 py-2 text-[11px] tracking-widest uppercase border transition-colors',
                 activeFilterCount > 0
-                  ? 'border-blood-red text-blood-red'
-                  : 'border-charcoal/15 text-chrome hover:border-charcoal/40'
+                  ? 'border-gold text-gold bg-gold/10'
+                  : 'border-olive/20 text-sage hover:border-gold/40'
               )}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Filters
               {activeFilterCount > 0 && (
-                <span className="w-4 h-4 flex items-center justify-center bg-blood-red text-off-white text-[9px] rounded-full">
+                <span className="w-4 h-4 flex items-center justify-center bg-gold text-navy text-[9px] rounded-full">
                   {activeFilterCount}
                 </span>
               )}
             </button>
             {activeFilterCount > 0 && (
-              <button onClick={clearFilters} className="text-[11px] text-blood-red tracking-wider hover:underline">
+              <button onClick={clearFilters} className="text-[11px] text-gold tracking-wider hover:underline">
                 Clear all
               </button>
             )}
@@ -136,7 +167,7 @@ function ShopPageContent() {
           <div className="relative">
             <button
               onClick={() => setShowSort(!showSort)}
-              className="flex items-center gap-2 px-3 py-2 text-[11px] tracking-widest uppercase border border-charcoal/15 text-chrome hover:border-charcoal/40 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-[11px] tracking-widest uppercase border border-olive/20 text-sage hover:border-gold/40 transition-colors"
             >
               {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
               <ChevronDown className={cn('w-3 h-3 transition-transform', showSort && 'rotate-180')} />
@@ -144,7 +175,7 @@ function ShopPageContent() {
             {showSort && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowSort(false)} />
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-charcoal/10 shadow-lg min-w-[180px]">
+                <div className="absolute right-0 top-full mt-1 z-50 bg-navy border border-olive/20 shadow-lg min-w-[180px]">
                   {SORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -155,8 +186,8 @@ function ShopPageContent() {
                       className={cn(
                         'block w-full text-left px-4 py-2.5 text-xs tracking-wider transition-colors',
                         sortBy === option.value
-                          ? 'text-blood-red bg-blood-red/5'
-                          : 'text-charcoal hover:bg-off-white'
+                          ? 'text-gold bg-gold/10'
+                          : 'text-sage hover:bg-olive/10'
                       )}
                     >
                       {option.label}
@@ -166,54 +197,99 @@ function ShopPageContent() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Product Count */}
-        <p className="text-xs text-chrome tracking-wider uppercase mb-4">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="text-xs text-sage/60 tracking-wider uppercase mb-8"
+        >
           {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
-        </p>
+        </motion.p>
+      </section>
 
-        {/* Product Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-sm text-chrome mb-4">No products found.</p>
+      {/* Product Grid */}
+      <section className="py-16 sm:py-24 lg:py-32 px-6 sm:px-8 lg:px-12 max-w-[1400px] mx-auto bg-navy">
+        <motion.div
+          variants={productGridStagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-100px' }}
+          className="product-grid"
+        >
+          {filteredProducts.map((product, i) => (
+            <motion.div
+              key={product.id}
+              custom={i}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                },
+              }}
+              initial="hidden"
+              animate="visible"
+            >
+              <ProductCard product={product} />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {filteredProducts.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE_PREMIUM }}
+            className="text-center py-16"
+          >
+            <p className="text-sage">No products match your filters.</p>
             <button
               onClick={clearFilters}
-              className="text-xs tracking-widest uppercase text-blood-red hover:underline"
+              className="mt-4 text-xs tracking-widest uppercase text-gold hover:underline"
             >
               Clear filters
             </button>
-          </div>
+          </motion.div>
         )}
-      </div>
+
+        {/* Featured Drop at bottom of shop */}
+        <div className="mt-20 lg:mt-32">
+          <FeaturedDrop />
+        </div>
+      </section>
 
       {/* Filter Drawer (Mobile + Desktop) */}
       {showFilters && (
         <div className="fixed inset-0 z-50">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/40 transition-opacity"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/40"
             onClick={() => setShowFilters(false)}
           />
-          {/* Panel */}
-          <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl overflow-y-auto animate-slide-in-right">
-            <div className="flex items-center justify-between p-4 border-b border-charcoal/10">
-              <h2 className="text-sm font-bold tracking-widest uppercase">Filters</h2>
-              <button onClick={() => setShowFilters(false)} className="p-1 hover:text-blood-red transition-colors">
-                <X className="w-5 h-5" />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-0 top-0 h-full w-full max-w-sm bg-navy shadow-xl overflow-y-auto"
+          >
+            <div className="flex items-center justify-between p-4 border-b border-olive/10">
+              <h2 className="text-sm font-bold tracking-widest uppercase text-off-white">Filters</h2>
+              <button onClick={() => setShowFilters(false)} className="p-1 text-sage hover:text-gold transition-colors">
+                <X className="w-5 h-5" strokeWidth={1.5} />
               </button>
             </div>
 
             <div className="p-4 space-y-6">
               {/* Edition */}
               <div>
-                <h3 className="text-[11px] tracking-widest uppercase text-chrome mb-3">Edition</h3>
+                <h3 className="text-[11px] tracking-widest uppercase text-gold mb-3">Edition</h3>
                 <div className="flex flex-wrap gap-2">
                   {EDITION_TYPES.map((ed) => (
                     <button
@@ -225,8 +301,8 @@ function ShopPageContent() {
                       className={cn(
                         'px-3 py-1.5 text-[11px] tracking-wider border transition-colors',
                         activeEdition === ed.id
-                          ? 'border-blood-red text-blood-red bg-blood-red/5'
-                          : 'border-charcoal/15 text-chrome hover:border-charcoal/40'
+                          ? 'border-gold text-gold bg-gold/10'
+                          : 'border-olive/20 text-sage hover:border-gold/40'
                       )}
                     >
                       {ed.icon} {ed.name}
@@ -237,7 +313,7 @@ function ShopPageContent() {
 
               {/* Team */}
               <div>
-                <h3 className="text-[11px] tracking-widest uppercase text-chrome mb-3">Team</h3>
+                <h3 className="text-[11px] tracking-widest uppercase text-gold mb-3">Team</h3>
                 <div className="flex flex-wrap gap-2">
                   {TEAMS.map((team) => (
                     <button
@@ -249,8 +325,8 @@ function ShopPageContent() {
                       className={cn(
                         'px-3 py-1.5 text-[11px] tracking-wider border transition-colors',
                         activeTeam === team
-                          ? 'border-blood-red text-blood-red bg-blood-red/5'
-                          : 'border-charcoal/15 text-chrome hover:border-charcoal/40'
+                          ? 'border-gold text-gold bg-gold/10'
+                          : 'border-olive/20 text-sage hover:border-gold/40'
                       )}
                     >
                       {team}
@@ -261,7 +337,7 @@ function ShopPageContent() {
 
               {/* Size */}
               <div>
-                <h3 className="text-[11px] tracking-widest uppercase text-chrome mb-3">Size</h3>
+                <h3 className="text-[11px] tracking-widest uppercase text-gold mb-3">Size</h3>
                 <div className="flex gap-2">
                   {SIZES.map((size) => (
                     <button
@@ -273,8 +349,8 @@ function ShopPageContent() {
                       className={cn(
                         'w-10 h-10 text-[11px] tracking-wider border transition-colors',
                         activeSize === size
-                          ? 'border-blood-red bg-blood-red text-off-white'
-                          : 'border-charcoal/20 text-charcoal hover:border-charcoal'
+                          ? 'border-gold bg-gold text-navy'
+                          : 'border-olive/20 text-sage hover:border-gold/40'
                       )}
                     >
                       {size}
@@ -284,19 +360,18 @@ function ShopPageContent() {
               </div>
             </div>
 
-            {/* Apply (mobile UX) */}
-            <div className="p-4 border-t border-charcoal/10">
+            <div className="p-4 border-t border-olive/10">
               <button
                 onClick={() => setShowFilters(false)}
-                className="w-full py-3 bg-blood-red text-off-white text-[11px] tracking-widest uppercase hover:bg-charcoal transition-colors"
+                className="w-full py-3 bg-gold text-navy text-[11px] tracking-widest uppercase hover:bg-bronze transition-colors"
               >
                 Show {filteredProducts.length} Results
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
-    </section>
+    </>
   );
 }
 

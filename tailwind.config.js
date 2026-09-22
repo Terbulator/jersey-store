@@ -44,24 +44,24 @@ module.exports = {
           foreground: 'hsl(var(--card-foreground))',
         },
         // HEADERR palette - primary hierarchy
-        navy: '#05192F',
-        deep_blue: '#000E39',
-        olive: '#50584F',
+        navy: 'hsl(var(--navy))',
+        deep_blue: 'hsl(var(--deep-blue))',
+        olive: 'hsl(var(--olive))',
         // HEADERR palette - secondary
-        sage: '#9BA161',
-        green: '#697B53',
+        sage: 'hsl(var(--sage))',
+        green: 'hsl(var(--green))',
         // HEADERR palette - accent
-        gold: '#A59660',
-        bronze: '#8C7A44',
-        amber: '#C68E1D',
+        gold: 'hsl(var(--gold))',
+        bronze: 'hsl(var(--bronze))',
+        amber: 'hsl(var(--amber))',
         // HIGH-IMPACT ACCENT - used very selectively
-        red: '#AC1A07',
+        red: 'hsl(var(--red))',
         // Legacy/compat
-        blood_red: '#AC1A07',
+        blood_red: 'hsl(var(--red))',
         // UI neutrals
-        off_white: '#F7F5F0',
-        charcoal: '#333333',
-        chrome: '#666666',
+        off_white: 'hsl(var(--off-white))',
+        charcoal: 'hsl(var(--charcoal))',
+        chrome: 'hsl(var(--chrome))',
       },
       fontFamily: {
         display: ['Space Grotesk', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Heart, Minus, Plus, ChevronDown, ChevronLeft, ChevronRight, Truck, RotateCcw, Shield, Headphones, X } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { PRODUCTS } from '@/data/products';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { ProductCard } from '@/components/website/product/product-card';
-import type { Product } from '@/data/products';
+import { useScrollReveal } from '@/hooks/use-scroll-reveal';
+import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
 interface ProductPageProps {
   params: { slug: string };
@@ -25,17 +27,28 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product?.id || ''));
 
+  const { ref, isVisible } = useScrollReveal<HTMLDivElement>({ rootMargin: '-100px' });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 120);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!product) {
     return (
-      <section className="py-24 px-4 text-center">
-        <h2 className="text-2xl font-bold text-charcoal mb-4">Product not found</h2>
-        <Link href="/shop" className="text-blood-red text-xs tracking-widest uppercase hover:underline">
+      <section className="py-24 px-4 text-center bg-navy">
+        <h2 className="text-2xl font-bold text-off-white mb-4">Product not found</h2>
+        <Link href="/shop" className="text-gold text-xs tracking-widest uppercase hover:text-sage transition-colors underline">
           Back to Shop
         </Link>
       </section>
@@ -80,25 +93,35 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   return (
     <>
-      <section className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8 bg-navy">
+        <div className="max-w-[1400px] mx-auto">
           {/* Breadcrumb */}
-          <nav className="text-[11px] tracking-widest uppercase text-chrome mb-6 sm:mb-8">
-            <Link href="/" className="hover:text-blood-red transition-colors">Home</Link>
+          <motion.nav
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE_PREMIUM }}
+            className="text-[11px] tracking-widest uppercase text-sage/60 mb-6 sm:mb-8"
+          >
+            <Link href="/" className="hover:text-gold transition-colors">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/shop" className="hover:text-blood-red transition-colors">Shop</Link>
+            <Link href="/shop" className="hover:text-gold transition-colors">Shop</Link>
             <span className="mx-2">/</span>
-            <Link href={`/shop?category=${product.category}`} className="hover:text-blood-red transition-colors">{product.category}</Link>
+            <Link href={`/shop?category=${product.category}`} className="hover:text-gold transition-colors">{product.category}</Link>
             <span className="mx-2">/</span>
-            <span className="text-charcoal">{product.name}</span>
-          </nav>
+            <span className="text-off-white">{product.name}</span>
+          </motion.nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
             {/* Gallery */}
-            <div>
+            <motion.div
+              ref={ref}
+              initial={{ opacity: 0, y: 24 }}
+              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+              transition={{ duration: 0.7, ease: EASE_PREMIUM }}
+            >
               {/* Main Image */}
               <div
-                className="relative aspect-[3/4] bg-white border border-charcoal/5 overflow-hidden cursor-zoom-in mb-3"
+                className="relative aspect-[3/4] bg-navy-deep border border-gold/15 overflow-hidden cursor-zoom-in rounded-sm mb-3"
                 onClick={() => {
                   setViewerIndex(currentImage);
                   setShowImageViewer(true);
@@ -107,20 +130,18 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <img
                   src={images[currentImage]}
                   alt={product.imageAlt || product.name}
-                  className="w-full h-full object-cover transition-opacity duration-500"
+                  className="w-full h-full object-cover transition-opacity duration-700"
                 />
                 {product.badge && (
-                  <span className="absolute top-4 left-4 px-3 py-1 bg-blood-red text-off-white text-[10px] tracking-widest uppercase">
+                  <span className="absolute top-4 left-4 px-3 py-1 bg-gold text-navy-deep text-[10px] tracking-widest uppercase font-medium">
                     {product.badge}
                   </span>
                 )}
-                {/* Image counter */}
                 {images.length > 1 && (
-                  <div className="absolute bottom-4 right-4 px-2.5 py-1 bg-charcoal/70 text-off-white text-[10px] tracking-wider">
+                  <div className="absolute bottom-4 right-4 px-2.5 py-1 bg-navy-deep/80 text-sage text-[10px] tracking-wider border border-gold/20">
                     {currentImage + 1} / {images.length}
                   </div>
                 )}
-                {/* Nav arrows */}
                 {images.length > 1 && (
                   <>
                     <button
@@ -128,7 +149,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                         e.stopPropagation();
                         setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                       }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-navy-deep/60 backdrop-blur-md border border-gold/20 flex items-center justify-center text-sage hover:text-gold hover:border-gold/50 transition-colors rounded-sm"
                       aria-label="Previous image"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -138,7 +159,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                         e.stopPropagation();
                         setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-navy-deep/60 backdrop-blur-md border border-gold/20 flex items-center justify-center text-sage hover:text-gold hover:border-gold/50 transition-colors rounded-sm"
                       aria-label="Next image"
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -149,14 +170,14 @@ export default function ProductPage({ params }: ProductPageProps) {
 
               {/* Thumbnails */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
                   {images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setCurrentImage(i)}
                       className={cn(
-                        'flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 border-2 transition-all duration-200',
-                        currentImage === i ? 'border-blood-red opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                        'flex-shrink-0 w-16 h-20 sm:w-20 sm:h-24 border transition-all duration-200 rounded-sm overflow-hidden',
+                        currentImage === i ? 'border-gold opacity-100' : 'border-gold/15 opacity-50 hover:opacity-90'
                       )}
                     >
                       <img src={img} alt={`${product.name} view ${i + 1}`} className="w-full h-full object-cover" />
@@ -164,23 +185,23 @@ export default function ProductPage({ params }: ProductPageProps) {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Product Info (sticky on desktop) */}
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <p className="text-blood-red text-[10px] tracking-[0.3em] uppercase mb-2">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <p className="text-gold text-[10px] tracking-[0.3em] uppercase mb-2">
                 {product.edition === 'player' ? 'Player Version' : product.edition === 'master' ? 'Master Edition' : 'Special Edition'}
               </p>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-charcoal mb-1">{product.name}</h1>
-              <p className="text-xs text-chrome mb-4">{product.team} · {product.season}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-off-white mb-1">{product.name}</h1>
+              <p className="text-xs text-sage/70 mb-4">{product.team} · {product.season}</p>
 
               {/* Price */}
               <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-2xl font-bold text-charcoal">{formatPrice(product.basePrice)}</span>
+                <span className="text-2xl font-bold text-gold">{formatPrice(product.basePrice)}</span>
                 {product.comparePrice && (
                   <>
-                    <span className="text-sm text-chrome line-through">{formatPrice(product.comparePrice)}</span>
-                    <span className="text-[11px] text-blood-red font-medium tracking-wider">
+                    <span className="text-sm text-sage/50 line-through">{formatPrice(product.comparePrice)}</span>
+                    <span className="text-[11px] text-gold font-medium tracking-wider">
                       -{Math.round(((product.comparePrice - product.basePrice) / product.comparePrice) * 100)}%
                     </span>
                   </>
@@ -190,12 +211,12 @@ export default function ProductPage({ params }: ProductPageProps) {
               {/* Size Selector */}
               <div className="mb-5">
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-[11px] tracking-widest uppercase text-charcoal font-medium">
+                  <span className="text-[11px] tracking-widest uppercase text-sage font-medium">
                     Select Size {selectedSize && `- ${selectedSize}`}
                   </span>
                   <button
                     onClick={() => setShowSizeGuide(true)}
-                    className="text-[11px] text-blood-red hover:underline tracking-wider"
+                    className="text-[11px] text-gold hover:text-sage transition-colors tracking-wider"
                   >
                     Size Guide
                   </button>
@@ -206,10 +227,10 @@ export default function ProductPage({ params }: ProductPageProps) {
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={cn(
-                        'w-12 h-12 text-[11px] tracking-wider border transition-all duration-200',
+                        'w-12 h-12 text-[11px] tracking-wider border transition-all duration-200 rounded-sm',
                         selectedSize === size
-                          ? 'border-blood-red bg-blood-red text-off-white'
-                          : 'border-charcoal/20 bg-white text-charcoal hover:border-charcoal'
+                          ? 'border-gold bg-gold text-navy-deep font-semibold'
+                          : 'border-gold/20 bg-navy-deep/40 text-sage hover:border-gold/60 hover:text-off-white'
                       )}
                     >
                       {size}
@@ -217,26 +238,26 @@ export default function ProductPage({ params }: ProductPageProps) {
                   ))}
                 </div>
                 {!selectedSize && (
-                  <p className="text-[11px] text-chrome/60 mt-2">Please select a size</p>
+                  <p className="text-[11px] text-sage/50 mt-2">Please select a size</p>
                 )}
               </div>
 
               {/* Quantity */}
               <div className="mb-5">
-                <span className="text-[11px] tracking-widest uppercase text-charcoal font-medium block mb-2.5">Quantity</span>
-                <div className="inline-flex items-center border border-charcoal/20">
+                <span className="text-[11px] tracking-widest uppercase text-sage font-medium block mb-2.5">Quantity</span>
+                <div className="inline-flex items-center border border-gold/20 rounded-sm">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
-                    className="w-10 h-10 flex items-center justify-center text-charcoal hover:bg-off-white disabled:opacity-30 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center text-sage hover:text-gold disabled:opacity-30 transition-colors"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-3 h-3" />
                   </button>
-                  <span className="w-10 h-10 flex items-center justify-center text-sm font-medium">{quantity}</span>
+                  <span className="w-10 h-10 flex items-center justify-center text-sm font-medium text-off-white">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-charcoal hover:bg-off-white transition-colors"
+                    className="w-10 h-10 flex items-center justify-center text-sage hover:text-gold transition-colors"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-3 h-3" />
@@ -250,12 +271,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                   onClick={handleAddToCart}
                   disabled={!selectedSize || addedToCart}
                   className={cn(
-                    'flex-1 py-4 text-[11px] tracking-widest uppercase font-medium transition-all duration-300',
+                    'flex-1 py-4 text-[11px] tracking-widest uppercase font-semibold transition-all duration-300 rounded-sm',
                     addedToCart
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-sage text-navy-deep'
                       : selectedSize
-                      ? 'bg-blood-red text-off-white hover:bg-charcoal'
-                      : 'bg-charcoal/10 text-charcoal/40 cursor-not-allowed'
+                      ? 'bg-gold text-navy-deep hover:bg-sage'
+                      : 'bg-white/5 text-sage/40 cursor-not-allowed'
                   )}
                 >
                   {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
@@ -263,10 +284,10 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <button
                   onClick={() => toggleWishlist(product)}
                   className={cn(
-                    'w-12 h-12 flex items-center justify-center border transition-colors',
+                    'w-12 h-12 flex items-center justify-center border rounded-sm transition-colors',
                     isWishlisted
-                      ? 'border-blood-red bg-blood-red/5 text-blood-red'
-                      : 'border-charcoal/20 text-charcoal hover:border-blood-red'
+                      ? 'border-gold bg-gold/10 text-gold'
+                      : 'border-gold/20 text-sage hover:border-gold hover:text-gold'
                   )}
                   aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
@@ -277,14 +298,14 @@ export default function ProductPage({ params }: ProductPageProps) {
               {selectedSize && (
                 <button
                   onClick={handleBuyNow}
-                  className="w-full py-4 border border-charcoal text-[11px] tracking-widest uppercase font-medium text-charcoal hover:bg-charcoal hover:text-off-white transition-colors mb-6"
+                  className="w-full py-4 border border-gold/30 text-[11px] tracking-widest uppercase font-medium text-sage hover:bg-gold hover:text-navy-deep transition-all duration-300 rounded-sm mb-6"
                 >
                   Buy Now
                 </button>
               )}
 
               {/* Trust badges */}
-              <div className="grid grid-cols-2 gap-3 py-5 border-y border-charcoal/10 mb-6">
+              <div className="grid grid-cols-2 gap-3 py-5 border-y border-gold/10 mb-6">
                 {[
                   { icon: Truck, text: 'Free shipping above ₹999' },
                   { icon: RotateCcw, text: '30-day easy returns' },
@@ -292,24 +313,24 @@ export default function ProductPage({ params }: ProductPageProps) {
                   { icon: Headphones, text: 'Customer support' },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-blood-red flex-shrink-0" />
-                    <span className="text-[10px] text-chrome tracking-wider">{text}</span>
+                    <Icon className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                    <span className="text-[10px] text-sage/60 tracking-wider">{text}</span>
                   </div>
                 ))}
               </div>
 
               {/* Accordion */}
-              <div className="divide-y divide-charcoal/10">
+              <div className="divide-y divide-gold/10">
                 {detailSections.map((section) => (
                   <div key={section.id}>
                     <button
                       onClick={() => toggleAccordion(section.id)}
                       className="w-full flex items-center justify-between py-4 text-left"
                     >
-                      <span className="text-[11px] tracking-widest uppercase font-medium text-charcoal">{section.title}</span>
+                      <span className="text-[11px] tracking-widest uppercase font-medium text-sage">{section.title}</span>
                       <ChevronDown
                         className={cn(
-                          'w-4 h-4 text-chrome transition-transform duration-200',
+                          'w-4 h-4 text-gold/60 transition-transform duration-200',
                           openAccordion === section.id && 'rotate-180'
                         )}
                       />
@@ -320,7 +341,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                         openAccordion === section.id ? 'max-h-40 pb-4' : 'max-h-0'
                       )}
                     >
-                      <p className="text-xs text-chrome/80 leading-relaxed">{section.content}</p>
+                      <p className="text-xs text-sage/60 leading-relaxed">{section.content}</p>
                     </div>
                   </div>
                 ))}
@@ -330,8 +351,12 @@ export default function ProductPage({ params }: ProductPageProps) {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div className="mt-16 sm:mt-24 pt-8 border-t border-charcoal/10">
-              <h2 className="text-[11px] tracking-widest uppercase text-blood-red mb-6">You May Also Like</h2>
+            <div className="mt-16 sm:mt-24 pt-8 border-t border-gold/10">
+              <div className="flex items-center gap-4 mb-6">
+                <span className="w-8 h-px bg-gold/40" />
+                <h2 className="text-[11px] tracking-widest uppercase text-gold">You May Also Like</h2>
+                <span className="flex-1 h-px bg-gold/10" />
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
                 {relatedProducts.map((p) => (
                   <ProductCard key={p.id} product={p} />
@@ -343,24 +368,29 @@ export default function ProductPage({ params }: ProductPageProps) {
       </section>
 
       {/* Mobile Sticky Purchase Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-charcoal/10 px-4 py-3 z-30">
+      <div
+        className={cn(
+          'lg:hidden fixed bottom-0 left-0 right-0 bg-navy-deep border-t border-gold/20 px-4 py-3 z-30 transition-transform duration-300',
+          isScrolled ? 'translate-y-0' : 'translate-y-full'
+        )}
+      >
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <p className="text-xs font-bold text-charcoal">{formatPrice(product.basePrice * quantity)}</p>
+            <p className="text-xs font-bold text-gold">{formatPrice(product.basePrice * quantity)}</p>
             {product.comparePrice && (
-              <p className="text-[10px] text-chrome line-through">{formatPrice(product.comparePrice * quantity)}</p>
+              <p className="text-[10px] text-sage/50 line-through">{formatPrice(product.comparePrice * quantity)}</p>
             )}
           </div>
           <button
             onClick={handleAddToCart}
             disabled={!selectedSize || addedToCart}
             className={cn(
-              'flex-1 py-3 text-[11px] tracking-widest uppercase font-medium transition-colors',
+              'flex-1 py-3 text-[11px] tracking-widest uppercase font-semibold transition-colors rounded-sm',
               addedToCart
-                ? 'bg-green-600 text-white'
+                ? 'bg-sage text-navy-deep'
                 : selectedSize
-                ? 'bg-blood-red text-off-white'
-                : 'bg-charcoal/10 text-charcoal/40'
+                ? 'bg-gold text-navy-deep'
+                : 'bg-white/5 text-sage/40'
             )}
           >
             {addedToCart ? '✓ Added' : 'Add to Cart'}
@@ -371,22 +401,32 @@ export default function ProductPage({ params }: ProductPageProps) {
       {/* Size Guide Modal */}
       {showSizeGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowSizeGuide(false)} />
-          <div className="relative bg-white max-w-md w-full max-h-[80vh] overflow-y-auto p-6">
+          <motion.div
+            className="absolute inset-0 bg-black/70"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => setShowSizeGuide(false)}
+          />
+          <motion.div
+            className="relative bg-navy-deep border border-gold/20 max-w-md w-full max-h-[80vh] overflow-y-auto p-6 rounded-sm"
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, ease: EASE_PREMIUM }}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold tracking-widest uppercase">Size Guide</h3>
-              <button onClick={() => setShowSizeGuide(false)} className="text-chrome hover:text-charcoal">
+              <h3 className="text-sm font-bold tracking-widest uppercase text-off-white">Size Guide</h3>
+              <button onClick={() => setShowSizeGuide(false)} className="text-sage/60 hover:text-gold transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-chrome mb-4">All measurements are in centimeters (cm).</p>
+            <p className="text-xs text-sage/60 mb-4">All measurements are in centimeters (cm).</p>
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-charcoal/10">
-                  <th className="text-left py-2 font-medium text-charcoal">Size</th>
-                  <th className="text-left py-2 font-medium text-charcoal">Chest</th>
-                  <th className="text-left py-2 font-medium text-charcoal">Length</th>
-                  <th className="text-left py-2 font-medium text-charcoal">Shoulder</th>
+                <tr className="border-b border-gold/15">
+                  <th className="text-left py-2 font-medium text-off-white">Size</th>
+                  <th className="text-left py-2 font-medium text-off-white">Chest</th>
+                  <th className="text-left py-2 font-medium text-off-white">Length</th>
+                  <th className="text-left py-2 font-medium text-off-white">Shoulder</th>
                 </tr>
               </thead>
               <tbody>
@@ -397,17 +437,17 @@ export default function ProductPage({ params }: ProductPageProps) {
                   { size: 'XL', chest: '114', length: '74', shoulder: '50' },
                   { size: 'XXL', chest: '120', length: '76', shoulder: '52' },
                 ].map((row) => (
-                  <tr key={row.size} className="border-b border-charcoal/5">
-                    <td className="py-2 font-medium text-charcoal">{row.size}</td>
-                    <td className="py-2 text-chrome">{row.chest}</td>
-                    <td className="py-2 text-chrome">{row.length}</td>
-                    <td className="py-2 text-chrome">{row.shoulder}</td>
+                  <tr key={row.size} className="border-b border-gold/10">
+                    <td className="py-2 font-medium text-sage">{row.size}</td>
+                    <td className="py-2 text-sage/60">{row.chest}</td>
+                    <td className="py-2 text-sage/60">{row.length}</td>
+                    <td className="py-2 text-sage/60">{row.shoulder}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="text-[10px] text-chrome/60 mt-3">Measurements may vary by ±2cm.</p>
-          </div>
+            <p className="text-[10px] text-sage/40 mt-3">Measurements may vary by ±2cm.</p>
+          </motion.div>
         </div>
       )}
 
@@ -416,7 +456,7 @@ export default function ProductPage({ params }: ProductPageProps) {
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
           <button
             onClick={() => setShowImageViewer(false)}
-            className="absolute top-4 right-4 text-white/70 hover:text-white z-10"
+            className="absolute top-4 right-4 text-sage/60 hover:text-gold z-10 transition-colors"
             aria-label="Close viewer"
           >
             <X className="w-6 h-6" />
@@ -425,14 +465,14 @@ export default function ProductPage({ params }: ProductPageProps) {
             <>
               <button
                 onClick={() => setViewerIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gold/10 backdrop-blur-sm border border-gold/20 flex items-center justify-center text-sage hover:text-gold transition-colors rounded-sm"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewerIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gold/10 backdrop-blur-sm border border-gold/20 flex items-center justify-center text-sage hover:text-gold transition-colors rounded-sm"
                 aria-label="Next image"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -444,7 +484,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             alt={product.name}
             className="max-w-[90vw] max-h-[85vh] object-contain"
           />
-          <div className="absolute bottom-6 text-white/50 text-xs tracking-wider">
+          <div className="absolute bottom-6 text-gold/60 text-xs tracking-wider">
             {viewerIndex + 1} / {images.length}
           </div>
         </div>

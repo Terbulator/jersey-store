@@ -1,17 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
+import { imageReveal, heroTextStagger, clipReveal, EASE_PREMIUM, DURATION } from '@/components/motion/motion-variants';
 
 export function Hero() {
+  const shouldReduceMotion = useReducedMotion();
+
+  const imageDuration = shouldReduceMotion ? 0.01 : DURATION.hero;
+  const textDuration = shouldReduceMotion ? 0.01 : 0.7;
+
   return (
     <section className="relative h-[100svh] min-h-[600px] max-h-[900px] overflow-hidden">
       {/* Background image - using real HEADERR campaign photography */}
       <motion.div
-        initial={{ opacity: 0, scale: 1.04 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.4, ease: [0.25, 0.1, 0.25, 1] }}
+        variants={imageReveal}
+        initial="hidden"
+        animate="visible"
+        style={{
+          transitionDuration: `${imageDuration}s`,
+          transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        }}
         className="absolute inset-0"
       >
         <img
@@ -30,31 +40,37 @@ export function Hero() {
           <div className="max-w-2xl">
             {/* Label */}
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              variants={heroTextStagger}
+              custom={0}
+              initial="hidden"
+              animate="visible"
               className="text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-off-white/70 mb-4 sm:mb-5 font-medium"
             >
               2026 Collection
             </motion.p>
 
-            {/* Headline */}
+            {/* Headline with clip reveal */}
             <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              variants={clipReveal}
+              initial="hidden"
+              animate="visible"
+              style={{
+                transitionDelay: shouldReduceMotion ? '0ms' : '550ms',
+                transitionDuration: shouldReduceMotion ? '0.01s' : '0.8s',
+              }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-off-white leading-[0.95]"
             >
-              WEAR
+              <span>WEAR</span>
               <br />
-              THE GAME.
+              <span>THE GAME.</span>
             </motion.h1>
 
             {/* Single supporting line */}
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              variants={heroTextStagger}
+              custom={1}
+              initial="hidden"
+              animate="visible"
               className="text-sm sm:text-base text-off-white/60 mt-5 sm:mt-6 max-w-md leading-relaxed"
             >
               Premium football & cricket jerseys built for the culture.
@@ -62,14 +78,15 @@ export function Hero() {
 
             {/* CTA */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+              variants={heroTextStagger}
+              custom={2}
+              initial="hidden"
+              animate="visible"
               className="mt-8 sm:mt-10"
             >
               <Link
                 href={ROUTES.SHOP}
-                className="inline-flex items-center gap-3 bg-off-white text-charcoal px-7 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-blood-red hover:text-off-white transition-all duration-500 group"
+                className="inline-flex items-center gap-3 bg-off-white text-navy px-7 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-gold hover:text-navy transition-all duration-500 group"
               >
                 Shop Collection
                 <svg

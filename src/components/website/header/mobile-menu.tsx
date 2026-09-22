@@ -1,294 +1,202 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { X, ArrowRight, User, Heart, ShoppingBag, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MENUS, NAV_Items, type MenuId } from '@/data/menu-data';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { X, ChevronDown, ChevronUp, ShoppingBag, Heart, User, Search } from 'lucide-react';
+import { NAV_Items, MENUS, type MenuId } from '@/data/menu-data';
+import { useCartStore } from '@/store/cart-store';
 import { ROUTES } from '@/lib/utils';
+import { mobileDrawer, accordionItem, fadeUpSmall } from '@/components/motion/motion-variants';
 
-interface MobileMenuProps {
-  open: boolean;
-  onClose: () => void;
-}
+export function MobileMenu({ onClose }: { onClose: () => void }) {
+  const [openSections, setOpenSections] = useState<Set<MenuId>>(new Set());
+  const [searchOpen, setSearchOpen] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const itemCount = useCartStore((s) => s.itemCount());
 
-const ACCOUNT_ITEMS = [
-  { label: 'Account', href: ROUTES.ACCOUNT, icon: User },
-  { label: 'Wishlist', href: ROUTES.WISHLIST, icon: Heart },
-  { label: 'Orders', href: ROUTES.ACCOUNT + '/orders', icon: ShoppingBag },
-];
-
-const EASE = [0.25, 0.1, 0.25, 1] as const;
-
-export function MobileMenu({ open, onClose }: MobileMenuProps) {
-  const [expandedSection, setExpandedSection] = useState<MenuId>(null);
-  const [headerImage, setHeaderImage] = useState<string>('');
-  const [headerTagline, setHeaderTagline] = useState<string>('');
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-      setExpandedSection(null);
-      const shopMenu = MENUS.shop;
-      if (shopMenu) {
-        setHeaderImage(shopMenu.imageCards[0]?.image || shopMenu.imageCards[0]?.image);
-        setHeaderTagline(shopMenu.tagline);
+  const toggleSection = (id: MenuId) => {
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
       }
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (expandedSection && MENUS[expandedSection]) {
-      const menu = MENUS[expandedSection];
-      setHeaderImage(menu.imageCards[0]?.image || menu.imageCards[0]?.image);
-      setHeaderTagline(menu.tagline);
-    }
-  }, [expandedSection]);
-
-  const handleSectionTap = (id: MenuId) => {
-    if (id && MENUS[id]?.sections.length) {
-      setExpandedSection(id);
-    } else if (id) {
-      window.location.href = NAV_Items.find(n => n.id === id)?.href || '/';
-    }
-  };
-
-  const toggleExpand = (id: MenuId) => {
-    setExpandedSection((prev) => (prev === id ? null : id));
+      return next;
+    });
   };
 
   return (
     <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 bg-black/40"
+      <motion.div
+        variants={mobileDrawer}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="fixed top-0 right-0 h-full w-full max-w-sm bg-navy z-50 shadow-2xl flex flex-col"
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-olive/20">
+          <span className="text-lg font-bold tracking-[0.25em] uppercase text-off-white">MENU</span>
+          <motion.button
             onClick={onClose}
-          />
-
-          {/* Drawer */}
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ duration: 0.45, ease: EASE }}
-            className="absolute inset-0 bg-off-white flex flex-col"
+            className="p-2 text-sage hover:text-gold transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {/* Header with dynamic image */}
-            <div className="relative h-48 lg:h-64 flex-shrink-0 overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={expandedSection || 'default'}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.5, ease: EASE }}
-                  className="absolute inset-0"
-                >
-                  <img
-                    src={headerImage || MENUS.shop.imageCards[0]?.image}
-                    alt={headerTagline || MENUS.shop.tagline}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <p className="text-white/40 text-[10px] tracking-[0.3em] uppercase font-medium mb-1">
-                      {headerTagline || MENUS.shop.tagline}
-                    </p>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Drawer header */}
-            <div className="flex items-center justify-between px-6 h-14 border-b border-charcoal/8">
-              <span className="text-xs tracking-[0.2em] uppercase font-medium">Menu</span>
-              <button onClick={onClose} aria-label="Close menu" className="p-2 -mr-2">
-                <X className="w-5 h-5" strokeWidth={1.5} />
-              </button>
-            </div>
-
-            <nav className="flex-1 overflow-y-auto px-6 py-6">
-              <ul className="space-y-0 mb-8">
-                {NAV_Items.map((item, i) => {
-                  const menu = MENUS[item.id];
-                  const isExpanded = expandedSection === item.id;
-                  return (
-                    <motion.li
-                      key={item.id}
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.08 + i * 0.04, duration: 0.35 }}
-                      className="border-b border-charcoal/6"
-                    >
-                      {/* Section header row */}
-                      <div className="flex items-center justify-between">
-                        <button
-                          onClick={() => handleSectionTap(item.id)}
-                          className="flex-1 py-4 text-left group"
-                          aria-label={`Open ${item.label} navigation`}
-                        >
-                          <span className="text-xl tracking-wider uppercase text-charcoal group-hover:text-blood-red transition-colors duration-300">
-                            {item.label}
-                          </span>
-                        </button>
-                        {menu?.sections.length && (
-                          <button
-                            onClick={() => toggleExpand(item.id)}
-                            className="p-2 -mr-2 text-chrome hover:text-blood-red transition-colors duration-200"
-                            aria-label={`Expand ${item.label}`}
-                            aria-expanded={isExpanded}
-                          >
-                            <motion.span
-                              animate={{ rotate: isExpanded ? 45 : 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="block"
-                            >
-                              <ChevronDown className="w-4 h-4" strokeWidth={1.5} />
-                            </motion.span>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Expandable sub-links */}
-                      <AnimatePresence>
-                        {isExpanded && menu && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.35, ease: EASE }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pb-4 pl-1 space-y-0">
-                              {menu.sections.map((section) => (
-                                <div key={section.title} className="mb-4">
-                                  <p className="text-[9px] tracking-[0.2em] uppercase text-chrome mb-2 font-medium">
-                                    {section.title}
-                                  </p>
-                                  {section.items.map((link) => (
-                                    <Link
-                                      key={link.label}
-                                      href={link.href}
-                                      onClick={onClose}
-                                      className="block py-2 text-sm text-charcoal/60 hover:text-blood-red transition-colors duration-200"
-                                    >
-                                      {link.label}
-                                    </Link>
-                                  ))}
-                                </div>
-                              ))}
-                              {/* Image cards in mobile */}
-                              <div className="grid grid-cols-1 gap-4 pt-2">
-                                {menu.imageCards.map((card, cIdx) => (
-                                  <motion.div
-                                    key={card.title}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -6 }}
-                                    transition={{ delay: cIdx * 0.04, duration: 0.3, ease: EASE }}
-                                    className="relative overflow-hidden group cursor-pointer rounded-lg"
-                                  >
-                                    <Link
-                                      href={card.cta.href}
-                                      className="block h-[160px] sm:h-[180px]"
-                                    >
-                                      <img
-                                        src={card.image}
-                                        alt={card.imageAlt}
-                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                                        loading="lazy"
-                                      />
-                                    </Link>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-400" />
-                                    <div className="absolute bottom-0 left-0 right-0 p-4">
-                                      <p className="text-white/50 text-[8px] tracking-[0.25em] uppercase font-medium mb-1">
-                                        {card.eyebrow}
-                                      </p>
-                                      <p className="text-white font-semibold text-[13px] sm:text-[14px] leading-tight mb-2">
-                                        {card.title}
-                                      </p>
-                                      <Link
-                                        href={card.cta.href}
-                                        className="inline-flex items-center gap-1.5 text-off-white text-[10px] tracking-[0.15em] uppercase font-medium hover:gap-2.5 transition-all duration-200"
-                                      >
-                                        {card.cta.label}
-                                      </Link>
-                                    </div>
-                                  </motion.div>
-                                ))}
-                              </div>
-                              <button
-                                onClick={() => {
-                                  const navItem = NAV_Items.find(n => n.id === item.id);
-                                  if (navItem) window.location.href = navItem.href;
-                                  onClose();
-                                }}
-                                className="mt-3 flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase text-blood-red font-medium"
-                              >
-                                View full {item.label}
-                                <ArrowRight className="w-3 h-3" strokeWidth={2} />
-                              </button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.li>
-                  );
-                })}
-              </ul>
-
-              {/* Account links */}
-              <div className="pt-4 border-t border-charcoal/8">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-chrome mb-4 font-medium">
-                  Account
-                </p>
-                <ul className="space-y-0">
-                  {ACCOUNT_ITEMS.map((item, i) => (
-                    <motion.li
-                      key={item.label}
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.35 + i * 0.04, duration: 0.35 }}
-                    >
-                      <Link
-                        href={item.href}
-                        onClick={onClose}
-                        className="flex items-center gap-3 py-3.5 text-sm tracking-wider uppercase text-charcoal hover:text-blood-red transition-colors duration-300"
-                      >
-                        <item.icon className="w-4 h-4" strokeWidth={1.5} />
-                        {item.label}
-                      </Link>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            </nav>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-              className="px-6 py-5 border-t border-charcoal/8"
-            >
-              <p className="text-[10px] tracking-[0.2em] uppercase text-chrome">
-                HEADERR &copy; 2026
-              </p>
-            </motion.div>
-          </motion.div>
+            <X className="w-6 h-6" strokeWidth={1.5} />
+          </motion.button>
         </div>
-      )}
+
+        {/* Search */}
+        <div className="p-4 border-b border-olive/10">
+          <motion.button
+            onClick={() => { setSearchOpen(true); onClose(); }}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-deep-blue border border-sage rounded-md text-sage hover:border-gold transition-colors"
+            whileHover={{ x: 4 }}
+          >
+            <Search className="w-5 h-5 text-sage" strokeWidth={1.5} />
+            <span className="text-sm text-sage">Search</span>
+          </motion.button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {NAV_Items.map((item) => {
+            const isOpen = openSections.has(item.id);
+            const hasMega = MENUS[item.id]?.sections.length > 0;
+            return (
+              <div key={item.id}>
+                <button
+                  onClick={() => {
+                    if (hasMega) {
+                      toggleSection(item.id);
+                    } else {
+                      onClose();
+                      window.location.href = item.href;
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-left text-sage font-medium transition-colors ${
+                    hasMega ? 'hover:text-gold' : 'text-off-white'
+                  }`}
+                >
+                  <span className="text-[11px] tracking-[0.15em] uppercase">{item.label}</span>
+                  {hasMega && (
+                    <motion.span
+                      variants={shouldReduceMotion ? { closed: { rotate: 0 }, open: { rotate: 180 } } : undefined}
+                      animate={isOpen ? 'open' : 'closed'}
+                      className="text-sage"
+                    >
+                      <ChevronDown className="w-5 h-5" strokeWidth={1.5} />
+                    </motion.span>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && hasMega && (
+                    <motion.div
+                      variants={accordionItem}
+                      animate={isOpen ? 'open' : 'closed'}
+                      className="overflow-hidden pl-4 border-l border-olive/10 ml-2"
+                    >
+                      <div className="space-y-1 mt-2">
+                        {MENUS[item.id]!.sections.map((section) => (
+                          <div key={section.title} className="space-y-1">
+                            <p className="text-[9px] tracking-[0.2em] uppercase text-olive font-medium mb-2">
+                              {section.title}
+                            </p>
+                            <ul className="space-y-1">
+                              {section.items.map((link) => (
+                                <Link
+                                  key={link.label}
+                                  href={link.href}
+                                  onClick={onClose}
+                                  className="block px-3 py-2 text-[12px] text-sage/70 hover:text-gold hover:bg-olive/5 rounded transition-all duration-200"
+                                >
+                                  {link.label}
+                                </Link>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        {MENUS[item.id]!.imageCards.map((card) => (
+                          <Link
+                            key={card.title}
+                            href={card.cta.href}
+                            onClick={onClose}
+                            className="block mt-4 overflow-hidden rounded-lg"
+                          >
+                            <div className="aspect-[4/3] overflow-hidden relative">
+                              <img
+                                src={card.image}
+                                alt={card.imageAlt}
+                                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="text-white/50 text-[7px] tracking-[0.2em] uppercase font-medium mb-1">
+                                {card.eyebrow}
+                              </p>
+                              <p className="text-white font-semibold text-[12px] leading-tight">{card.title}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        <div className="mt-4 pt-4 border-t border-olive/10">
+                          <Link
+                            href={MENUS[item.id]!.cta.href}
+                            onClick={onClose}
+                            className="inline-flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-gold font-medium hover:gap-3 transition-all"
+                          >
+                            {MENUS[item.id]!.cta.label}
+                          </Link>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Utility Links */}
+        <div className="p-4 border-t border-olive/20 space-y-3">
+          <Link
+            href={ROUTES.ACCOUNT}
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 text-sage hover:text-gold transition-colors"
+          >
+            <User className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-sm font-medium">Account</span>
+          </Link>
+          <Link
+            href={ROUTES.WISHLIST}
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 text-sage hover:text-gold transition-colors"
+          >
+            <Heart className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-sm font-medium">Wishlist</span>
+          </Link>
+          <Link
+            href={ROUTES.CART}
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 text-sage hover:text-gold transition-colors"
+          >
+            <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-sm font-medium">Cart</span>
+            {itemCount > 0 && (
+              <span className="ml-auto min-w-[18px] h-5 bg-red text-off-white text-[9px] font-bold flex items-center justify-center px-1.5 rounded">
+                {itemCount}
+              </span>
+            )}
+          </Link>
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }

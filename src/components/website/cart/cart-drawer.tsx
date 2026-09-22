@@ -2,12 +2,12 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { X, Minus, Plus, ShoppingBag, Truck, Shield, RotateCcw } from 'lucide-react';
+import { X, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
-
-const EASE = [0.25, 0.1, 0.25, 1] as const;
+import { ROUTES } from '@/lib/utils';
+import { slideInRight, drawerBackdrop, quickAddSlide, EASE_PREMIUM } from '@/components/motion/motion-variants';
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal, itemCount } = useCartStore();
@@ -39,33 +39,33 @@ export function CartDrawer() {
         <>
           {/* Overlay */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            variants={drawerBackdrop}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="fixed inset-0 bg-black/40 z-50"
             onClick={closeCart}
           />
 
           {/* Drawer */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ duration: 0.4, ease: EASE }}
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col"
             role="dialog"
             aria-label="Shopping cart"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-charcoal/8">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-olive/10">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold tracking-[0.15em] uppercase">Your Bag</h2>
+                <h2 className="text-sm font-bold tracking-[0.15em] uppercase text-navy">Your Bag</h2>
                 <span className="text-[11px] text-chrome">({itemCount()})</span>
               </div>
               <button
                 onClick={closeCart}
-                className="p-2 -mr-2 text-charcoal hover:text-blood-red transition-colors duration-200"
+                className="p-2 -mr-2 text-chrome hover:text-red transition-colors duration-200"
                 aria-label="Close cart"
               >
                 <X className="w-5 h-5" strokeWidth={1.5} />
@@ -76,15 +76,25 @@ export function CartDrawer() {
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <ShoppingBag className="w-12 h-12 text-chrome/30 mb-4" strokeWidth={1} />
-                  <p className="text-sm font-medium tracking-wide">YOUR BAG IS EMPTY.</p>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, ease: EASE_PREMIUM }}
+                  >
+                    <svg className="w-12 h-12 text-chrome/30 mb-4" strokeWidth={1} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a2 2 0 00-2-2H6a2 2 0 00-2 2v18a2 2 0 002 2h12a2 2 0 002-2v-7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h8M8 13h8" />
+                    </svg>
+                  </motion.div>
+                  <p className="text-sm font-medium tracking-wide text-navy">YOUR BAG IS EMPTY.</p>
                   <p className="text-xs text-chrome mt-1.5 mb-6">Add something to get started.</p>
-                  <button
+                  <Link
+                    href={ROUTES.SHOP}
                     onClick={closeCart}
-                    className="px-7 py-3 bg-charcoal text-off-white text-[11px] tracking-[0.15em] uppercase hover:bg-blood-red transition-colors duration-300"
+                    className="px-7 py-3 bg-navy text-off-white text-[11px] tracking-[0.15em] uppercase hover:bg-gold hover:text-navy transition-colors duration-300"
                   >
                     Shop the Collection
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <AnimatePresence initial={false}>
@@ -93,12 +103,12 @@ export function CartDrawer() {
                       <motion.div
                         key={`${item.product.id}-${item.size}`}
                         layout
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
-                        transition={{ duration: 0.25 }}
+                        variants={quickAddSlide}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
                       >
-                        <div className="flex gap-4 py-4 border-b border-charcoal/6 last:border-0">
+                        <div className="flex gap-4 py-4 border-b border-olive/10 last:border-0">
                           <Link
                             href={`/shop/products/${item.product.slug}`}
                             onClick={closeCart}
@@ -107,14 +117,14 @@ export function CartDrawer() {
                             <img
                               src={item.product.image}
                               alt={item.product.name}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                             />
                           </Link>
                           <div className="flex-1 min-w-0">
                             <Link
                               href={`/shop/products/${item.product.slug}`}
                               onClick={closeCart}
-                              className="text-xs font-medium text-charcoal hover:text-blood-red transition-colors tracking-wide block truncate"
+                              className="text-xs font-medium text-navy hover:text-red transition-colors tracking-wide block truncate"
                             >
                               {item.product.name}
                             </Link>
@@ -128,34 +138,34 @@ export function CartDrawer() {
                               Size {item.size}
                             </p>
                             <div className="flex items-center justify-between mt-3">
-                              <div className="flex items-center border border-charcoal/12">
+                              <div className="flex items-center border border-olive/15">
                                 <button
                                   onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
                                   disabled={item.quantity <= 1}
-                                  className="w-8 h-8 flex items-center justify-center text-charcoal hover:bg-off-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                  className="w-8 h-8 flex items-center justify-center text-chrome hover:bg-off-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                   aria-label="Decrease quantity"
                                 >
                                   <Minus className="w-3 h-3" strokeWidth={1.5} />
                                 </button>
-                                <span className="w-8 h-8 flex items-center justify-center text-[11px] font-medium">
+                                <span className="w-8 h-8 flex items-center justify-center text-[11px] font-medium text-navy">
                                   {item.quantity}
                                 </span>
                                 <button
                                   onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
-                                  className="w-8 h-8 flex items-center justify-center text-charcoal hover:bg-off-white transition-colors"
+                                  className="w-8 h-8 flex items-center justify-center text-chrome hover:bg-off-white transition-colors"
                                   aria-label="Increase quantity"
                                 >
                                   <Plus className="w-3 h-3" strokeWidth={1.5} />
                                 </button>
                               </div>
-                              <p className="text-xs font-bold text-charcoal">
+                              <p className="text-xs font-bold text-navy">
                                 {formatPrice(item.product.basePrice * item.quantity)}
                               </p>
                             </div>
                           </div>
                           <button
                             onClick={() => removeItem(item.product.id, item.size)}
-                            className="text-[10px] text-chrome hover:text-blood-red transition-colors self-start mt-0.5 tracking-wider"
+                            className="text-[10px] text-chrome hover:text-red transition-colors self-start mt-0.5 tracking-wider"
                             aria-label={`Remove ${item.product.name}`}
                           >
                             Remove
@@ -170,14 +180,14 @@ export function CartDrawer() {
 
             {/* Footer */}
             {items.length > 0 && (
-              <div className="px-6 py-5 border-t border-charcoal/8 space-y-4">
+              <div className="px-6 py-5 border-t border-olive/10 space-y-4">
                 <div className="flex justify-between text-xs">
                   <span className="text-chrome">Subtotal</span>
-                  <span className="font-medium">{formatPrice(subtotal())}</span>
+                  <span className="font-medium text-navy">{formatPrice(subtotal())}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-chrome">Shipping</span>
-                  <span className={shipping === 0 ? 'text-green-600 font-medium' : 'font-medium'}>
+                  <span className={shipping === 0 ? 'text-green-600 font-medium' : 'font-medium text-navy'}>
                     {shipping === 0 ? 'FREE' : formatPrice(shipping)}
                   </span>
                 </div>
@@ -186,7 +196,7 @@ export function CartDrawer() {
                 )}
 
                 {/* Trust indicators */}
-                <div className="flex items-center justify-center gap-6 pt-2 border-t border-charcoal/6">
+                <div className="flex items-center justify-center gap-6 pt-2 border-t border-olive/10">
                   <div className="flex items-center gap-1.5 text-[10px] text-chrome/60">
                     <Truck className="w-3.5 h-3.5" strokeWidth={1.5} />
                     <span>Free Shipping</span>
@@ -204,14 +214,14 @@ export function CartDrawer() {
                 <Link
                   href="/checkout"
                   onClick={closeCart}
-                  className="block w-full text-center py-3.5 bg-blood-red text-off-white text-[11px] tracking-[0.15em] uppercase hover:bg-charcoal transition-colors duration-300"
+                  className="block w-full text-center py-3.5 bg-red text-off-white text-[11px] tracking-[0.15em] uppercase hover:bg-navy transition-colors duration-300"
                 >
                   Checkout · {formatPrice(subtotal() + shipping)}
                 </Link>
                 <Link
                   href="/cart"
                   onClick={closeCart}
-                  className="block w-full text-center py-3 border border-charcoal/15 text-[11px] tracking-[0.15em] uppercase text-charcoal hover:bg-off-white transition-colors duration-300"
+                  className="block w-full text-center py-3 border border-olive/15 text-[11px] tracking-[0.15em] uppercase text-navy hover:bg-off-white transition-colors duration-300"
                 >
                   View Bag
                 </Link>
