@@ -1,184 +1,113 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Search, User, Heart, ShoppingBag, Menu, X } from 'lucide-react';
-import { motion, useScroll, useTransform, useSpring, useReducedMotion, AnimatePresence } from 'framer-motion';
-import { SearchOverlay } from '../search/search-overlay';
-import { MegaNav } from './mega-nav';
-import { MobileMenu } from './mobile-menu';
-import { CartDrawer } from '../cart/cart-drawer';
-import { useCartStore } from '@/store/cart-store';
+import { useState, useEffect } from 'react';
+import { Search, User, ShoppingBag, Menu } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/utils';
-import type { MenuId } from '@/data/menu-data';
-import { headerEntrance, headerNavStagger, headerIconStagger, EASE_PREMIUM } from '@/components/motion/motion-variants';
+import { useCartStore } from '@/store/cart-store';
+import { useUiStore } from '@/store/ui-store';
+import { cn } from '@/lib/utils';
+
+const NAV = [
+  { label: 'Shop', href: ROUTES.SHOP },
+  { label: 'Football', href: ROUTES.FOOTBALL },
+  { label: 'Cricket', href: ROUTES.CRICKET },
+  { label: 'Streetwear', href: ROUTES.STREETWEAR },
+  { label: 'Bundle', href: '/bundle' },
+  { label: 'About', href: '/about' },
+];
 
 export function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [headerMounted, setHeaderMounted] = useState(false);
-
-  const [megaActive, setMegaActive] = useState<MenuId>(null);
-
-  const itemCount = useCartStore((s) => s.itemCount());
-  const openCart = useCartStore((s) => s.openCart);
-
-  const { scrollY } = useScroll();
-  const shouldReduceMotion = useReducedMotion();
-
-  const headerBg = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(5, 25, 47, 0)', 'rgba(5, 25, 47, 0.98)']
-  );
-  const headerBorder = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(58, 79, 42, 0)', 'rgba(58, 79, 42, 0.3)']
-  );
-  const headerBlur = useTransform(scrollY, [0, 100], [0, 24]);
-  const headerBackdrop = useTransform(headerBlur, (v) => `blur(${v}px)`);
-
-  const navColor = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(245, 243, 237, 0.9)', '#05192F']
-  );
-  const iconColor = useTransform(
-    scrollY,
-    [0, 100],
-    ['rgba(245, 243, 237, 0.9)', '#F5F3ED']
-  );
-  const logoColor = useSpring(iconColor, { stiffness: 300, damping: 30 });
+  const [scrolled, setScrolled] = useState(false);
+  const items = useCartStore((s) => s.items);
+  const itemCount = items.reduce((n, i) => n + i.quantity, 0);
+  const { setMenuOpen, setSearchOpen } = useUiStore();
+  const router = useRouter();
 
   useEffect(() => {
-    setHeaderMounted(true);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    const unsubscribe = scrollY.on('change', () => setMegaActive(null));
-    return unsubscribe;
-  }, [scrollY]);
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMegaActive(null);
-        setSearchOpen(false);
-        setMobileOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
-
-  const handleMegaEnter = useCallback((id: MenuId) => setMegaActive(id), []);
-  const handleMegaLeave = useCallback(() => setMegaActive(null), []);
-  const handleClickSection = useCallback((id: MenuId) => setMegaActive(null), []);
 
   return (
     <>
-      <motion.header
-        style={{
-          backgroundColor: headerBg,
-          borderBottomColor: headerBorder,
-          backdropFilter: headerBackdrop,
-        }}
-        className="fixed top-0 left-0 right-0 z-40 border-b border-transparent transition-colors duration-350"
-        aria-label="Main navigation"
-        variants={headerEntrance}
-        initial={headerMounted ? 'hidden' : 'hidden'}
-        animate={headerMounted ? 'visible' : 'hidden'}
+      <header
+        className={cn(
+          'header-shell fixed top-9 left-0 right-0 z-40',
+          scrolled ? 'scrolled' : ''
+        )}
+        style={{ height: scrolled ? 60 : 72, transition: 'height 0.35s ease' }}
       >
-        <div className="max-w-[1400px] mx-auto px-5 sm:px-8 lg:px-12">
-          <div className="flex items-center justify-between h-14 sm:h-16 lg:h-[72px] relative">
-            <motion.button
-              onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2 -ml-2 z-10"
+        <div className="mx-auto max-w-[1400px] h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between gap-6">
+          <Link href={ROUTES.HOME} className="flex items-center gap-2 shrink-0">
+            <span className="headline text-[22px] text-off-white leading-none tracking-tight">
+              HEADERR.
+            </span>
+            <span className="hidden md:inline font-mono-meta text-[9px] text-off-white/40 pt-1">
+              EST. 2026
+            </span>
+          </Link>
+
+          <nav className="hidden lg:flex items-center gap-8">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="font-mono-meta text-[10px] text-off-white/70 hover:text-off-white transition-colors py-2 relative group"
+              >
+                {item.label}
+                <span className="absolute left-0 -bottom-0.5 h-px w-0 bg-off-white transition-all duration-300 group-hover:w-full" />
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-1 sm:gap-3">
+            <button
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+              className="p-2 text-off-white/70 hover:text-off-white transition-colors"
+            >
+              <Search className="w-[18px] h-[18px]" strokeWidth={1.5} />
+            </button>
+            <Link
+              href={ROUTES.ACCOUNT}
+              aria-label="Account"
+              className="hidden sm:flex p-2 text-off-white/70 hover:text-off-white transition-colors"
+            >
+              <User className="w-[18px] h-[18px]" strokeWidth={1.5} />
+            </Link>
+            <Link
+              href={ROUTES.WISHLIST}
+              aria-label="Wishlist"
+              className="hidden sm:flex p-2 text-off-white/70 hover:text-off-white transition-colors"
+            >
+              <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
+            </Link>
+            <button
+              onClick={() => useCartStore.getState().openCart()}
+              aria-label="Cart"
+              className="relative p-2 text-off-white/70 hover:text-off-white transition-colors"
+            >
+              <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-red text-off-white text-[9px] font-medium flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
-              style={{ color: iconColor }}
-              variants={headerIconStagger}
-              custom={0}
+              className="lg:hidden p-2 text-off-white/70 hover:text-off-white transition-colors"
             >
-              {mobileOpen ? <X className="w-5 h-5" strokeWidth={1.5} /> : <Menu className="w-5 h-5" strokeWidth={1.5} />}
-            </motion.button>
-
-            <div className="hidden lg:block">
-              <MegaNav
-                active={megaActive}
-                onEnter={handleMegaEnter}
-                onLeave={handleMegaLeave}
-                onClickSection={handleClickSection}
-              />
-            </div>
-
-            <motion.span
-              style={{ color: logoColor }}
-              className="absolute left-1/2 -translate-x-1/2 text-lg sm:text-xl font-bold tracking-[0.25em] uppercase z-10"
-              variants={headerEntrance}
-            >
-              <Link href={ROUTES.HOME} aria-label="HEADERR Home">HEADERR</Link>
-            </motion.span>
-
-            <motion.div
-              className="flex items-center gap-2 sm:gap-3 z-10"
-              variants={headerIconStagger}
-            >
-              <motion.button
-                onClick={() => setSearchOpen(true)}
-                aria-label="Search"
-                className="p-2 transition-colors duration-300"
-                style={{ color: iconColor }}
-                custom={1}
-              >
-                <Search className="w-[18px] h-[18px]" strokeWidth={1.5} />
-              </motion.button>
-              <motion.a
-                href={ROUTES.ACCOUNT}
-                aria-label="Account"
-                className="p-2 transition-colors duration-300 hidden sm:block"
-                style={{ color: iconColor }}
-                custom={2}
-              >
-                <User className="w-[18px] h-[18px]" strokeWidth={1.5} />
-              </motion.a>
-              <motion.a
-                href={ROUTES.WISHLIST}
-                aria-label="Wishlist"
-                className="p-2 transition-colors duration-300 hidden sm:block"
-                style={{ color: iconColor }}
-                custom={3}
-              >
-                <Heart className="w-[18px] h-[18px]" strokeWidth={1.5} />
-              </motion.a>
-              <motion.button
-                onClick={openCart}
-                aria-label={`Cart (${itemCount} items)`}
-                className="p-2 transition-colors duration-300 relative"
-                style={{ color: iconColor }}
-                custom={4}
-              >
-                <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
-                {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red text-off-white text-[9px] font-bold flex items-center justify-center px-1">
-                    {itemCount}
-                  </span>
-                )}
-              </motion.button>
-            </motion.div>
+              <Menu className="w-[20px] h-[20px]" strokeWidth={1.5} />
+            </button>
           </div>
         </div>
-      </motion.header>
-
-      <AnimatePresence>
-        <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
-      </AnimatePresence>
-      <AnimatePresence>
-        {mobileOpen && (
-          <MobileMenu onClose={() => setMobileOpen(false)} />
-        )}
-      </AnimatePresence>
-      <CartDrawer />
+      </header>
     </>
   );
 }

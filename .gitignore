@@ -42,3 +42,5 @@ next-env.d.ts
 
 # generated prisma 8 contract artifacts (rebuilt via `prisma contract emit`)
 /generated/
+
+devlog.txt

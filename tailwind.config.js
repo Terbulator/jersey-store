@@ -14,59 +14,25 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        // HEADERR palette - primary hierarchy
+        // HEADERR system — legacy names remapped to new palette
         navy: 'hsl(var(--navy))',
         deep_blue: 'hsl(var(--deep-blue))',
         olive: 'hsl(var(--olive))',
-        // HEADERR palette - secondary
         sage: 'hsl(var(--sage))',
         green: 'hsl(var(--green))',
-        // HEADERR palette - accent
         gold: 'hsl(var(--gold))',
         bronze: 'hsl(var(--bronze))',
         amber: 'hsl(var(--amber))',
-        // HIGH-IMPACT ACCENT - used very selectively
         red: 'hsl(var(--red))',
-        // Legacy/compat
         blood_red: 'hsl(var(--red))',
-        // UI neutrals
         off_white: 'hsl(var(--off-white))',
         charcoal: 'hsl(var(--charcoal))',
         chrome: 'hsl(var(--chrome))',
       },
       fontFamily: {
-        display: ['Space Grotesk', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ["'Instrument Serif'", 'Georgia', 'serif'],
+        sans: ["'Suisse Intl'", "'Helvetica Neue'", 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ["'ABC Monument Grotesk Mono'", 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       borderRadius: {
         none: '0px',
@@ -89,6 +55,25 @@ module.exports = {
       transitionTimingFunction: {
         premium: 'cubic-bezier(0.22, 1, 0.36, 1)',
         ease_out: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(24px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'image-zoom': {
+          '0%': { opacity: '0', transform: 'scale(1.06)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'marquee': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'image-zoom': 'image-zoom 1.4s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'marquee': 'marquee 24s linear infinite',
       },
     },
   },

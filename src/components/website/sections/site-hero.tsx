@@ -1,0 +1,78 @@
+'use client';
+
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ROUTES } from '@/lib/utils';
+import { EASE_PREMIUM } from '@/components/motion/motion-variants';
+
+const HERO_IMAGE =
+  'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=80';
+
+export function SiteHero() {
+  return (
+    <section className="relative h-[100svh] min-h-[640px] bg-black overflow-hidden">
+      <motion.div
+        initial={{ scale: 1.15 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.6, ease: EASE_PREMIUM }}
+        className="absolute inset-0"
+      >
+        <img
+          src={HERO_IMAGE}
+          alt=""
+          className="w-full h-full object-cover opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+      </motion.div>
+
+      <div className="relative h-full flex flex-col justify-end max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pb-24 pt-40">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.9, ease: EASE_PREMIUM }}
+          className="max-w-3xl"
+        >
+          <p className="font-mono-meta text-[10px] tracking-[0.35em] text-off-white/60 mb-6">
+            VOL. 01 — THE 2026 SEASON
+          </p>
+          <h1 className="headline text-[52px] sm:text-[76px] lg:text-[104px] leading-[0.95] text-off-white">
+            WEAR THE
+            <br />
+            <em className="text-red not-italic underline underline-offset-[0.12em] decoration-[0.5px]">
+              GAME.
+            </em>
+          </h1>
+          <p className="mt-7 text-base sm:text-lg text-off-white/70 max-w-md leading-relaxed">
+            Player-version football &amp; cricket jerseys. Master-edition streetwear. Cut
+            for the culture that never stops.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link href={ROUTES.SHOP} className="btn-pill btn-pill-solid">
+              Shop the Drop
+            </Link>
+            <Link href="/bundle" className="btn-pill btn-pill-outline">
+              Bundle &amp; Save
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 1 }}
+        className="absolute bottom-8 right-6 sm:right-8 lg:right-12 hidden sm:flex flex-col items-center gap-3"
+      >
+        <span className="font-mono-meta text-[9px] text-off-white/40 tracking-[0.3em] [writing-mode:vertical-rl]">
+          SCROLL
+        </span>
+        <motion.span
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-px h-12 bg-off-white/30 block"
+        />
+      </motion.div>
+    </section>
+  );
+}

@@ -1,49 +1,29 @@
-import { Hero } from '@/components/website/hero/hero';
-import { CategoryMosaic } from '@/components/website/categories/category-mosaic';
-import { FootballCampaign } from '@/components/website/campaigns/football-campaign';
-import { CricketCampaign } from '@/components/website/campaigns/cricket-campaign';
-import { StreetwearEditorial } from '@/components/website/campaigns/streetwear-editorial';
-import { FeaturedDrop } from '@/components/website/hero/featured-drop';
-import { CultureStory } from '@/components/website/campaigns/culture-story';
-import { NewArrivalsSection } from '@/components/website/shared/product-sections';
-import { NewsletterSection } from '@/components/website/shared/newsletter-section';
-import { Footer } from '@/components/website/footer/footer';
-import { PRODUCTS } from '@/data/products';
+import { SiteHero } from '@/components/website/sections/site-hero';
+import { TrustStrip } from '@/components/website/sections/trust-strip';
+import { CategoryNav } from '@/components/website/sections/category-nav';
+import { BestSellers } from '@/components/website/sections/best-sellers';
+import { EditorialSplit } from '@/components/website/sections/editorial-split';
+import { BundleSection } from '@/components/website/sections/bundle-section';
+import { StatsSection } from '@/components/website/sections/stats-section';
+import { EditionsSection } from '@/components/website/sections/editions-section';
+import { ExpertSection } from '@/components/website/sections/expert-section';
+import { NewsletterSection } from '@/components/website/sections/newsletter-section';
 
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   return (
     <>
-      {/* 1. Hero — full-width image-led campaign */}
-      <Hero />
-
-      {/* 2. Asymmetric Category Discovery */}
-      <CategoryMosaic />
-
-      {/* 3. New Arrivals — serious retail merchandising */}
-      <NewArrivalsSection />
-
-      {/* 4. Football Campaign */}
-      <FootballCampaign />
-
-      {/* 5. Cricket Campaign */}
-      <CricketCampaign />
-
-      {/* 6. Streetwear Editorial */}
-      <StreetwearEditorial />
-
-      {/* 7. Featured Drop */}
-      <FeaturedDrop />
-
-      {/* 8. Culture Story */}
-      <CultureStory />
-
-      {/* 9. Newsletter */}
+      <SiteHero />
+      <TrustStrip />
+      <CategoryNav />
+      <BestSellers />
+      <EditorialSplit />
+      <BundleSection />
+      <StatsSection />
+      <EditionsSection />
+      <ExpertSection />
       <NewsletterSection />
-
-      {/* 10. Footer */}
-      <Footer />
     </>
   );
 }

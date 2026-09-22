@@ -1,234 +1,148 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, X, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { X, ArrowRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PRODUCTS } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
-import { searchOverlayPanel, searchResultStagger, drawerBackdrop, EASE_PREMIUM } from '@/components/motion/motion-variants';
+import { useUiStore } from '@/store/ui-store';
+import { metaLine, editionLabel } from '@/lib/catalog';
 
-const POPULAR_SEARCHES = [
-  'Football', 'Brazil', 'Argentina', 'Real Madrid', 'Barcelona',
-  'Player Version', 'Master Edition', 'Cricket', 'IPL', 'Streetwear',
-];
+const TAGS = ['Football', 'Cricket', 'Streetwear', 'Player', 'Master', 'Sale', 'New'];
 
-interface SearchOverlayProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
+export function SearchOverlay() {
+  const { searchOpen, setSearchOpen } = useUiStore();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (open) {
+    if (searchOpen) {
       setQuery('');
-      setTimeout(() => inputRef.current?.focus(), 200);
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [open]);
+  }, [searchOpen]);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  const results =
-    query.length >= 2
-      ? PRODUCTS.filter((p) => {
-          const q = query.toLowerCase();
-          return (
-            p.name.toLowerCase().includes(q) ||
-            p.team.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q) ||
-            p.edition.toLowerCase().includes(q)
-          );
-        }).slice(0, 6)
-      : [];
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return PRODUCTS.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.team.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.edition.toLowerCase().includes(q) ||
+        (p.badge && p.badge.toLowerCase().includes(q))
+    );
+  }, [query]);
 
   return (
     <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-50">
-          {/* Backdrop */}
-          <motion.div
-            variants={drawerBackdrop}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
-          />
-
-          {/* Panel */}
-          <motion.div
-            variants={shouldReduceMotion
-              ? { hidden: { opacity: 0, scale: 1 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.01 } } }
-              : searchOverlayPanel
-            }
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="relative max-w-3xl mx-auto mt-[10vh] sm:mt-[14vh] px-4"
-          >
-            <div
-              className="bg-navy shadow-2xl border border-olive/20 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+      {searchOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+          className="fixed inset-0 z-[55] bg-black/95 backdrop-blur-md flex flex-col"
+        >
+          <div className="flex items-center justify-between px-6 h-16 border-b border-white/10">
+            <span className="font-mono-meta text-[10px] text-off-white/50">Search</span>
+            <button
+              onClick={() => setSearchOpen(false)}
+              aria-label="Close search"
+              className="p-2 text-off-white/70 hover:text-off-white"
             >
-              {/* Search Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-olive/10">
-                <span className="text-[11px] tracking-[0.2em] uppercase font-medium text-sage">Search</span>
-                <button
-                  onClick={onClose}
-                  aria-label="Close search"
-                  className="text-chrome hover:text-sage transition-colors duration-200 p-1"
-                >
-                  <X className="w-5 h-5" strokeWidth={1.5} />
-                </button>
-              </div>
+              <X className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+          </div>
 
-              {/* Search Input */}
-              <div className="flex items-center gap-4 px-6 py-5 border-b border-olive/10">
-                <Search className="w-5 h-5 text-chrome flex-shrink-0" strokeWidth={1.5} />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search jerseys, teams, editions..."
-                  className="flex-1 bg-transparent text-base text-off-white outline-none placeholder:text-chrome"
-                />
-              </div>
+          <div className="w-full max-w-4xl mx-auto px-6 sm:px-8 py-10 flex-1 overflow-y-auto">
+            <motion.input
+              ref={inputRef}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search jerseys, teams, editions…"
+              className="w-full bg-transparent border-b border-white/20 focus:border-off-white outline-none py-4 text-2xl sm:text-3xl headline text-off-white placeholder:text-off-white/30 transition-colors"
+            />
 
-              {/* Results */}
-              <AnimatePresence mode="wait">
-                {results.length > 0 && (
-                  <motion.div
-                    key="results"
-                    variants={searchResultStagger}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="max-h-[50vh] overflow-y-auto"
-                  >
-                    {results.map((product, i) => (
-                      <motion.div
-                        key={product.id}
-                        custom={i}
-                        variants={{
-                          hidden: { opacity: 0, y: 8 },
-                          visible: (i: number) => ({
-                            opacity: 1,
-                            y: 0,
-                            transition: {
-                              delay: shouldReduceMotion ? 0 : i * 0.04,
-                              duration: 0.3,
-                              ease: EASE_PREMIUM,
-                            },
-                          }),
-                        }}
-                        initial="hidden"
-                        animate="visible"
-                      >
-                        <Link
-                          href={`/shop/products/${product.slug}`}
-                          onClick={onClose}
-                          className="flex items-center gap-4 px-6 py-4 hover:bg-olive/5 transition-colors duration-200 group"
-                        >
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-12 h-14 object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-off-white truncate">
-                              {product.name}
-                            </p>
-                            <p className="text-[10px] text-sage/60 uppercase tracking-[0.15em] mt-0.5">
-                              {product.edition === 'player'
-                                ? 'Player Version'
-                                : product.edition === 'master'
-                                ? 'Master Edition'
-                                : 'Special Edition'}
-                            </p>
-                          </div>
-                          <span className="text-sm font-bold text-gold flex-shrink-0">
-                            {formatPrice(product.basePrice)}
-                          </span>
-                          <ArrowRight className="w-3 h-3 text-chrome/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200" strokeWidth={1.5} />
-                        </Link>
-                      </motion.div>
-                    ))}
-                    <Link
-                      href={`/shop?search=${encodeURIComponent(query)}`}
-                      onClick={onClose}
-                      className="flex items-center justify-between px-6 py-4 text-[10px] tracking-[0.15em] uppercase text-red hover:bg-olive/5 transition-colors duration-200 border-t border-olive/10"
+            {!query.trim() ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mt-10"
+              >
+                <p className="font-mono-meta text-[10px] text-off-white/40 mb-4">
+                  Popular Searches
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {TAGS.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setQuery(tag)}
+                      className="px-4 py-2 rounded-full border border-white/15 text-[11px] font-mono-meta text-off-white/70 hover:border-off-white hover:text-off-white transition-colors"
                     >
-                      View all results
-                      <ArrowRight className="w-3 h-3" strokeWidth={1.5} />
-                    </Link>
-                  </motion.div>
-                )}
-
-                {query.length >= 2 && results.length === 0 && (
-                  <motion.div
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="px-6 py-12 text-center"
-                  >
-                    <p className="text-sm text-sage">No results for &ldquo;{query}&rdquo;</p>
-                    <p className="text-xs text-chrome/50 mt-1.5">Try a different search term.</p>
-                  </motion.div>
-                )}
-
-                {query.length < 2 && (
-                  <motion.div
-                    key="popular"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="px-6 py-6"
-                  >
-                    <p className="text-[10px] tracking-[0.15em] uppercase text-chrome mb-4 font-medium">
-                      Popular Searches
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {POPULAR_SEARCHES.map((hint, i) => (
-                        <motion.button
-                          key={hint}
-                          initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
-                          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-                          transition={{ delay: shouldReduceMotion ? 0 : i * 0.03 }}
-                          onClick={() => setQuery(hint)}
-                          className="px-4 py-2.5 text-[11px] tracking-wider border border-olive/15 text-sage hover:border-sage hover:text-off-white hover:bg-olive/5 transition-all duration-200"
-                        >
-                          {hint}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </div>
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ) : results.length > 0 ? (
+              <div className="mt-8">
+                <p className="font-mono-meta text-[10px] text-off-white/40 mb-4">
+                  {results.length} {results.length === 1 ? 'result' : 'results'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {results.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.3 }}
+                    >
+                      <Link
+                        href={`/shop/products/${p.slug}`}
+                        onClick={() => setSearchOpen(false)}
+                        className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group"
+                      >
+                        <div className="w-14 h-16 bg-white/5 shrink-0 overflow-hidden rounded-lg">
+                          <img
+                            src={p.image}
+                            alt={p.imageAlt}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="headline text-lg text-off-white leading-tight">
+                            {p.name}
+                          </p>
+                          <p className="font-mono-meta text-[9px] text-off-white/40 mt-1">
+                            {metaLine(p)} · {editionLabel(p.edition)}
+                          </p>
+                          <p className="text-sm text-off-white/70 mt-0.5">
+                            {formatPrice(p.basePrice)}
+                          </p>
+                        </div>
+                        <ArrowRight
+                          className="ml-auto w-4 h-4 text-off-white/30 group-hover:text-off-white transition-colors"
+                          strokeWidth={1.5}
+                        />
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="mt-10 text-sm text-off-white/50">
+                No results for &ldquo;{query}&rdquo;.
+              </p>
+            )}
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
