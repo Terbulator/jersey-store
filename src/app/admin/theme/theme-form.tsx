@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Save, RotateCcw, Check, AlertTriangle } from 'lucide-react';
 import { FONT_ALLOWLIST, THEME_DEFAULTS, type Theme } from '@/lib/theme';
 
-type Status = { kind: 'idle' | 'saving' | 'saved' | 'error'; message?: string };
+import type { FormStatus as Status } from '@/lib/admin-ui';
 
 const FONT_LABELS: Record<string, string> = {
   [FONT_ALLOWLIST[0]]: 'Instrument Serif (display)',
@@ -32,15 +32,7 @@ function pretty(path: string) {
   return `${GROUP_TITLES[group] ?? group} · ${name}`;
 }
 
-function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-md border border-[#292929] bg-[#111111] p-4">
-      <h2 className="font-mono-meta text-[10px] text-off-white/50 uppercase tracking-[0.18em]">{title}</h2>
-      {hint && <p className="mt-1 text-[11px] text-[#666666]">{hint}</p>}
-      <div className="mt-3 space-y-3">{children}</div>
-    </section>
-  );
-}
+import { Card } from '@/lib/admin-ui';
 
 export function ThemeForm({ initialTheme }: { initialTheme: Theme }) {
   const [theme, setTheme] = useState<Theme>(() => JSON.parse(JSON.stringify(initialTheme)) as Theme);

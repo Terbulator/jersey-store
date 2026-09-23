@@ -34,8 +34,7 @@ function detect(value: string, products: DestinationOption[], pages: Destination
   return { sel: 'preset', preset: '/' };
 }
 
-const inputCls =
-  'rounded-md border border-[#292929] bg-[#0D0D0D] px-2.5 py-1.5 text-[13px] text-[#EFECE6] placeholder:text-[#666666] focus:border-[#B3001B] focus:outline-none';
+import { crudInputCls as inputCls } from '@/lib/admin-ui';
 
 // Friendly link picker: presets, products, pages, external URLs, or an
 // advanced custom path. Raw javascript:/data: URLs are never offered and are

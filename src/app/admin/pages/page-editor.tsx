@@ -18,9 +18,9 @@ export interface PageForm {
   seo_description: string;
 }
 
-type Status = { kind: 'idle' | 'saving' | 'saved' | 'error'; message?: string };
+import type { FormStatus as Status } from '@/lib/admin-ui';
 
-const inputCls = 'input w-full text-[12px]';
+import { formInputCls as inputCls } from '@/lib/admin-ui';
 const BLOCK_TYPES = ['heading', 'text', 'image', 'button', 'divider'] as const;
 
 function slugify(s: string) {

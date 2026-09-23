@@ -70,4 +70,9 @@ assert(productUpdateSchema.safeParse({ image: 'data:x' }).success === false, 'pr
 assert(productUpdateSchema.safeParse({ unknown_key: 1 }).success === false, 'strict product schema');
 assert(variantSchema.safeParse({ product_id: 'p', size: '', stock: -1 }).success === false, 'variant bounds checked');
 
+// --- unknown sections/keys (folded in from check-section-schemas) ---
+assert(parseSectionSettings('mystery', {}).ok === false, 'unknown section rejected');
+const stripped = parseSectionSettings('hero', { headline: 'H', injected: 'x' });
+assert(stripped.ok && !('injected' in stripped.settings), 'unknown keys stripped');
+
 console.log('OK — cms checks passed');

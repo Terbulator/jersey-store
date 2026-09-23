@@ -10,7 +10,6 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const [shipping, setShipping] = useState({ freeThreshold: '999', standardRate: '99' });
   const [contact, setContact] = useState({ email: '', phone: '', address: '' });
 
   useEffect(() => {
@@ -18,7 +17,6 @@ export default function AdminSettingsPage() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Could not load settings.');
-        if (data.settings?.shipping) setShipping(data.settings.shipping);
         if (data.settings?.contact) setContact(data.settings.contact);
         setLoaded(true);
       })
@@ -34,7 +32,7 @@ export default function AdminSettingsPage() {
       const res = await fetch('/api/admin/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shipping: { freeThreshold: Number(shipping.freeThreshold) || 0, standardRate: Number(shipping.standardRate) || 0 }, contact }),
+        body: JSON.stringify({ contact }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Could not save.');
       setSaved(true);
@@ -50,28 +48,13 @@ export default function AdminSettingsPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="font-display text-2xl text-[#EFECE6]">Settings</h1>
-        <p className="mt-0.5 text-[12px] text-[#A8A8A8]">Store-wide configuration.</p>
+        <p className="mt-0.5 text-[12px] text-[#A8A8A8]">Store-wide configuration. Shipping lives in System → Shipping.</p>
       </div>
 
       {!loaded && !error && <p className="text-[13px] text-[#666666]">Loading…</p>}
 
       <form onSubmit={save} className="space-y-8 rounded-md border border-[#292929] bg-[#111111] p-5">
         {!loaded && error && <p className="text-[12px] text-[#EF4444]">{error}</p>}
-
-        <section className="space-y-4">
-          <h2 className="text-[13px] font-semibold text-[#EFECE6]">Shipping</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-[11px] uppercase tracking-widest text-[#A8A8A8]">Free shipping over (₹)</label>
-              <input className={inputClass} type="number" value={shipping.freeThreshold} onChange={(e) => setShipping((s) => ({ ...s, freeThreshold: e.target.value }))} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[11px] uppercase tracking-widest text-[#A8A8A8]">Standard rate (₹)</label>
-              <input className={inputClass} type="number" value={shipping.standardRate} onChange={(e) => setShipping((s) => ({ ...s, standardRate: e.target.value }))} />
-            </div>
-          </div>
-          <p className="text-[11px] text-[#666666]">Checkout computes shipping automatically from these values.</p>
-        </section>
 
         <section className="space-y-4">
           <h2 className="text-[13px] font-semibold text-[#EFECE6]">Contact</h2>

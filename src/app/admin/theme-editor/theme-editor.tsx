@@ -486,7 +486,7 @@ export function ThemeEditor({
             addable={addable}
             onAdd={(k) => {
               const max = items.reduce((m, i) => Math.max(m, i.sort_order), -1);
-              const fresh: EditorSection = { id: crypto.randomUUID(), key: k, name: SECTION_META[k].name, enabled: true, sort_order: max + 1, settings: {}, hasDraft: true };
+              const fresh: EditorSection = { id: crypto.randomUUID(), key: k, name: SECTION_META[k].label, enabled: true, sort_order: max + 1, settings: {}, hasDraft: true };
               commit([...items, fresh]);
               setSelectedId(fresh.id);
               setShowAdd(false);

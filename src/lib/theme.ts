@@ -179,16 +179,3 @@ export function themeToCss(theme: Theme): string {
   lines.push(`@media(max-width:767px){${mobile}}`);
   return lines.join('');
 }
-
-// Inline-style vars for <body>: vars inherit into the whole tree.
-export function themeToVars(theme: Theme): Record<string, string> {
-  const vars: Record<string, string> = {};
-  for (const [k, v] of Object.entries(theme.colors)) vars[cssVarName(k)] = v;
-  for (const [k, v] of Object.entries(theme.radius)) vars[cssVarName(`radius-${k}`)] = `${v}px`;
-  vars[cssVarName('spacing-section-y')] = `${theme.spacing.sectionY}px`;
-  vars[cssVarName('spacing-section-y-mobile')] = `${theme.spacing.sectionYMobile}px`;
-  vars['--font-display'] = theme.fonts.display;
-  vars['--font-body'] = theme.fonts.body;
-  vars['--font-mono'] = theme.fonts.mono;
-  return vars;
-}

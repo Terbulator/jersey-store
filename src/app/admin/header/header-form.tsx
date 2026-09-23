@@ -5,26 +5,11 @@ import { Save, Check } from 'lucide-react';
 import { ImageUploader } from '@/components/admin/image-uploader';
 import type { HeaderSettings } from '@/lib/site-chrome';
 
-type Status = { kind: 'idle' | 'saving' | 'saved' | 'error'; message?: string };
+import type { FormStatus as Status } from '@/lib/admin-ui';
 
-const inputCls = 'input w-full text-[12px]';
+import { formInputCls as inputCls } from '@/lib/admin-ui';
 
-function CheckRow({ label, hint, checked, onChange }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-start gap-2.5">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 accent-[#B3001B]"
-      />
-      <span>
-        <span className="block text-[13px] text-[#EFECE6]">{label}</span>
-        {hint && <span className="block text-[11px] text-[#666666]">{hint}</span>}
-      </span>
-    </label>
-  );
-}
+import { CheckRow } from '@/lib/admin-ui';
 
 export function HeaderForm({ initial }: { initial: HeaderSettings }) {
   const [form, setForm] = useState<HeaderSettings>({ ...initial });

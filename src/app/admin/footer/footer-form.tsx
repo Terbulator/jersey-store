@@ -5,9 +5,9 @@ import { Save, Check, Plus, Trash2 } from 'lucide-react';
 import { DestinationInput } from '@/components/admin/destination-field';
 import type { FooterSettings } from '@/lib/site-chrome';
 
-type Status = { kind: 'idle' | 'saving' | 'saved' | 'error'; message?: string };
+import type { FormStatus as Status } from '@/lib/admin-ui';
 
-const inputCls = 'input w-full text-[12px]';
+import { formInputCls as inputCls } from '@/lib/admin-ui';
 
 export function FooterForm({ initial }: { initial: FooterSettings }) {
   const [form, setForm] = useState<FooterSettings>(() => JSON.parse(JSON.stringify(initial)) as FooterSettings);

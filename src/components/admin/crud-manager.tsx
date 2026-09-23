@@ -16,8 +16,7 @@ export type CrudField =
 
 type Row = Record<string, unknown> & { id: string };
 
-const inputCls =
-  'rounded-md border border-[#292929] bg-[#0D0D0D] px-2.5 py-1.5 text-[13px] text-[#EFECE6] placeholder:text-[#666666] focus:border-[#B3001B] focus:outline-none';
+import { crudInputCls as inputCls } from '@/lib/admin-ui';
 const btnCls =
   'rounded-md border border-[#292929] p-1.5 text-[#A8A8A8] hover:border-[#3a3a3a] hover:text-[#EFECE6]';
 

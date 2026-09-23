@@ -29,5 +29,3 @@ export function TemplatesProvider({ display, children }: { display: DisplaySetti
 export function ThemeStyle({ theme }: { theme: Theme }) {
   return <style dangerouslySetInnerHTML={{ __html: themeToCss(theme) }} />;
 }
-
-export { THEME_DEFAULTS };

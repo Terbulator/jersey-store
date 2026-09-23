@@ -37,7 +37,6 @@ export type SectionKey =
 
 export interface SectionMeta {
   key: SectionKey;
-  name: string;
   label: string;
 }
 
@@ -59,18 +58,18 @@ export const SECTION_ORDER: SectionKey[] = [
 ];
 
 export const SECTION_META: Record<SectionKey, SectionMeta> = {
-  hero: { key: 'hero', name: 'Hero', label: 'Hero' },
-  story_slides: { key: 'story_slides', name: 'Story Slides', label: 'Story Slides' },
-  trust_strip: { key: 'trust_strip', name: 'Trust Strip', label: 'Trust Strip' },
-  category_nav: { key: 'category_nav', name: 'Category Nav', label: 'Category Nav' },
-  best_sellers: { key: 'best_sellers', name: 'Best Sellers', label: 'Best Sellers' },
-  editorial_split: { key: 'editorial_split', name: 'Editorial Split', label: 'Editorial Split' },
-  bundle_section: { key: 'bundle_section', name: 'Bundle Section', label: 'Bundle Section' },
-  stats_section: { key: 'stats_section', name: 'Stats', label: 'Stats' },
-  editions_section: { key: 'editions_section', name: 'Editions', label: 'Editions' },
-  expert_section: { key: 'expert_section', name: 'Expert Section', label: 'Expert Section' },
-  newsletter_section: { key: 'newsletter_section', name: 'Newsletter', label: 'Newsletter' },
-  review_section: { key: 'review_section', name: 'Reviews', label: 'Reviews' },
+  hero: { key: 'hero', label: 'Hero' },
+  story_slides: { key: 'story_slides', label: 'Story Slides' },
+  trust_strip: { key: 'trust_strip', label: 'Trust Strip' },
+  category_nav: { key: 'category_nav', label: 'Category Nav' },
+  best_sellers: { key: 'best_sellers', label: 'Best Sellers' },
+  editorial_split: { key: 'editorial_split', label: 'Editorial Split' },
+  bundle_section: { key: 'bundle_section', label: 'Bundle Section' },
+  stats_section: { key: 'stats_section', label: 'Stats' },
+  editions_section: { key: 'editions_section', label: 'Editions' },
+  expert_section: { key: 'expert_section', label: 'Expert Section' },
+  newsletter_section: { key: 'newsletter_section', label: 'Newsletter' },
+  review_section: { key: 'review_section', label: 'Reviews' },
 };
 
 // Renders a single section given its key, settings, and storefront data.

@@ -139,8 +139,6 @@ export const SECTION_SCHEMAS = {
   }),
 } as const;
 
-export type SectionSettings = Partial<z.infer<(typeof SECTION_SCHEMAS)[keyof typeof SECTION_SCHEMAS]>>;
-
 // Validates a section's settings against its typed schema. Unknown keys are
 // stripped; bare records and partial payloads are accepted (components fall
 // back to defaults for missing fields).
