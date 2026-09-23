@@ -7,17 +7,12 @@ import { ReviewCarousel } from '@/components/website/reviews/review-carousel';
 import { ReviewFormModal } from '@/components/website/reviews/review-form-modal';
 import { ReviewLightbox } from '@/components/website/reviews/review-lightbox';
 
-export function ReviewSection({
-  reviews,
-  products,
-  editions,
-}: {
-  reviews: Review[];
-  products: Product[];
-  editions: Edition[];
-}) {
+interface RSSettings { heading?: string; subheading?: string }
+
+export function ReviewSection({ reviews, products, editions, settings }: { reviews: Review[]; products: Product[]; editions: Edition[]; settings?: RSSettings | null }) {
   const [formOpen, setFormOpen] = useState(false);
   const [lightbox, setLightbox] = useState<{ url: string; alt: string | null } | null>(null);
+  const heading = settings?.heading ?? 'What the Culture Says.';
 
   return (
     <section className="bg-[#080808] text-[#EFECE6]">
@@ -28,7 +23,7 @@ export function ReviewSection({
           <div>
             <p className="eyebrow mb-4 text-[#777777]">The Community</p>
             <h2 className="font-display text-[42px] leading-[0.95] sm:text-[64px] lg:text-[76px] tracking-[-0.03em] text-[#EFECE6]">
-              What the Culture Says.
+              {heading}
             </h2>
             <p className="mt-6 font-mono-meta text-[11px] sm:text-[12px] text-[#777777] tracking-[0.18em]">
               Real People. Real Jerseys. Real Feedback.

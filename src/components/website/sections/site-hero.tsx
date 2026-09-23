@@ -7,28 +7,30 @@ import { ROUTES } from '@/lib/utils';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 import { createClient } from '@/lib/supabase/client';
 
-interface HeroSlide {
-  eyebrow: string | null;
-  headline: string;
-  subheadline: string | null;
-  desktop_image: string | null;
-  cta_text: string | null;
-  cta_url: string | null;
+interface HeroSettings {
+  eyebrow?: string;
+  headline?: string;
+  subheadline?: string;
+  image_url?: string;
+  desktop_image?: string;
+  cta_text?: string;
+  cta_url?: string;
 }
 
-const FALLBACK: HeroSlide = {
+const FALLBACK: HeroSettings = {
   eyebrow: 'VOL. 01 — THE 2026 SEASON',
   headline: 'WEAR THE GAME.',
   subheadline: 'Player-version football & cricket jerseys. Master-edition streetwear. Cut for the culture that never stops.',
-  desktop_image: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=80',
+  image_url: 'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1600&q=80',
   cta_text: 'Shop the Drop',
   cta_url: ROUTES.SHOP,
 };
 
-export function SiteHero() {
-  const [slide, setSlide] = useState<HeroSlide>(FALLBACK);
+export function SiteHero({ settings }: { settings?: HeroSettings | null }) {
+  const [slide, setSlide] = useState<HeroSettings>(settings ?? FALLBACK);
 
   useEffect(() => {
+    if (settings && settings.headline) { setSlide(settings); return; }
     let cancelled = false;
     const supabase = createClient();
     supabase
@@ -37,32 +39,23 @@ export function SiteHero() {
       .eq('active', true)
       .order('sort_order', { ascending: true })
       .limit(1)
-      .then(({ data }: { data: Array<{ eyebrow: string | null; headline: string; subheadline: string | null; desktop_image: string | null; cta_text: string | null; cta_url: string | null }> | null }) => {
+      .then(({ data }: { data: Array<{ eyebrow?: string | null; headline: string; subheadline?: string | null; desktop_image?: string | null; cta_text?: string | null; cta_url?: string | null }> | null }) => {
         if (cancelled || !data?.length) return;
         const s = data[0];
-        if (s.headline) {
-          setSlide({
-            eyebrow: s.eyebrow ?? null,
-            headline: s.headline,
-            subheadline: s.subheadline ?? null,
-            desktop_image: s.desktop_image ?? null,
-            cta_text: s.cta_text ?? null,
-            cta_url: s.cta_url ?? null,
-          });
-        }
+        if (s.headline) setSlide({
+          eyebrow: s.eyebrow ?? '', headline: s.headline,
+          subheadline: s.subheadline ?? '', desktop_image: s.desktop_image ?? '',
+          cta_text: s.cta_text ?? '', cta_url: s.cta_url ?? '',
+        });
       })
-      .catch(() => {
-        // fall back to hardcoded hero
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [settings]);
 
-  const heroImage = slide.desktop_image ?? FALLBACK.desktop_image;
-  const headlineParts = slide.headline.split('GAME.');
+  const heroImage = slide.image_url ?? FALLBACK.image_url!;
+  const headlineParts = (slide.headline ?? '').split('GAME.');
   const hasGameSplit = headlineParts.length > 1;
-  const firstPart = hasGameSplit ? headlineParts[0] : slide.headline;
+  const firstPart = hasGameSplit ? headlineParts[0] : slide.headline ?? '';
   const highlight = hasGameSplit ? headlineParts.join(' ').replace(firstPart, '').trim() : '';
 
   return (
@@ -73,11 +66,7 @@ export function SiteHero() {
         transition={{ duration: 1.6, ease: EASE_PREMIUM }}
         className="absolute inset-0"
       >
-        <img
-          src={heroImage ?? FALLBACK.desktop_image!}
-          alt=""
-          className="w-full h-full object-cover opacity-50"
-        />
+        <img src={heroImage} alt="" className="w-full h-full object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/50" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
       </motion.div>
@@ -123,14 +112,8 @@ export function SiteHero() {
         transition={{ delay: 1.2, duration: 1 }}
         className="absolute bottom-8 right-6 sm:right-8 lg:right-12 hidden sm:flex flex-col items-center gap-3"
       >
-        <span className="font-mono-meta text-[9px] text-off-white/40 tracking-[0.3em] [writing-mode:vertical-rl]">
-          SCROLL
-        </span>
-        <motion.span
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-px h-12 bg-off-white/30 block"
-        />
+        <span className="font-mono-meta text-[9px] text-off-white/40 tracking-[0.3em] [writing-mode:vertical-rl]">SCROLL</span>
+        <motion.span animate={{ y: [0, 8, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} className="w-px h-12 bg-off-white/30 block" />
       </motion.div>
     </section>
   );

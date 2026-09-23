@@ -25,11 +25,15 @@ export default async function HomePage() {
   const supabase = createClient();
   const { data } = await supabase
     .from('homepage_sections')
-    .select('key, enabled')
+    .select('key, enabled, settings')
     .eq('enabled', true)
     .order('sort_order', { ascending: true });
 
-  const enabledKeys = data?.length ? new Set(data.filter((s) => s.enabled).map((s) => s.key)) : null;
+  const settingsMap: Record<string, Record<string, unknown> | null> = {};
+  for (const s of (data ?? [])) {
+    if (s.enabled && s.settings && typeof s.settings === 'object') settingsMap[s.key] = s.settings as Record<string, unknown>;
+  }
+  function g(k: string): Record<string, unknown> | null { return settingsMap[k] ?? null; }
 
   const [products, categories, editions, reviews] = await Promise.all([
     getProducts(),
@@ -39,24 +43,23 @@ export default async function HomePage() {
   ]);
 
   const allSections: { key: string; render: ReactNode }[] = [
-    { key: 'hero', render: <SiteHero /> },
-    { key: 'story_slides', render: <StorySlides categories={categories} /> },
-    { key: 'trust_strip', render: <TrustStrip /> },
-    { key: 'category_nav', render: <CategoryNav categories={categories} /> },
-    { key: 'best_sellers', render: <BestSellers products={products} editions={editions} /> },
-    { key: 'editorial_split', render: <EditorialSplit /> },
-    { key: 'bundle_section', render: <BundleSection /> },
-    { key: 'stats_section', render: <StatsSection /> },
-    { key: 'editions_section', render: <EditionsSection editions={editions} products={products} /> },
-    { key: 'expert_section', render: <ExpertSection /> },
-    { key: 'newsletter_section', render: <NewsletterSection /> },
-    { key: 'review_section', render: <ReviewSection reviews={reviews} products={products} editions={editions} /> },
+    { key: 'hero', render: <SiteHero settings={g('hero') as any} /> },
+    { key: 'story_slides', render: <StorySlides categories={categories} settings={g('story_slides') as any} /> },
+    { key: 'trust_strip', render: <TrustStrip settings={g('trust_strip') as any} /> },
+    { key: 'category_nav', render: <CategoryNav categories={categories} settings={g('category_nav') as any} /> },
+    { key: 'best_sellers', render: <BestSellers products={products} editions={editions} settings={g('best_sellers') as any} /> },
+    { key: 'editorial_split', render: <EditorialSplit settings={g('editorial_split') as any} /> },
+    { key: 'bundle_section', render: <BundleSection settings={g('bundle_section') as any} /> },
+    { key: 'stats_section', render: <StatsSection settings={g('stats_section') as any} /> },
+    { key: 'editions_section', render: <EditionsSection editions={editions} products={products} settings={g('editions_section') as any} /> },
+    { key: 'expert_section', render: <ExpertSection settings={g('expert_section') as any} /> },
+    { key: 'newsletter_section', render: <NewsletterSection settings={g('newsletter_section') as any} /> },
+    { key: 'review_section', render: <ReviewSection reviews={reviews} products={products} editions={editions} settings={g('review_section') as any} /> },
   ];
 
   const orderedData = data ?? [];
-  // Fallback: DB unavailable or empty → full saved layout.
-  const sections = enabledKeys
-    ? allSections.filter((s) => enabledKeys.has(s.key)).sort(
+  const sections = orderedData.length
+    ? allSections.filter((s) => orderedData.some((d) => d.key === s.key && d.enabled)).sort(
         (a, b) => orderedData.findIndex((x) => x.key === a.key) - orderedData.findIndex((x) => x.key === b.key)
       )
     : allSections;
