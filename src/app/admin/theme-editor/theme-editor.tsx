@@ -25,13 +25,14 @@ import {
 import {
   SECTION_ORDER,
   SECTION_META,
+  SECTION_SUPPORT,
   renderHomepageSections,
   type SectionKey,
   type StorefrontData,
 } from '@/components/website/section-registry';
 import { renderSectionFields, SECTION_ELEMENTS } from '@/components/admin/section-fields';
 import { DesignFields } from '@/components/admin/design-fields';
-import { SECTION_SUPPORT, type SectionDesign } from '@/components/website/section-shell';
+import type { SectionDesign } from '@/components/website/section-shell';
 import { ThemeProvider } from '@/components/website/theme-provider';
 import { TemplatesProvider } from '@/components/website/theme-provider';
 import type { Theme } from '@/lib/theme';

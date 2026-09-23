@@ -17,7 +17,7 @@ const optUrl = z.string().max(2000).refine(SAFE_URL_REFINER, { message: 'URL sch
 
 // Per-section design overrides (settings.design). Colors accept #rrggbb or a
 // 'token:<path>' reference so local overrides follow theme changes. Only
-// keys the component supports are applied (SECTION_SUPPORT in section-shell).
+// keys the component supports are applied (SECTION_SUPPORT in section-registry).
 export const hexOrToken = z.string().max(100).refine(
   (v) => v === '' || /^#[0-9a-fA-F]{6}$/.test(v) || /^token:[a-z0-9.]+$/i.test(v),
   { message: 'Use a #rrggbb color or theme token.' }

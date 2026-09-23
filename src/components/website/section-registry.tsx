@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import { SectionShell, SECTION_SUPPORT } from '@/components/website/section-shell';
+import { SectionShell } from '@/components/website/section-shell';
 import { SiteHero } from '@/components/website/sections/site-hero';
 import { StorySlides } from '@/components/website/sections/story-slides';
 import { TrustStrip } from '@/components/website/sections/trust-strip';
@@ -70,6 +70,25 @@ export const SECTION_META: Record<SectionKey, SectionMeta> = {
   expert_section: { key: 'expert_section', label: 'Expert Section' },
   newsletter_section: { key: 'newsletter_section', label: 'Newsletter' },
   review_section: { key: 'review_section', label: 'Reviews' },
+};
+
+// Design keys each section supports. bg/padding/radius are excluded where
+// they would break full-bleed or sticky layouts (hero, story). Plain data in
+// this directive-free module so server components can import it — it must
+// NOT live in a 'use client' module (that breaks the production RSC manifest).
+export const SECTION_SUPPORT: Record<string, string[]> = {
+  hero: ['bg', 'heading_color', 'body_color', 'accent_color', 'align', 'animation', 'visibility'],
+  story_slides: ['bg', 'heading_color', 'body_color', 'accent_color', 'visibility'],
+  trust_strip: ['bg', 'body_color', 'accent_color', 'padding', 'visibility', 'animation'],
+  category_nav: ['bg', 'heading_color', 'accent_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
+  best_sellers: ['bg', 'heading_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
+  editorial_split: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
+  bundle_section: ['bg', 'heading_color', 'body_color', 'accent_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
+  stats_section: ['bg', 'heading_color', 'body_color', 'padding', 'visibility', 'animation'],
+  editions_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
+  expert_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
+  newsletter_section: ['bg', 'heading_color', 'body_color', 'accent_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
+  review_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
 };
 
 // Renders a single section given its key, settings, and storefront data.

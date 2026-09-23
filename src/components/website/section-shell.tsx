@@ -5,8 +5,8 @@ import { resolveThemeColor } from '@/lib/theme';
 import { useTheme } from './theme-provider';
 
 // Per-section design overrides, stored as settings.design. Only keys the
-// underlying component actually supports are applied (see SECTION_SUPPORT) —
-// no fake controls. hide_on (visibility) is universal.
+// underlying component actually supports are applied (see SECTION_SUPPORT in
+// section-registry) — no fake controls. hide_on (visibility) is universal.
 export interface SectionDesign {
   bg?: string;
   heading_color?: string;
@@ -22,23 +22,6 @@ export interface SectionDesign {
   animation_duration?: number;
   hide_on?: ('desktop' | 'tablet' | 'mobile')[];
 }
-
-// Design keys each section supports. bg/padding/radius are excluded where
-// they would break full-bleed or sticky layouts (hero, story).
-export const SECTION_SUPPORT: Record<string, string[]> = {
-  hero: ['bg', 'heading_color', 'body_color', 'accent_color', 'align', 'animation', 'visibility'],
-  story_slides: ['bg', 'heading_color', 'body_color', 'accent_color', 'visibility'],
-  trust_strip: ['bg', 'body_color', 'accent_color', 'padding', 'visibility', 'animation'],
-  category_nav: ['bg', 'heading_color', 'accent_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
-  best_sellers: ['bg', 'heading_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
-  editorial_split: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
-  bundle_section: ['bg', 'heading_color', 'body_color', 'accent_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
-  stats_section: ['bg', 'heading_color', 'body_color', 'padding', 'visibility', 'animation'],
-  editions_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'visibility', 'animation'],
-  expert_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
-  newsletter_section: ['bg', 'heading_color', 'body_color', 'accent_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
-  review_section: ['bg', 'heading_color', 'body_color', 'heading_size', 'padding', 'align', 'radius', 'shadow', 'animation', 'visibility'],
-};
 
 const SHADOWS: Record<string, string> = {
   soft: 'shadow-[0_8px_30px_rgba(0,0,0,0.35)]',
