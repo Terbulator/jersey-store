@@ -26,6 +26,7 @@ function errorMessage(error: { code?: string; message: string }): string {
 export default function LoginPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [role, setRole] = useState<string | null>(null);
   const [redirect, setRedirect] = useState<string | null>(null);
   const [searchDone, setSearchDone] = useState(false);
   const [email, setEmail] = useState('');
@@ -39,11 +40,27 @@ export default function LoginPage() {
     setSearchDone(true);
   }, []);
 
+  const home = role ? '/admin' : ROUTES.ACCOUNT;
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((j: { role?: string | null }) => {
+        if (active) setRole(j.role ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
   useEffect(() => {
     if (searchDone && !loading && user) {
-      router.replace(redirect ?? ROUTES.ACCOUNT);
+      router.replace(redirect ?? home);
     }
-  }, [searchDone, loading, user, redirect, router]);
+  }, [searchDone, loading, user, redirect, home, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +79,11 @@ export default function LoginPage() {
       if (data.user) {
         await syncGuestData(data.user.id);
       }
-      router.replace(redirect ?? ROUTES.ACCOUNT);
+      const me = await fetch('/api/me')
+        .then((r) => r.json())
+        .then((j: { role?: string | null }) => j.role ?? null)
+        .catch(() => null);
+      router.replace(redirect ?? (me ? '/admin' : ROUTES.ACCOUNT));
       router.refresh();
     } catch {
       setError(errorMessage({ message: 'failed' }));

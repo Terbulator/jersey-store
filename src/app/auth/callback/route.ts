@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getAdminSession } from '@/lib/admin';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next');
-
-  const target =
-    next && next.startsWith('/') && !next.startsWith('//') ? next : '/account';
 
   if (code) {
     const cookieStore = cookies();
@@ -34,6 +32,13 @@ export async function GET(request: Request) {
     );
     await supabase.auth.exchangeCodeForSession(code);
   }
+
+  const target =
+    next && next.startsWith('/') && !next.startsWith('//')
+      ? next
+      : (await getAdminSession()).status === 'ok'
+        ? '/admin'
+        : '/account';
 
   return NextResponse.redirect(`${origin}${target}`);
 }
