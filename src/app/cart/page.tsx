@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { ShoppingBag, Minus, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
+import { useShipping } from '@/lib/use-shipping';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, itemCount } = useCartStore();
-  const shipping = subtotal() > 999 ? 0 : 99;
+  const { freeThreshold, rate, message } = useShipping();
+  const shipping = subtotal() > freeThreshold ? 0 : rate;
   const total = subtotal() + shipping;
 
   return (
@@ -120,7 +122,7 @@ export default function CartPage() {
                     </span>
                   </div>
                   {shipping > 0 && (
-                    <p className="text-[10px] text-chrome/60">Free shipping on orders above ₹999</p>
+                    <p className="text-[10px] text-chrome/60">{message}</p>
                   )}
                 </div>
 

@@ -6,6 +6,7 @@ import { Check, ChevronRight, Lock } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
 import { trackEvent } from '@/lib/analytics';
+import { useShipping } from '@/lib/use-shipping';
 
 type Step = 1 | 2 | 3;
 
@@ -14,7 +15,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
   const { items, subtotal, clearCart } = useCartStore();
-  const shipping = subtotal() > 999 ? 0 : 99;
+  const { freeThreshold, rate } = useShipping();
+  const shipping = subtotal() > freeThreshold ? 0 : rate;
   const total = subtotal() + shipping;
 
   useEffect(() => {
