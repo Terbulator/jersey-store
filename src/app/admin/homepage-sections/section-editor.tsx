@@ -9,9 +9,10 @@ interface SectionEditorProps {
   sectionKey: string;
   sectionName: string;
   settings: Record<string, unknown> | null;
+  onSettingsChange?: (key: string, settings: Record<string, unknown> | null) => void;
 }
 
-export function SectionEditor({ sectionKey, sectionName, settings }: SectionEditorProps) {
+export function SectionEditor({ sectionKey, sectionName, settings, onSettingsChange }: SectionEditorProps) {
   const router = useRouter();
   const [form, setForm] = useState<Record<string, unknown>>(settings ?? {});
   const [busy, setBusy] = useState(false);
@@ -22,6 +23,10 @@ export function SectionEditor({ sectionKey, sectionName, settings }: SectionEdit
 
   function update<K extends string>(key: K, value: unknown) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (onSettingsChange) {
+      const next = { ...form, [key]: value };
+      onSettingsChange(sectionKey, next);
+    }
   }
 
   async function save() {

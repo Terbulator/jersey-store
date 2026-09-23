@@ -1,5 +1,7 @@
 import { requireAdmin, adminDataClient } from '@/lib/admin';
-import { HomepageSectionsManager } from './homepage-sections-manager';
+import { PreviewWrapper } from './preview-wrapper';
+import { createClient } from '@/lib/supabase/server';
+import { getProducts, getCategories, getEditions, getApprovedReviews } from '@/lib/storefront';
 
 export const metadata = { title: 'Homepage Sections — HEADERR Admin' };
 
@@ -18,14 +20,22 @@ export default async function AdminHomepageSectionsPage() {
     settingsMap[s.key] = st ?? null;
   }
 
+  const supabase = createClient();
+  const { data: products } = await supabase.from('products').select('*').limit(20);
+  const { data: categories } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
+  const { data: editions } = await supabase.from('editions').select('*').order('sort_order', { ascending: true });
+  const { data: reviews } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(10);
+
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="font-display text-2xl text-[#EFECE6]">Homepage Sections</h1>
-        <p className="mt-0.5 text-[12px] text-[#A8A8A8]">Toggle, reorder, and edit what renders on the storefront homepage.</p>
-      </div>
-      {error && <p className="text-[12px] text-[#EF4444]">Could not load sections.</p>}
-      <HomepageSectionsManager items={items} settingsMap={settingsMap} />
+      <PreviewWrapper
+        items={items}
+        settingsMap={settingsMap}
+        products={(products ?? []) as Record<string, unknown>[]}
+        categories={(categories ?? []) as Record<string, unknown>[]}
+        editions={(editions ?? []) as Record<string, unknown>[]}
+        reviews={(reviews ?? []) as Record<string, unknown>[]}
+      />
       <div className="rounded-md border border-[#292929] bg-[#111111] p-4 text-[12px] text-[#A8A8A8]">
         If no sections are enabled, the homepage falls back to showing the full saved layout.
       </div>
