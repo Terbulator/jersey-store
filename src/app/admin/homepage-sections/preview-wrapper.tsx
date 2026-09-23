@@ -15,11 +15,21 @@ export function PreviewWrapper({ items, settingsMap, products, categories, editi
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [editorSettings, setEditorSettings] = useState<Record<string, Record<string, unknown> | null>>({});
   const [inspectorMode, setInspectorMode] = useState(false);
 
   function updateEditor(key: string, settings: Record<string, unknown> | null) {
     setEditorSettings((prev) => ({ ...prev, [key]: settings }));
+  }
+
+  function selectSection(key: string) {
+    setSelectedKey(key);
+    setInspectorMode(false);
+    setExpandedKey(key);
+    requestAnimationFrame(() => {
+      document.getElementById(`section-row-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   }
 
   return (
@@ -48,8 +58,11 @@ export function PreviewWrapper({ items, settingsMap, products, categories, editi
             items={items}
             settingsMap={settingsMap}
             onSettingsChange={updateEditor}
-            inspectorMode={inspectorMode && !selectedKey}
-            onSelectSection={(key) => { setSelectedKey(key); setInspectorMode(false); }}
+            inspectorMode={inspectorMode}
+            onSelectSection={selectSection}
+            selectedKey={selectedKey}
+            expandedKey={expandedKey}
+            onToggleEdit={(key) => setExpandedKey(expandedKey === key ? null : key)}
           />
         </div>
         {previewOpen && (
@@ -72,7 +85,7 @@ export function PreviewWrapper({ items, settingsMap, products, categories, editi
                 reviews={reviews}
                 selectedKey={selectedKey}
                 editorSettings={editorSettings}
-                onSelect={(key) => { setSelectedKey(key); setInspectorMode(false); }}
+                onSelect={selectSection}
                 inspectorMode={inspectorMode}
               />
             </div>
