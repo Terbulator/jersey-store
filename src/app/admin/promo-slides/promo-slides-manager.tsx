@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ImageUploader } from '@/components/admin/image-uploader';
 
 export interface SlideRow {
   id: string;
@@ -29,7 +30,7 @@ export function PromoSlidesManager({ items }: { items: SlideRow[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, Partial<SlideRow>>>({});
-  const [created, setCreated] = useState({ headline: '', eyebrow: '', subheadline: '', cta_text: '', cta_url: '', desktop_image: '' });
+  const [created, setCreated] = useState({ headline: '', eyebrow: '', subheadline: '', cta_text: '', cta_url: '', desktop_image: '', mobile_image: '' });
 
   async function act(id: string, patch: Partial<SlideRow>) {
     setBusy(id);
@@ -68,7 +69,7 @@ export function PromoSlidesManager({ items }: { items: SlideRow[] }) {
       setError('Could not create slide.');
       return;
     }
-    setCreated({ headline: '', eyebrow: '', subheadline: '', cta_text: '', cta_url: '', desktop_image: '' });
+    setCreated({ headline: '', eyebrow: '', subheadline: '', cta_text: '', cta_url: '', desktop_image: '', mobile_image: '' });
     setNewOpen(false);
     router.refresh();
   }
@@ -107,7 +108,10 @@ export function PromoSlidesManager({ items }: { items: SlideRow[] }) {
               <input className={inputClass} placeholder="CTA URL" value={created.cta_url} onChange={(e) => setCreated((c) => ({ ...c, cta_url: e.target.value }))} />
             </div>
             <div className={`${field} sm:col-span-2`}>
-              <input className={inputClass} placeholder="Desktop image URL" value={created.desktop_image} onChange={(e) => setCreated((c) => ({ ...c, desktop_image: e.target.value }))} />
+              <ImageUploader value={created.desktop_image} onChange={(url) => setCreated((c) => ({ ...c, desktop_image: url }))} folder="promo" />
+            </div>
+            <div className={`${field} sm:col-span-2`}>
+              <ImageUploader value={created.mobile_image} onChange={(url) => setCreated((c) => ({ ...c, mobile_image: url }))} folder="promo" />
             </div>
           </div>
           <button onClick={create} className="mt-4 rounded-md bg-[#B3001B] px-4 py-2 text-[12px] font-semibold text-[#EFECE6]">
@@ -179,8 +183,11 @@ export function PromoSlidesManager({ items }: { items: SlideRow[] }) {
                   <div className={field}>
                     <input className={inputClass} value={String(val('cta_url'))} onChange={(e) => draft(s.id, 'cta_url', e.target.value)} placeholder="CTA URL" />
                   </div>
+<div className={`${field} sm:col-span-2`}>
+                  <ImageUploader value={String(val('desktop_image') ?? '')} onChange={(url) => draft(s.id, 'desktop_image', url)} folder="promo" />
+                </div>
                   <div className={`${field} sm:col-span-2`}>
-                    <input className={inputClass} value={String(val('desktop_image'))} onChange={(e) => draft(s.id, 'desktop_image', e.target.value)} placeholder="Desktop image URL" />
+                    <ImageUploader value={String(val('mobile_image') ?? '')} onChange={(url) => draft(s.id, 'mobile_image', url)} folder="promo" />
                   </div>
                 </div>
 

@@ -7,7 +7,7 @@ const fields: CrudField[] = [
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'slug', label: 'Slug', type: 'text' },
   { key: 'description', label: 'Description', type: 'textarea', rows: 2 },
-  { key: 'image', label: 'Image URL', type: 'text', placeholder: 'https://…' },
+  { key: 'image', label: 'Image', type: 'image' },
 ];
 
 export default async function AdminCollectionsPage() {

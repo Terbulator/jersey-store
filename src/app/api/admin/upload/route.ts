@@ -5,6 +5,8 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   await requireAdmin();
+  const { searchParams } = new URL(req.url);
+  const folder = searchParams.get('folder') ?? 'homepage';
   const form = await req.formData();
   const file = form.get('file') as File | null;
   if (!file) return NextResponse.json({ error: 'No file.' }, { status: 400 });
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.name.split('.').pop() ?? 'png';
-  const path = `homepage/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  const path = `${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
   const sb = await adminDataClient();
   const { error: upErr } = await sb.storage.from('product-images').upload(path, file, {
     cacheControl: '3600',

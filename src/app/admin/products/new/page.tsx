@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ImageUploader } from '@/components/admin/image-uploader';
 
 const inputClass =
   'w-full rounded-md border border-[#292929] bg-[#0D0D0D] px-3 py-2 text-[13px] text-[#EFECE6] placeholder:text-[#666666] focus:border-[#B3001B] focus:outline-none';
@@ -112,8 +113,8 @@ export default function NewProductPage() {
           </div>
         </div>
         <div className={field}>
-          <Label>Image URL</Label>
-          <input className={inputClass} value={form.image} onChange={(e) => set('image', e.target.value)} placeholder="https://…" />
+          <Label>Product Image</Label>
+          <ImageUploader value={form.image} onChange={(url) => set('image', url)} onRemove={() => set('image', '')} />
         </div>
         <div className={field}>
           <Label>Badge</Label>

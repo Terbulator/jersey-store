@@ -9,7 +9,7 @@ const fields: CrudField[] = [
   { key: 'badge', label: 'Badge', type: 'text' },
   { key: 'code', label: 'Code', type: 'text' },
   { key: 'discount_text', label: 'Discount', type: 'text' },
-  { key: 'image', label: 'Image URL', type: 'text', placeholder: 'https://…' },
+  { key: 'image', label: 'Image', type: 'image' },
   { key: 'cta_text', label: 'CTA Text', type: 'text' },
   { key: 'cta_url', label: 'CTA URL', type: 'text' },
 ];

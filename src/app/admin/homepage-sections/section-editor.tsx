@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, ImageIcon, X, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import { ImageUploader } from '@/components/admin/image-uploader';
 
 interface SectionEditorProps {
   sectionKey: string;
@@ -192,28 +193,10 @@ function Field(props: { label: string; value: string; onChange: (v: string) => v
 }
 
 function ImageField(props: { label: string; value: string; onChange: (v: string) => void }) {
-  function triggerUpload() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
-      const j = await res.json();
-      if (j.url) props.onChange(j.url);
-    };
-    input.click();
-  }
   return (
     <div>
       <label className="font-mono-meta text-[9px] text-off-white/40 uppercase tracking-[0.15em]">{props.label}</label>
-      <div className="flex gap-2">
-        <input value={props.value} onChange={(e) => props.onChange(e.target.value)} className="input flex-1 text-[12px]" />
-        <button onClick={triggerUpload} className="btn-pill btn-pill-outline text-[10px] px-2"><Upload className="w-3 h-3" /></button>
-      </div>
+      <ImageUploader value={props.value} onChange={props.onChange} folder="homepage" />
     </div>
   );
 }

@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { Plus, Trash2, Repeat } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ImageUploader } from './image-uploader';
 
 export type CrudField =
   | { key: string; label: string; type: 'text'; placeholder?: string }
   | { key: string; label: string; type: 'textarea'; rows?: number }
   | { key: string; label: string; type: 'number'; placeholder?: string }
-  | { key: string; label: string; type: 'select'; options: string[] };
+  | { key: string; label: string; type: 'select'; options: string[] }
+  | { key: string; label: string; type: 'image' };
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -56,10 +58,7 @@ export function CrudManager({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      setError('Could not save.');
-      return false;
-    }
+    if (!res.ok) { setError('Could not save.'); return false; }
     setError('');
     router.refresh();
     return true;
@@ -143,43 +142,41 @@ export function CrudManager({
                 if (f.type === 'select') {
                   return (
                     <label key={f.key} className="flex items-center gap-2">
-                      <span className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-[#666666]">
-                        {f.label}
-                      </span>
+                      <span className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</span>
                       <select
                         value={v}
                         onChange={(e) => set(it.id, f.key, e.target.value)}
-                        onBlur={(e) => e.target.value !== it[f.key] && saveField(it.id, f.key, e.target.value)}
+                        onBlur={(e) => e.target.value.trim() !== it[f.key] && saveField(it.id, f.key, e.target.value)}
                         className={inputCls}
                       >
                         <option value="">—</option>
-                        {f.options.map((o) => (
-                          <option key={o} value={o}>
-                            {o}
-                          </option>
-                        ))}
+                        {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
                       </select>
                     </label>
                   );
                 }
-                const input = (
-                  <input
-                    value={v}
-                    placeholder={f.type === 'number' ? '0' : undefined}
-                    onChange={(e) => set(it.id, f.key, e.target.value)}
-                    onBlur={(e) =>
-                      e.target.value.trim() !== String(it[f.key] ?? '') &&
-                      saveField(it.id, f.key, e.target.value)
-                    }
-                    className={inputCls}
-                  />
-                );
+                if (f.type === 'image') {
+                  return (
+                    <div key={f.key}>
+                      <span className="mb-1 block text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</span>
+                      <ImageUploader
+                        value={v}
+                        onChange={(url) => { set(it.id, f.key, url); saveField(it.id, f.key, url); }}
+                        onRemove={() => { set(it.id, f.key, ''); saveField(it.id, f.key, ''); }}
+                      />
+                    </div>
+                  );
+                }
                 return (
                   <label key={f.key} className="flex items-center gap-2">
-                    <span className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-[#666666]">
-                      {f.label}
-                    </span>
-                    {input}
+                    <span className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</span>
+                    <input
+                      value={v}
+                      placeholder={f.type === 'number' ? '0' : undefined}
+                      onChange={(e) => set(it.id, f.key, e.target.value)}
+                      onBlur={(e) => e.target.value.trim() !== String(it[f.key] ?? '') && saveField(it.id, f.key, e.target.value)}
+                      className={inputCls}
+                    />
                   </label>
                 );
               })}
@@ -194,19 +191,11 @@ export function CrudManager({
             <div key={f.key} className="mb-2.5">
               <p className="mb-1 text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</p>
               {f.type === 'textarea' ? (
-                <textarea
-                  value={draft[f.key] ?? ''}
-                  rows={f.rows ?? 2}
-                  onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))}
-                  className={`${inputCls} w-full`}
-                />
+                <textarea value={draft[f.key] ?? ''} rows={f.rows ?? 2} onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))} className={`${inputCls} w-full`} />
+              ) : f.type === 'image' ? (
+                <ImageUploader value={draft[f.key] ?? ''} onChange={(url) => setDraft((d) => ({ ...d, [f.key]: url }))} />
               ) : (
-                <input
-                  value={draft[f.key] ?? ''}
-                  placeholder={f.placeholder}
-                  onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))}
-                  className={`${inputCls} w-full`}
-                />
+                <input value={draft[f.key] ?? ''} placeholder={(f as { placeholder?: string }).placeholder} onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))} className={`${inputCls} w-full`} />
               )}
             </div>
           ))}
@@ -215,8 +204,7 @@ export function CrudManager({
           disabled={!String(draft[requiredField] ?? '').trim()}
           className="mt-1 flex items-center gap-1.5 rounded-md bg-[#B3001B] px-3 py-2 text-[12px] font-semibold text-[#EFECE6] disabled:opacity-50"
         >
-          <Plus className="h-3.5 w-3.5" />
-          {addLabel}
+          <Plus className="h-3.5 w-3.5" /> {addLabel}
         </button>
       </div>
 

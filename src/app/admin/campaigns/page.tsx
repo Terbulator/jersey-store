@@ -6,7 +6,7 @@ export const metadata = { title: 'Campaigns — HEADERR Admin' };
 const fields: CrudField[] = [
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'description', label: 'Description', type: 'textarea', rows: 3 },
-  { key: 'image', label: 'Image URL', type: 'text', placeholder: 'https://…' },
+  { key: 'image', label: 'Image', type: 'image' },
   { key: 'cta_text', label: 'CTA Text', type: 'text' },
   { key: 'cta_url', label: 'CTA URL', type: 'text' },
   { key: 'status', label: 'Status', type: 'select', options: ['draft', 'scheduled', 'active', 'expired'] },

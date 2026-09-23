@@ -8,7 +8,7 @@ const fields: CrudField[] = [
   { key: 'eyebrow', label: 'Eyebrow', type: 'text' },
   { key: 'headline', label: 'Headline', type: 'text' },
   { key: 'copy', label: 'Copy', type: 'textarea', rows: 3 },
-  { key: 'image', label: 'Image URL', type: 'text', placeholder: 'https://…' },
+  { key: 'image', label: 'Image', type: 'image' },
   { key: 'cta_text', label: 'CTA Text', type: 'text' },
   { key: 'cta_url', label: 'CTA URL', type: 'text' },
 ];
