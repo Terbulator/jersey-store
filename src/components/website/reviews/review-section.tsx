@@ -1,14 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { useReviewStore } from '@/store/review-store';
+import type { Edition, Product, Review } from '@/lib/storefront-types';
 import { ReviewTicker } from '@/components/website/reviews/review-ticker';
 import { ReviewCarousel } from '@/components/website/reviews/review-carousel';
 import { ReviewFormModal } from '@/components/website/reviews/review-form-modal';
 import { ReviewLightbox } from '@/components/website/reviews/review-lightbox';
 
-export function ReviewSection() {
-  const approved = useReviewStore((s) => s.approvedReviews());
+export function ReviewSection({
+  reviews,
+  products,
+  editions,
+}: {
+  reviews: Review[];
+  products: Product[];
+  editions: Edition[];
+}) {
   const [formOpen, setFormOpen] = useState(false);
   const [lightbox, setLightbox] = useState<{ url: string; alt: string | null } | null>(null);
 
@@ -36,8 +43,8 @@ export function ReviewSection() {
           </button>
         </div>
 
-        {approved.length > 0 ? (
-          <ReviewCarousel reviews={approved} onPhotoClick={(url, alt) => setLightbox({ url, alt })} />
+        {reviews.length > 0 ? (
+          <ReviewCarousel reviews={reviews} onPhotoClick={(url, alt) => setLightbox({ url, alt })} />
         ) : (
           <div className="text-center py-16 border border-white/10 rounded-[6px]">
             <p className="font-display text-3xl sm:text-4xl text-[#EFECE6]">
@@ -57,7 +64,7 @@ export function ReviewSection() {
         )}
       </div>
 
-      <ReviewFormModal open={formOpen} onClose={() => setFormOpen(false)} />
+      <ReviewFormModal open={formOpen} onClose={() => setFormOpen(false)} products={products} editions={editions} />
       <ReviewLightbox
         photoUrl={lightbox?.url ?? null}
         photoAlt={lightbox?.alt ?? null}

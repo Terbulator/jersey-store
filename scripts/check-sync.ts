@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { mergeCart, mergeWishlist } from '@/lib/merge';
-import type { Product } from '@/data/products';
+import type { Product } from '@/lib/storefront-types';
 import type { CartItem } from '@/store/cart-store';
 
 const p1 = { id: 'p1' } as Product;

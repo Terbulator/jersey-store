@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { PRODUCTS, CATEGORIES, EDITION_TYPES } from '@/data/products';
+import type { Category, Edition, Product } from '@/lib/storefront-types';
 import { ProductGrid } from '@/components/website/product/product-grid';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
@@ -16,17 +16,22 @@ const SORT_OPTIONS = [
   { value: 'price-high', label: 'Price: High → Low' },
 ];
 
-const TEAMS = [...new Set(PRODUCTS.map((p) => p.team))];
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
 export function ShopTemplate({
   title,
   description,
   defaultCategory = 'all',
+  products,
+  categories,
+  editions,
 }: {
   title: string;
   description: string;
   defaultCategory?: string;
+  products: Product[];
+  categories: Category[];
+  editions: Edition[];
 }) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams?.get('category') || defaultCategory;
@@ -39,8 +44,13 @@ export function ShopTemplate({
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
 
+  const TEAMS = useMemo(
+    () => [...new Set(products.map((p) => p.team).filter((t): t is string => !!t))],
+    [products]
+  );
+
   const filteredProducts = useMemo(() => {
-    let items = [...PRODUCTS];
+    let items = [...products];
 
     if (activeCategory !== 'all') {
       items = items.filter((p) => p.category === activeCategory);
@@ -68,7 +78,7 @@ export function ShopTemplate({
     }
 
     return items;
-  }, [activeCategory, activeEdition, activeTeam, activeSize, sortBy]);
+  }, [products, activeCategory, activeEdition, activeTeam, activeSize, sortBy]);
 
   const clearFilters = () => {
     setActiveCategory('all');
@@ -82,7 +92,7 @@ export function ShopTemplate({
 
   const categoryTabs =
     defaultCategory === 'all'
-      ? [{ id: 'all', label: 'ALL' }, ...CATEGORIES.map((c) => ({ id: c.slug, label: c.name.toUpperCase() }))]
+      ? [{ id: 'all', label: 'ALL' }, ...categories.map((c) => ({ id: c.slug, label: c.name.toUpperCase() }))]
       : null;
 
   return (
@@ -204,7 +214,7 @@ export function ShopTemplate({
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.4, ease: EASE_PREMIUM }}
           >
-            <ProductGrid products={filteredProducts} />
+            <ProductGrid products={filteredProducts} editions={editions} />
           </motion.div>
         </AnimatePresence>
 
@@ -256,7 +266,7 @@ export function ShopTemplate({
                     Edition
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {EDITION_TYPES.map((ed) => (
+                    {editions.map((ed) => (
                       <button
                         key={ed.id}
                         onClick={() => {

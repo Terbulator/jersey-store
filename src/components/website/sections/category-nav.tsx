@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
+import type { Category } from '@/lib/storefront-types';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
-export function CategoryNav() {
+export function CategoryNav({ categories }: { categories: Category[] }) {
+  if (categories.length === 0) return null;
+
   return (
     <section className="section-gap bg-black">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
@@ -22,7 +24,7 @@ export function CategoryNav() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {CATEGORIES.map((cat, i) => (
+          {categories.map((cat, i) => (
             <motion.div
               key={cat.id}
               initial={{ opacity: 0, y: 32 }}

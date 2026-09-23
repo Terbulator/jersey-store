@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Product } from '@/data/products';
+import type { Product } from '@/lib/storefront-types';
 import { trackEvent } from '@/lib/analytics';
 
 export interface CartItem {

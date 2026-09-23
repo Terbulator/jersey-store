@@ -1,4 +1,4 @@
-import type { Review } from '@/lib/review-types';
+import type { Review } from '@/lib/storefront-types';
 
 function Stars({ rating }: { rating: number }) {
   return (

@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Star } from 'lucide-react';
-import { PRODUCTS } from '@/data/products';
-import { useReviewStore } from '@/store/review-store';
+import type { Edition, Product } from '@/lib/storefront-types';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
@@ -39,14 +38,20 @@ function readAndResize(file: File): Promise<string> {
   });
 }
 
+const variantOf = (p: Product, editions: Edition[]) =>
+  editions.find((e) => e.slug === p.edition)?.name ?? p.edition;
+
 export function ReviewFormModal({
   open,
   onClose,
+  products,
+  editions,
 }: {
   open: boolean;
   onClose: () => void;
+  products: Product[];
+  editions: Edition[];
 }) {
-  const submitReview = useReviewStore((s) => s.submitReview);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [rating, setRating] = useState(0);
@@ -61,8 +66,8 @@ export function ReviewFormModal({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const product = useMemo(
-    () => PRODUCTS.find((p) => p.id === productId) ?? null,
-    [productId]
+    () => products.find((p) => p.id === productId) ?? null,
+    [productId, products]
   );
 
   useEffect(() => {
@@ -97,7 +102,7 @@ export function ReviewFormModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!name.trim() || !email.trim() || rating < 1 || !title.trim() || !body.trim() || !product) {
@@ -105,23 +110,28 @@ export function ReviewFormModal({
       return;
     }
     setBusy(true);
-    // Simulate async submission so the UI shows a brief in-flight state.
-    setTimeout(() => {
-      submitReview({
-        customerName: name,
-        customerEmail: email,
-        rating,
-        title,
-        body,
-        productId: product.id,
-        productName: product.name,
-        productVariant: product.edition === 'master' ? 'Master Edition' : 'Player Version',
-        photoUrl: photo,
-        photoAlt: `${name}'s photo`,
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: name.trim(),
+          customerEmail: email.trim(),
+          rating,
+          title: title.trim(),
+          body: body.trim(),
+          productId: product.id,
+          photoUrl: photo,
+        }),
       });
-      setBusy(false);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not submit your review.');
       setSubmitted(true);
-    }, 450);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const labelCls = 'font-mono-meta text-[10px] text-chrome mb-2 block';
@@ -238,10 +248,9 @@ export function ReviewFormModal({
                     required
                   >
                     <option value="">Select product</option>
-                    {PRODUCTS.map((p) => (
+                    {products.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} —{' '}
-                        {p.edition === 'master' ? 'Master Edition' : 'Player Version'}
+                        {p.name} — {variantOf(p, editions)}
                       </option>
                     ))}
                   </select>

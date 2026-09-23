@@ -2,9 +2,15 @@
 
 import { motion } from 'framer-motion';
 import { ProductCard } from './product-card';
-import type { Product } from '@/data/products';
+import type { Edition, Product } from '@/lib/storefront-types';
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({
+  products,
+  editions,
+}: {
+  products: Product[];
+  editions: Edition[];
+}) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-5">
       {products.map((product, i) => (
@@ -15,7 +21,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
           viewport={{ once: true, margin: '-60px' }}
           transition={{ delay: (i % 4) * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <ProductCard product={product} />
+          <ProductCard product={product} editions={editions} />
         </motion.div>
       ))}
     </div>

@@ -244,6 +244,22 @@ create table if not exists public.media_assets (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.offers (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  subtitle text,
+  badge text,
+  code text,
+  discount_text text,
+  image text,
+  cta_text text,
+  cta_url text,
+  active boolean not null default true,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.site_settings (
   key text primary key,
   value jsonb not null default '{}'::jsonb,
@@ -295,6 +311,7 @@ alter table public.admin_users enable row level security;
 alter table public.orders enable row level security;
 alter table public.media_assets enable row level security;
 alter table public.coupons enable row level security;
+alter table public.offers enable row level security;
 alter table public.analytics_events enable row level security;
 
 -- Public content: anyone with anon/authenticated key can SELECT.
@@ -302,7 +319,7 @@ alter table public.analytics_events enable row level security;
 do $$
 declare t text;
 begin
-  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','homepage_sections','site_settings','reviews']
+  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','homepage_sections','site_settings','reviews','offers']
   loop
     execute format('drop policy if exists "public read %1$s" on public.%1$s', t);
     execute format('create policy "public read %1$s" on public.%1$s for select using (true)', t);
@@ -325,7 +342,7 @@ grant usage on schema public to anon, authenticated, service_role;
 
 grant select on public.categories, public.editions, public.products, public.product_variants,
   public.collections, public.announcements, public.navigation_items, public.promo_slides,
-  public.banners, public.campaigns, public.homepage_sections, public.site_settings, public.reviews
+  public.banners, public.campaigns, public.homepage_sections, public.site_settings, public.reviews, public.offers
   to anon, authenticated;
 
 grant insert on public.analytics_events to anon, authenticated;
@@ -333,5 +350,5 @@ grant insert on public.analytics_events to anon, authenticated;
 grant all on public.products, public.product_variants, public.categories, public.editions,
   public.collections, public.announcements, public.navigation_items, public.promo_slides,
   public.banners, public.campaigns, public.homepage_sections, public.site_settings, public.reviews,
-  public.admin_users, public.orders, public.media_assets, public.coupons, public.analytics_events
+  public.admin_users, public.orders, public.media_assets, public.coupons, public.analytics_events, public.offers
   to service_role;

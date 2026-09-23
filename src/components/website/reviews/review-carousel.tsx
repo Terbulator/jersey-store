@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import type { Review } from '@/lib/review-types';
+import type { Review } from '@/lib/storefront-types';
 import { ReviewCard } from '@/components/website/reviews/review-card';
 
 export function ReviewCarousel({

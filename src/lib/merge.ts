@@ -1,4 +1,4 @@
-import type { Product } from '@/data/products';
+import type { Product } from '@/lib/storefront-types';
 import type { CartItem } from '@/store/cart-store';
 
 export function mergeWishlist(local: Product[], remote: Product[]): Product[] {

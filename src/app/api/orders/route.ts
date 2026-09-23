@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { PRODUCTS } from '@/data/products';
 import { adminDataClient } from '@/lib/admin';
 import { isRateLimited } from '@/lib/rate-limit';
 
@@ -49,18 +48,31 @@ export async function POST(req: NextRequest) {
 
   const payload = parsed.data;
 
-  // Recompute prices server-side from the catalog. Never trust client totals.
+  const sb = await adminDataClient();
+
+  // Recompute prices server-side from the DB catalog. Never trust client totals.
+  const productIds = [...new Set(payload.items.map((i) => i.productId))];
+  const { data: dbProducts, error: lookupError } = await sb
+    .from('products')
+    .select('id, name, slug, images, price')
+    .in('id', productIds);
+
+  if (lookupError) {
+    return NextResponse.json({ error: 'Could not verify the catalog.' }, { status: 500 });
+  }
+  const byId = new Map((dbProducts ?? []).map((p) => [p.id, p]));
+
   const resolvedItems = payload.items.map((item) => {
-    const product = PRODUCTS.find((p) => p.id === item.productId);
+    const product = byId.get(item.productId);
     if (!product) return null;
     return {
       productId: product.id,
       name: product.name,
       slug: product.slug,
-      image: product.image,
+      image: product.images?.[0] ?? '',
       size: item.size,
       quantity: item.quantity,
-      price: product.basePrice,
+      price: Number(product.price),
     };
   });
 
@@ -68,8 +80,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'One or more products were not found.' }, { status: 400 });
   }
   const items = resolvedItems as NonNullable<(typeof resolvedItems)[number]>[];
-
-  const sb = await adminDataClient();
   const { data: settings } = await sb.from('site_settings').select('value').eq('key', 'shipping').maybeSingle();
   const shippingCfg = (settings?.value ?? {}) as { freeThreshold?: number; standardRate?: number };
   const FREE_SHIPPING_THRESHOLD = Number(shippingCfg.freeThreshold ?? 999);

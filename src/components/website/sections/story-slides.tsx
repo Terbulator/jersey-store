@@ -1,78 +1,89 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { CATEGORIES } from '@/data/products';
+import type { Category } from '@/lib/storefront-types';
 import { ROUTES } from '@/lib/utils';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
 const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
-const SLIDES = [
-  {
-    id: 'football',
-    code: '01',
-    label: 'Football',
-    headline: 'The game starts here.',
-    sub: '',
-    cta: 'Shop Football',
-    href: ROUTES.FOOTBALL,
-    image: `${CATEGORIES[0].image.replace('w=800', 'w=1400')}`,
-  },
-  {
-    id: 'cricket',
-    code: '02',
-    label: 'Cricket',
-    headline: 'Play different.',
-    sub: '',
-    cta: 'Shop Cricket',
-    href: ROUTES.CRICKET,
-    image: `${CATEGORIES[1].image.replace('w=800', 'w=1400')}`,
-  },
-  {
-    id: 'player',
-    code: '03',
-    label: 'Player Version',
-    headline: 'Built for the game.',
-    sub: 'Player Version 25/26',
-    cta: 'Explore Player Version',
-    href: ROUTES.SHOP,
-    image:
-      'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=1400&q=80',
-  },
-  {
-    id: 'master',
-    code: '04',
-    label: 'Master Edition',
-    headline: 'Master the details.',
-    sub: '',
-    cta: 'Explore Master Edition',
-    href: ROUTES.SHOP,
-    image:
-      'https://images.unsplash.com/photo-1585591189603-d914a73ad1e1?w=1400&q=80',
-  },
-  {
-    id: 'newdrop',
-    code: '05',
-    label: 'New Drop',
-    headline: 'The new drop.',
-    sub: '2026 Collection',
-    cta: 'Shop New Drop',
-    href: ROUTES.NEW_ARRIVALS,
-    image:
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1400&q=80',
-  },
-];
+const FALLBACK_FOOTBALL =
+  'https://images.unsplash.com/photo-1485291723934-4b48f2736edd?w=1400&q=80';
+const FALLBACK_CRICKET =
+  'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=1400&q=80';
 
-export function StorySlides() {
+export function StorySlides({ categories }: { categories: Category[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end end'],
   });
+
+  const foot = categories[0];
+  const cric = categories[1];
+
+  const SLIDES = useMemo(
+    () => [
+      {
+        id: 'football',
+        code: '01',
+        label: 'Football',
+        headline: 'The game starts here.',
+        sub: '',
+        cta: 'Shop Football',
+        href: ROUTES.FOOTBALL,
+        image: (foot?.image ?? FALLBACK_FOOTBALL).replace('w=800', 'w=1400'),
+      },
+      {
+        id: 'cricket',
+        code: '02',
+        label: 'Cricket',
+        headline: 'Play different.',
+        sub: '',
+        cta: 'Shop Cricket',
+        href: ROUTES.CRICKET,
+        image: (cric?.image ?? FALLBACK_CRICKET).replace('w=800', 'w=1400'),
+      },
+      {
+        id: 'player',
+        code: '03',
+        label: 'Player Version',
+        headline: 'Built for the game.',
+        sub: 'Player Version 25/26',
+        cta: 'Explore Player Version',
+        href: ROUTES.SHOP,
+        image:
+          'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=1400&q=80',
+      },
+      {
+        id: 'master',
+        code: '04',
+        label: 'Master Edition',
+        headline: 'Master the details.',
+        sub: '',
+        cta: 'Explore Master Edition',
+        href: ROUTES.SHOP,
+        image:
+          'https://images.unsplash.com/photo-1585591189603-d914a73ad1e1?w=1400&q=80',
+      },
+      {
+        id: 'newdrop',
+        code: '05',
+        label: 'New Drop',
+        headline: 'The new drop.',
+        sub: '2026 Collection',
+        cta: 'Shop New Drop',
+        href: ROUTES.NEW_ARRIVALS,
+        image:
+          'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1400&q=80',
+      },
+    ],
+    [foot?.image, cric?.image]
+  );
 
   const clamp = (n: number, min: number, max: number) =>
     Math.min(Math.max(n, min), max);
@@ -82,7 +93,7 @@ export function StorySlides() {
     return scrollYProgress.on('change', (v) => {
       setActive(clamp(Math.floor(v * SLIDES.length), 0, SLIDES.length - 1));
     });
-  }, [scrollYProgress]);
+  }, [scrollYProgress, SLIDES.length]);
 
   const slide = SLIDES[active];
 

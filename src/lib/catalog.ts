@@ -1,11 +1,8 @@
-import { EDITION_TYPES, PRODUCTS, type Product } from '@/data/products';
+// Pure helpers over storefront records. No static data — callers pass fetched arrays.
+import type { Edition, Product } from '@/lib/storefront-types';
 
-export const EDITION_LABEL: Record<string, string> = Object.fromEntries(
-  EDITION_TYPES.map((e) => [e.id, e.name])
-);
-
-export const editionLabel = (edition: string) =>
-  EDITION_LABEL[edition] ?? edition;
+export const editionLabel = (editions: Edition[], id: string) =>
+  editions.find((e) => e.slug === id)?.name ?? id;
 
 export const formatSeason = (season: string) => {
   const n = parseInt(season, 10);
@@ -13,24 +10,23 @@ export const formatSeason = (season: string) => {
   return `${String(n).slice(2)}/${String(n + 1).slice(2)}`;
 };
 
-export const productBySlug = (slug: string) =>
-  PRODUCTS.find((p) => p.slug === slug);
+export const productsByCategory = (products: Product[], category: string) =>
+  products.filter((p) => p.category === category);
 
-export const productsByCategory = (category: string) =>
-  PRODUCTS.filter((p) => p.category === category);
+export const productsByEdition = (products: Product[], edition: string) =>
+  products.filter((p) => p.edition === edition);
 
-export const productsByEdition = (edition: string) =>
-  PRODUCTS.filter((p) => p.edition === edition);
+export const bestSellers = (products: Product[], count = 8) => products.slice(0, count);
 
-export const bestSellers = () => PRODUCTS.slice(0, 8);
-
-export const relatedProducts = (product: Product, count = 4) =>
-  PRODUCTS.filter((p) => p.id !== product.id)
-    .sort((a, b) =>
-      (a.badge === product.badge || a.category === product.category ? 1 : 0) -
-      (b.badge === product.badge || b.category === product.category ? 1 : 0)
+export const relatedProducts = (product: Product, products: Product[], count = 4) =>
+  products
+    .filter((p) => p.id !== product.id)
+    .sort(
+      (a, b) =>
+        (a.category === product.category ? 1 : 0) -
+        (b.category === product.category ? 1 : 0)
     )
     .slice(0, count);
 
-export const metaLine = (p: Product) =>
-  `${EDITION_LABEL[p.edition]?.toUpperCase()} · ${formatSeason(p.season)}`;
+export const metaLine = (p: Product, editions: Edition[]) =>
+  `${editionLabel(editions, p.edition)?.toUpperCase()} · ${p.season ? formatSeason(p.season) : ''}`;

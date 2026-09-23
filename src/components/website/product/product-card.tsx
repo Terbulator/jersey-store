@@ -8,10 +8,16 @@ import { formatPrice } from '@/lib/utils';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { useCartStore } from '@/store/cart-store';
 import { metaLine } from '@/lib/catalog';
-import type { Product } from '@/data/products';
+import type { Edition, Product } from '@/lib/storefront-types';
 import { cn } from '@/lib/utils';
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  editions,
+}: {
+  product: Product;
+  editions: Edition[];
+}) {
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const addItem = useCartStore((s) => s.addItem);
@@ -88,7 +94,7 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
 
       <div className="pt-3.5 px-0.5">
-        <p className="font-mono-meta text-[9px] text-chrome">{metaLine(product)}</p>
+        <p className="font-mono-meta text-[9px] text-chrome">{metaLine(product, editions)}</p>
         <Link href={`/shop/products/${product.slug}`}>
           <h3 className="headline text-lg sm:text-xl text-navy mt-1.5 leading-tight">
             {product.name}

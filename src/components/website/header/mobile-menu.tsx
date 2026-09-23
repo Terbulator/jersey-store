@@ -6,8 +6,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
 import { useUiStore } from '@/store/ui-store';
 import { useCartStore } from '@/store/cart-store';
+import type { NavItem } from '@/lib/storefront-types';
 
-const LINKS = [
+const FALLBACK_LINKS = [
   { label: 'Shop All', href: ROUTES.SHOP },
   { label: 'Football', href: ROUTES.FOOTBALL },
   { label: 'Cricket', href: ROUTES.CRICKET },
@@ -18,7 +19,11 @@ const LINKS = [
   { label: 'Account', href: ROUTES.ACCOUNT },
 ];
 
-export function MobileMenu() {
+export function MobileMenu({ navItems }: { navItems: NavItem[] }) {
+  const links = navItems.filter((n) => n.section === 'mobile');
+  const LINKS = links.length
+    ? links.map((n) => ({ label: n.label, href: n.href }))
+    : FALLBACK_LINKS;
   const { menuOpen, setMenuOpen } = useUiStore();
 
   return (

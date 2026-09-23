@@ -4,14 +4,24 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppWindow, Store, ShieldCheck } from 'lucide-react';
-import { EDITION_TYPES } from '@/data/products';
+import type { Edition, Product } from '@/lib/storefront-types';
 import { productsByEdition } from '@/lib/catalog';
 import { ProductGrid } from '../product/product-grid';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
-export function EditionsSection() {
-  const [active, setActive] = useState(EDITION_TYPES[0].id);
-  const activeEdition = EDITION_TYPES.find((e) => e.id === active)!;
+export function EditionsSection({
+  editions,
+  products,
+}: {
+  editions: Edition[];
+  products: Product[];
+}) {
+  const [active, setActive] = useState(editions[0]?.id ?? '');
+  const activeEdition = editions.find((e) => e.id === active);
+
+  if (editions.length === 0 || !activeEdition) return null;
+
+  const activeProducts = productsByEdition(products, activeEdition.slug);
 
   return (
     <section className="bg-off-white py-20 sm:py-28">
@@ -29,7 +39,7 @@ export function EditionsSection() {
         </div>
 
         <div className="flex gap-2 mb-10 border-b border-black/10 pb-0 overflow-x-auto">
-          {EDITION_TYPES.map((edition) => (
+          {editions.map((edition) => (
             <button
               key={edition.id}
               onClick={() => setActive(edition.id)}
@@ -69,8 +79,8 @@ export function EditionsSection() {
               </div>
             </div>
 
-            <ProductGrid products={productsByEdition(activeEdition.slug)} />
-            {productsByEdition(activeEdition.slug).length === 0 && (
+            <ProductGrid products={activeProducts} editions={editions} />
+            {activeProducts.length === 0 && (
               <p className="text-sm text-chrome">
                 0 products in this edition yet — the {activeEdition.name} drop lands Friday.
               </p>

@@ -4,14 +4,20 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { X, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PRODUCTS } from '@/data/products';
+import type { Edition, Product } from '@/lib/storefront-types';
 import { formatPrice } from '@/lib/utils';
 import { useUiStore } from '@/store/ui-store';
 import { metaLine, editionLabel } from '@/lib/catalog';
 
 const TAGS = ['Football', 'Cricket', 'Streetwear', 'Player', 'Master', 'Sale', 'New'];
 
-export function SearchOverlay() {
+export function SearchOverlay({
+  products,
+  editions,
+}: {
+  products: Product[];
+  editions: Edition[];
+}) {
   const { searchOpen, setSearchOpen } = useUiStore();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,15 +32,15 @@ export function SearchOverlay() {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return PRODUCTS.filter(
+    return products.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
-        p.team.toLowerCase().includes(q) ||
+        (p.team ?? '').toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         p.edition.toLowerCase().includes(q) ||
         (p.badge && p.badge.toLowerCase().includes(q))
     );
-  }, [query]);
+  }, [products, query]);
 
   return (
     <AnimatePresence>
@@ -121,7 +127,7 @@ export function SearchOverlay() {
                             {p.name}
                           </p>
                           <p className="font-mono-meta text-[9px] text-off-white/40 mt-1">
-                            {metaLine(p)} · {editionLabel(p.edition)}
+                            {metaLine(p, editions)} · {editionLabel(editions, p.edition)}
                           </p>
                           <p className="text-sm text-off-white/70 mt-0.5">
                             {formatPrice(p.basePrice)}

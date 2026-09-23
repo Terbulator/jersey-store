@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ROUTES } from '@/lib/utils';
 import { FooterWordmark } from './footer-wordmark';
+import type { NavItem } from '@/lib/storefront-types';
 
 const COLUMNS = [
   {
@@ -43,7 +44,23 @@ const COLUMNS = [
   },
 ];
 
-export function Footer() {
+const FOOTER_SECTIONS = [
+  { section: 'footer-shop', title: 'Shop' },
+  { section: 'footer-support', title: 'Support' },
+  { section: 'footer-follow', title: 'Follow' },
+  { section: 'footer-about', title: 'About' },
+];
+
+export function Footer({ navItems }: { navItems: NavItem[] }) {
+  const columns = navItems.length
+    ? FOOTER_SECTIONS.map((g) => ({
+        title: g.title,
+        links: navItems
+          .filter((n) => n.section === g.section)
+          .map((n) => ({ label: n.label, href: n.href })),
+      })).filter((c) => c.links.length)
+    : COLUMNS;
+
   return (
     <footer className="relative bg-black text-off-white overflow-hidden">
       <div className="relative flex flex-col">
@@ -71,7 +88,7 @@ export function Footer() {
               aria-label="Footer"
               className="grid grid-cols-2 sm:grid-cols-4 gap-x-12 gap-y-10 lg:gap-x-16"
             >
-              {COLUMNS.map((col) => (
+              {columns.map((col) => (
                 <div key={col.title}>
                   <p className="font-mono-meta text-[11px] tracking-[0.08em] text-[#A8A8A8] mb-4">
                     {col.title}

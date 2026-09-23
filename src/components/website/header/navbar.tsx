@@ -10,8 +10,9 @@ import { useWishlistStore } from '@/store/wishlist-store';
 import { useUiStore } from '@/store/ui-store';
 import { useAuth } from '@/components/auth/auth-provider';
 import { cn } from '@/lib/utils';
+import type { NavItem } from '@/lib/storefront-types';
 
-const NAV = [
+const FALLBACK_NAV = [
   { label: 'Shop', href: ROUTES.SHOP },
   { label: 'Football', href: ROUTES.FOOTBALL },
   { label: 'Cricket', href: ROUTES.CRICKET },
@@ -20,7 +21,11 @@ const NAV = [
   { label: 'About', href: '/about' },
 ];
 
-export function Navbar() {
+export function Navbar({ navItems }: { navItems: NavItem[] }) {
+  const main = navItems.filter((n) => n.section === 'main');
+  const NAV = main.length
+    ? main.map((n) => ({ label: n.label, href: n.href }))
+    : FALLBACK_NAV;
   const [scrolled, setScrolled] = useState(false);
   const items = useCartStore((s) => s.items);
   const itemCount = items.reduce((n, i) => n + i.quantity, 0);

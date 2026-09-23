@@ -1,9 +1,9 @@
-import type { Product } from '@/data/products';
+import type { Product } from '@/lib/storefront-types';
+import { mapProduct } from '@/lib/storefront-types';
 import type { CartItem } from '@/store/cart-store';
 import { useCartStore } from '@/store/cart-store';
 import { useWishlistStore } from '@/store/wishlist-store';
 import { createClient } from '@/lib/supabase/client';
-import { PRODUCTS } from '@/data/products';
 import { mergeCart, mergeWishlist } from '@/lib/merge';
 
 export { mergeCart, mergeWishlist };
@@ -18,14 +18,24 @@ interface RemoteCartRow {
   quantity: number;
 }
 
-function productById(id: string): Product | undefined {
-  return PRODUCTS.find((p) => p.id === id);
+async function productsByIds(ids: string[]): Promise<Map<string, Product>> {
+  if (ids.length === 0) return new Map();
+  const supabase = createClient();
+  const { data } = await supabase.from('products').select('*').in('id', ids);
+  const map = new Map<string, Product>();
+  for (const row of data ?? []) {
+    const product = mapProduct(row);
+    map.set(product.id, product);
+  }
+  return map;
 }
 
-function toCartItems(rows: RemoteCartRow[]): CartItem[] {
+async function toCartItems(rows: RemoteCartRow[]): Promise<CartItem[]> {
+  if (rows.length === 0) return [];
+  const byId = await productsByIds(rows.map((r) => r.product_id));
   const items: CartItem[] = [];
   for (const row of rows) {
-    const product = productById(row.product_id);
+    const product = byId.get(row.product_id);
     if (!product) continue; // catalog changed; drop orphaned line
     items.push({ product, size: row.size, quantity: row.quantity });
   }
@@ -73,12 +83,11 @@ export async function syncGuestData(userId: string) {
     supabase.from('cart_items').select('*').eq('cart_user_id', userId),
   ]);
 
-  const remoteWishlist = (wishRows ?? [])
-    .map((row: { product_id: string }) => productById(row.product_id))
-    .filter((p: Product | undefined): p is Product => !!p);
+  const wishIds = (wishRows ?? []).map((row: { product_id: string }) => row.product_id);
+  const remoteWishlist = [...(await productsByIds(wishIds)).values()];
 
   const mergedWishlist = mergeWishlist(localWishlist, remoteWishlist);
-  const mergedCart = mergeCart(localCart, toCartItems(cartRows as RemoteCartRow[]));
+  const mergedCart = mergeCart(localCart, await toCartItems(cartRows as RemoteCartRow[]));
 
   useWishlistStore.setState({ items: mergedWishlist });
   useCartStore.setState({ items: mergedCart, isOpen: false });

@@ -4,11 +4,18 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { bestSellers } from '@/lib/catalog';
+import type { Edition, Product } from '@/lib/storefront-types';
 import { ProductGrid } from '../product/product-grid';
 import { ROUTES } from '@/lib/utils';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
-export function BestSellers() {
+export function BestSellers({
+  products,
+  editions,
+}: {
+  products: Product[];
+  editions: Edition[];
+}) {
   return (
     <section className="bg-off-white py-20 sm:py-28">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
@@ -34,7 +41,7 @@ export function BestSellers() {
           </Link>
         </motion.div>
 
-        <ProductGrid products={bestSellers()} />
+        <ProductGrid products={bestSellers(products)} editions={editions} />
       </div>
     </section>
   );
