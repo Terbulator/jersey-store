@@ -27,6 +27,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
+  const [roleReady, setRoleReady] = useState(false);
   const [redirect, setRedirect] = useState<string | null>(null);
   const [searchDone, setSearchDone] = useState(false);
   const [email, setEmail] = useState('');
@@ -40,27 +41,36 @@ export default function LoginPage() {
     setSearchDone(true);
   }, []);
 
-  const home = role ? '/admin' : ROUTES.ACCOUNT;
-
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setRoleReady(false);
+      return;
+    }
     let active = true;
+    setRoleReady(false);
     fetch('/api/me')
       .then((r) => r.json())
       .then((j: { role?: string | null }) => {
-        if (active) setRole(j.role ?? null);
+        if (!active) return;
+        setRole(j.role ?? null);
+        setRoleReady(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) {
+          setRole(null);
+          setRoleReady(true);
+        }
+      });
     return () => {
       active = false;
     };
   }, [user]);
 
   useEffect(() => {
-    if (searchDone && !loading && user) {
-      router.replace(redirect ?? home);
+    if (searchDone && !loading && user && roleReady) {
+      router.replace(redirect ?? (role ? '/admin' : ROUTES.ACCOUNT));
     }
-  }, [searchDone, loading, user, redirect, home, router]);
+  }, [searchDone, loading, user, roleReady, role, redirect, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,12 +89,6 @@ export default function LoginPage() {
       if (data.user) {
         await syncGuestData(data.user.id);
       }
-      const me = await fetch('/api/me')
-        .then((r) => r.json())
-        .then((j: { role?: string | null }) => j.role ?? null)
-        .catch(() => null);
-      router.replace(redirect ?? (me ? '/admin' : ROUTES.ACCOUNT));
-      router.refresh();
     } catch {
       setError(errorMessage({ message: 'failed' }));
       setBusy(false);
@@ -95,7 +99,7 @@ export default function LoginPage() {
     await createClient().auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect ?? ROUTES.ACCOUNT)}`,
+        redirectTo: `${window.location.origin}/auth/callback${redirect ? `?next=${encodeURIComponent(redirect)}` : ''}`,
       },
     });
   };
