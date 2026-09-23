@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { isSafeUrl } from '@/lib/section-schemas';
 
 const FIELDS = ['eyebrow', 'headline', 'subheadline', 'desktop_image', 'mobile_image', 'cta_text', 'cta_url', 'status', 'active', 'sort_order'];
 
 export async function POST(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  if (blocked) return blocked;
   const body = await req.json().catch(() => null);
   if (!body?.headline) return NextResponse.json({ error: 'Missing headline.' }, { status: 400 });
+  for (const k of ['desktop_image', 'mobile_image', 'cta_url']) {
+    if (body[k] !== undefined && body[k] !== null && body[k] !== '' && !isSafeUrl(body[k])) {
+      return NextResponse.json({ error: 'URL scheme not allowed.' }, { status: 400 });
+    }
+  }
   const sb = await adminDataClient();
   const row: Record<string, unknown> = {
     headline: body.headline,
@@ -27,7 +36,14 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  if (blocked) return blocked;
   const { id, ...patch } = await req.json();
+  for (const k of ['desktop_image', 'mobile_image', 'cta_url']) {
+    if (patch[k] !== undefined && patch[k] !== null && patch[k] !== '' && !isSafeUrl(patch[k])) {
+      return NextResponse.json({ error: 'URL scheme not allowed.' }, { status: 400 });
+    }
+  }
   if (!id) return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of FIELDS) {
@@ -41,6 +57,8 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req, 'expensive');
+  if (blocked) return blocked;
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
   const sb = await adminDataClient();

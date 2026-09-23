@@ -27,8 +27,8 @@ export function NewsletterSection({ settings }: { settings?: NSSettings | null }
       <div className="mx-auto max-w-[720px] px-6 sm:px-8 text-center relative overflow-hidden">
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.7, ease: EASE_PREMIUM }}>
           <p className="eyebrow">The Drop List</p>
-          <h2 className="headline text-4xl sm:text-5xl text-off-white mt-4 leading-[1.05]">{heading}<br /><em className="text-red not-italic">{sub}</em></h2>
-          <p className="mt-6 text-base text-off-white/60 leading-relaxed max-w-md mx-auto">{subText}</p>
+          <h2 data-cms="heading" data-sec-h style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="headline text-4xl sm:text-5xl text-off-white mt-4 leading-[1.05]">{heading}<br /><em style={{ color: 'var(--sec-accent, var(--th-brand-primary))' }} className="text-red not-italic">{sub}</em></h2>
+          <p style={{ color: 'var(--sec-body, var(--th-text-inverse-soft))' }} className="mt-6 text-base text-off-white/60 leading-relaxed max-w-md mx-auto">{subText}</p>
           <form onSubmit={handleSubmit} className="mt-10 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" className="input flex-1" aria-label="Email address" disabled={status === 'loading' || status === 'success'} />
             <button type="submit" disabled={status === 'loading' || status === 'success'} className="btn-pill btn-pill-solid whitespace-nowrap">

@@ -18,8 +18,8 @@ export function TrustStrip({ settings }: { settings?: TrustSettings | null }) {
       <div className="marquee">
         <div className="marquee-track flex items-center gap-10 whitespace-nowrap">
           {track.map((item, i) => (
-            <span key={i} className="font-mono-meta text-[10px] tracking-[0.25em] text-off-white/60 flex items-center gap-10">
-              {item} <span className="text-red">✦</span>
+            <span key={i} data-cms="items" style={{ color: 'var(--sec-body, var(--th-text-inverse-soft))' }} className="font-mono-meta text-[10px] tracking-[0.25em] text-off-white/60 flex items-center gap-10">
+              {item} <span style={{ color: 'var(--sec-accent, var(--th-brand-primary))' }} className="text-red">✦</span>
             </span>
           ))}
         </div>

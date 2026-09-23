@@ -19,8 +19,8 @@ export function StatsSection({ settings }: { settings?: SSSettings | null }) {
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12 grid grid-cols-2 lg:grid-cols-4 gap-10">
         {stats.map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ delay: i * 0.08, duration: 0.6, ease: EASE_PREMIUM }} className="text-center lg:text-left">
-            <p className="headline text-4xl sm:text-5xl text-off-white">{stat.value}</p>
-            <p className="font-mono-meta text-[10px] text-off-white/50 mt-2 tracking-[0.15em] uppercase">{stat.label}</p>
+            <p data-cms="stats" style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="headline text-4xl sm:text-5xl text-off-white">{stat.value}</p>
+            <p style={{ color: 'var(--sec-body, var(--th-text-muted))' }} className="font-mono-meta text-[10px] text-off-white/50 mt-2 tracking-[0.15em] uppercase">{stat.label}</p>
           </motion.div>
         ))}
       </div>

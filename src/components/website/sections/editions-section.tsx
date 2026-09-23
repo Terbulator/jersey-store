@@ -23,8 +23,8 @@ export function EditionsSection({ editions, products, settings }: { editions: Ed
     <section className="bg-off-white py-20 sm:py-28">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
-          <div><p className="eyebrow eyebrow-dark">The Editions</p><h2 className="headline text-4xl sm:text-5xl text-navy mt-3">{heading}</h2></div>
-          <p className="text-sm text-chrome max-w-[280px] leading-relaxed hidden sm:block">{sub}</p>
+          <div><p className="eyebrow eyebrow-dark">The Editions</p><h2 data-cms="heading" data-sec-h style={{ color: 'var(--sec-heading, var(--th-surface-ink))' }} className="headline text-4xl sm:text-5xl text-navy mt-3">{heading}</h2></div>
+          <p data-cms="subheading" style={{ color: 'var(--sec-body, var(--th-text-secondary))' }} className="text-sm text-chrome max-w-[280px] leading-relaxed hidden sm:block">{sub}</p>
         </div>
         <div className="flex gap-2 mb-10 border-b border-black/10 pb-0 overflow-x-auto">
           {editions.map((edition) => (

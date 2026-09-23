@@ -8,6 +8,11 @@ import { SearchOverlay } from '@/components/website/search/search-overlay';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { StorefrontGate } from '@/components/storefront-gate';
 import { AnalyticsTracker } from '@/components/analytics-tracker';
+import { ThemeProvider, ThemeStyle, TemplatesProvider } from '@/components/website/theme-provider';
+import { getTheme } from '@/lib/theme';
+import { getDisplay } from '@/lib/display';
+import { getSiteChrome } from '@/lib/site-chrome';
+import { createClient } from '@/lib/supabase/server';
 import { getNavItems, getProducts, getEditions } from '@/lib/storefront';
 
 export const metadata = {
@@ -23,20 +28,26 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [navItems, products, editions] = await Promise.all([
+  const [navItems, products, editions, theme, chrome, display] = await Promise.all([
     getNavItems(),
     getProducts(),
     getEditions(),
+    getTheme(createClient()),
+    getSiteChrome(createClient()),
+    getDisplay(createClient()),
   ]);
 
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-black text-off-white antialiased">
+        <ThemeStyle theme={theme} />
+        <ThemeProvider theme={theme}>
+        <TemplatesProvider display={display}>
         <AuthProvider>
           <StorefrontGate>
             <AnnouncementBar />
-            <Navbar navItems={navItems} />
-            <MobileMenu navItems={navItems} />
+            <Navbar navItems={navItems} header={chrome.header} />
+            <MobileMenu navItems={navItems} header={chrome.header} />
             <SearchOverlay products={products} editions={editions} />
             <CartDrawer />
           </StorefrontGate>
@@ -44,8 +55,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AnalyticsTracker />
         </AuthProvider>
         <StorefrontGate>
-          <Footer navItems={navItems} />
+          <Footer navItems={navItems} footer={chrome.footer} />
         </StorefrontGate>
+        </TemplatesProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

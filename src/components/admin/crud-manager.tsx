@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { Plus, Trash2, Repeat } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ImageUploader } from './image-uploader';
+import { DestinationInput } from './destination-field';
 
 export type CrudField =
   | { key: string; label: string; type: 'text'; placeholder?: string }
   | { key: string; label: string; type: 'textarea'; rows?: number }
   | { key: string; label: string; type: 'number'; placeholder?: string }
   | { key: string; label: string; type: 'select'; options: string[] }
-  | { key: string; label: string; type: 'image' };
+  | { key: string; label: string; type: 'image' }
+  | { key: string; label: string; type: 'destination'; products?: { value: string; label: string }[]; pages?: { value: string; label: string }[] };
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -167,6 +169,19 @@ export function CrudManager({
                     </div>
                   );
                 }
+                if (f.type === 'destination') {
+                  return (
+                    <div key={f.key} className="sm:col-span-2">
+                      <span className="mb-1 block text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</span>
+                      <DestinationInput
+                        value={v}
+                        products={f.products}
+                        pages={f.pages}
+                        onChange={(href) => { set(it.id, f.key, href); saveField(it.id, f.key, href); }}
+                      />
+                    </div>
+                  );
+                }
                 return (
                   <label key={f.key} className="flex items-center gap-2">
                     <span className="w-24 shrink-0 text-[10px] uppercase tracking-widest text-[#666666]">{f.label}</span>
@@ -194,6 +209,13 @@ export function CrudManager({
                 <textarea value={draft[f.key] ?? ''} rows={f.rows ?? 2} onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))} className={`${inputCls} w-full`} />
               ) : f.type === 'image' ? (
                 <ImageUploader value={draft[f.key] ?? ''} onChange={(url) => setDraft((d) => ({ ...d, [f.key]: url }))} />
+              ) : f.type === 'destination' ? (
+                <DestinationInput
+                  value={draft[f.key] ?? ''}
+                  products={f.products}
+                  pages={f.pages}
+                  onChange={(href) => setDraft((d) => ({ ...d, [f.key]: href }))}
+                />
               ) : (
                 <input value={draft[f.key] ?? ''} placeholder={(f as { placeholder?: string }).placeholder} onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))} className={`${inputCls} w-full`} />
               )}

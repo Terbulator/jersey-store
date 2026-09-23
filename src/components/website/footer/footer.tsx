@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/lib/utils';
 import { FooterWordmark } from './footer-wordmark';
 import type { NavItem } from '@/lib/storefront-types';
+import { FOOTER_DEFAULTS, type FooterSettings } from '@/lib/site-chrome';
 
 const COLUMNS = [
   {
@@ -51,7 +52,8 @@ const FOOTER_SECTIONS = [
   { section: 'footer-about', title: 'About' },
 ];
 
-export function Footer({ navItems }: { navItems: NavItem[] }) {
+export function Footer({ navItems, footer }: { navItems: NavItem[]; footer?: FooterSettings }) {
+  const F = { ...FOOTER_DEFAULTS, ...footer };
   const columns = navItems.length
     ? FOOTER_SECTIONS.map((g) => ({
         title: g.title,
@@ -62,11 +64,18 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
     : COLUMNS;
 
   return (
-    <footer className="relative bg-black text-off-white overflow-hidden">
+    <footer className="relative bg-black text-off-white overflow-hidden" style={F.bg ? { background: F.bg } : undefined}>
       <div className="relative flex flex-col">
         {/* Small information at the top */}
         <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 pt-16 sm:pt-20 lg:pt-24">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-12 lg:gap-8">
+            {/* Brand */}
+            <div className="max-w-xs">
+              <p className="headline text-2xl text-off-white">{F.logo_text}</p>
+              {!!F.description && (
+                <p className="mt-3 text-[13px] leading-relaxed text-[#A8A8A8]">{F.description}</p>
+              )}
+            </div>
             {/* Utility / legal */}
             <div className="font-mono-meta text-[11px] leading-[1.7] tracking-[0.08em]">
               <ul className="space-y-1">
@@ -115,24 +124,26 @@ export function Footer({ navItems }: { navItems: NavItem[] }) {
         <div className="h-[36vh] sm:h-[26vh]" aria-hidden="true" />
 
         {/* Massive HEADERR wordmark — own full-width container, lower region */}
-        <div className="relative z-[1] w-full select-none pointer-events-none overflow-hidden">
-          <FooterWordmark />
-        </div>
+        {F.show_wordmark && (
+          <div className="relative z-[1] w-full select-none pointer-events-none overflow-hidden">
+            <FooterWordmark />
+          </div>
+        )}
       </div>
 
       {/* Bottom legal bar */}
       <div className="relative z-10 border-t border-[rgba(239,236,230,0.15)] bg-[#080808]">
         <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12 py-5">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 font-mono-meta text-[11px] tracking-[0.08em]">
-            <p className="text-[#EFECE6]">© 2026 HEADERR</p>
+            <p className="text-[#EFECE6]">{F.copyright}</p>
             <ul className="sm:ml-auto flex flex-wrap gap-x-6 gap-y-2 text-[#A8A8A8]">
-              {['Privacy Policy', 'Terms', 'Shipping Policy', 'Refund Policy'].map((item) => (
-                <li key={item}>
+              {F.legal.map((item) => (
+                <li key={item.label}>
                   <a
-                    href="#"
+                    href={item.href}
                     className="hover:text-[#B3001B] transition-colors duration-200"
                   >
-                    {item.toUpperCase()}
+                    {item.label.toUpperCase()}
                   </a>
                 </li>
               ))}

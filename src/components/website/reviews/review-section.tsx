@@ -22,10 +22,10 @@ export function ReviewSection({ reviews, products, editions, settings }: { revie
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8 mb-10 sm:mb-14">
           <div>
             <p className="eyebrow mb-4 text-[#777777]">The Community</p>
-            <h2 className="font-display text-[42px] leading-[0.95] sm:text-[64px] lg:text-[76px] tracking-[-0.03em] text-[#EFECE6]">
+            <h2 data-cms="heading" style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="font-display text-[42px] leading-[0.95] sm:text-[64px] lg:text-[76px] tracking-[-0.03em] text-[#EFECE6]">
               {heading}
             </h2>
-            <p className="mt-6 font-mono-meta text-[11px] sm:text-[12px] text-[#777777] tracking-[0.18em]">
+            <p style={{ color: 'var(--sec-body, var(--th-text-muted))' }} className="mt-6 font-mono-meta text-[11px] sm:text-[12px] text-[#777777] tracking-[0.18em]">
               Real People. Real Jerseys. Real Feedback.
             </p>
           </div>

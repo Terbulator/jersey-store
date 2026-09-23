@@ -10,6 +10,13 @@ import { useCartStore } from '@/store/cart-store';
 import { metaLine } from '@/lib/catalog';
 import type { Edition, Product } from '@/lib/storefront-types';
 import { cn } from '@/lib/utils';
+import { useTemplates } from '@/components/website/theme-provider';
+
+const RATIOS: Record<string, string> = {
+  '3/4': 'aspect-[3/4]',
+  '1/1': 'aspect-square',
+  '4/5': 'aspect-[4/5]',
+};
 
 export function ProductCard({
   product,
@@ -18,6 +25,7 @@ export function ProductCard({
   product: Product;
   editions: Edition[];
 }) {
+  const T = useTemplates().card;
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
   const toggleWishlist = useWishlistStore((s) => s.toggleWishlist);
   const addItem = useCartStore((s) => s.addItem);
@@ -30,7 +38,8 @@ export function ProductCard({
     <div className="group">
       <Link
         href={`/shop/products/${product.slug}`}
-        className="block relative aspect-[3/4] bg-off-white overflow-hidden"
+        style={T.radius ? { borderRadius: T.radius } : undefined}
+        className={cn('block relative bg-off-white overflow-hidden', RATIOS[T.image_ratio] ?? 'aspect-[3/4]')}
       >
         <img
           src={product.image}
@@ -38,7 +47,7 @@ export function ProductCard({
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           loading="lazy"
         />
-        {secondImage && (
+        {T.show_second_image && secondImage && (
           <img
             src={secondImage}
             alt=""
@@ -52,6 +61,7 @@ export function ProductCard({
           <span
             className={cn(
               'absolute top-3 left-3 font-mono-meta text-[9px] px-2.5 py-1',
+              T.badge_style === 'pill' && 'rounded-full',
               product.badge === 'NEW' && 'bg-red text-white',
               product.badge === 'SALE' && 'bg-black text-off-white',
               product.badge === 'LIMITED' && 'bg-off-white text-black border border-black/10'
@@ -61,7 +71,8 @@ export function ProductCard({
           </span>
         )}
 
-        <motion.button
+        {T.show_wishlist && (
+          <motion.button
           key={pulse}
           onClick={(e) => {
             e.preventDefault();
@@ -80,7 +91,9 @@ export function ProductCard({
             fill={isWishlisted ? 'currentColor' : 'none'}
           />
         </motion.button>
+        )}
 
+        {T.show_quick_add && (
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -91,6 +104,7 @@ export function ProductCard({
         >
           Quick Add
         </button>
+        )}
       </Link>
 
       <div className="pt-3.5 px-0.5">
@@ -100,12 +114,14 @@ export function ProductCard({
             {product.name}
           </h3>
         </Link>
-        <p className="text-[13px] text-chrome mt-1 leading-relaxed line-clamp-1">
-          {product.description}
-        </p>
+        {T.show_description && (
+          <p className="text-[13px] text-chrome mt-1 leading-relaxed line-clamp-1">
+            {product.description}
+          </p>
+        )}
         <div className="flex items-center gap-2 mt-2">
           <span className="text-[15px] text-navy font-medium">{formatPrice(product.basePrice)}</span>
-          {product.comparePrice && product.comparePrice > product.basePrice && (
+          {T.show_compare && product.comparePrice && product.comparePrice > product.basePrice && (
             <span className="text-xs text-chrome line-through">
               {formatPrice(product.comparePrice)}
             </span>

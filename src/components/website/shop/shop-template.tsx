@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { Category, Edition, Product } from '@/lib/storefront-types';
 import { ProductGrid } from '@/components/website/product/product-grid';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
+import { DISPLAY_DEFAULTS, type CollectionDisplay } from '@/lib/display';
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
@@ -25,6 +26,7 @@ export function ShopTemplate({
   products,
   categories,
   editions,
+  collection,
 }: {
   title: string;
   description: string;
@@ -32,7 +34,9 @@ export function ShopTemplate({
   products: Product[];
   categories: Category[];
   editions: Edition[];
+  collection?: CollectionDisplay;
 }) {
+  const C = { ...DISPLAY_DEFAULTS.collection, ...collection };
   const searchParams = useSearchParams();
   const initialCategory = searchParams?.get('category') || defaultCategory;
 
@@ -133,7 +137,9 @@ export function ShopTemplate({
           </div>
         )}
 
+        {(C.show_filters || C.show_sort) && (
         <div className="flex items-center justify-between mb-6">
+          {C.show_filters && (
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFilters(true)}
@@ -161,7 +167,8 @@ export function ShopTemplate({
               </button>
             )}
           </div>
-
+          )}
+          {C.show_sort && (
           <div className="relative">
             <button
               onClick={() => setShowSort(!showSort)}
@@ -197,11 +204,15 @@ export function ShopTemplate({
               </>
             )}
           </div>
+          )}
         </div>
+        )}
 
+        {C.show_count && (
         <p className="font-mono-meta text-[9px] text-off-white/40 tracking-wider uppercase mb-4">
           {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
         </p>
+        )}
       </section>
 
       {/* Product Grid */}
@@ -214,7 +225,7 @@ export function ShopTemplate({
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.4, ease: EASE_PREMIUM }}
           >
-            <ProductGrid products={filteredProducts} editions={editions} />
+            <ProductGrid products={filteredProducts} editions={editions} columns={{ mobile: C.columns_mobile, desktop: C.columns_desktop }} />
           </motion.div>
         </AnimatePresence>
 

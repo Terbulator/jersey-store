@@ -24,18 +24,22 @@ import { ProductGrid } from '@/components/website/product/product-grid';
 import { editionLabel, metaLine } from '@/lib/catalog';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 import { trackEvent } from '@/lib/analytics';
+import { DISPLAY_DEFAULTS, type DetailDisplay } from '@/lib/display';
 
 export function ProductDetail({
   product,
   categories,
   editions,
   related,
+  display,
 }: {
   product: Product;
   categories: Category[];
   editions: Edition[];
   related: Product[];
+  display?: DetailDisplay;
 }) {
+  const D = { ...DISPLAY_DEFAULTS.detail, ...display };
   const [currentImage, setCurrentImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -92,7 +96,7 @@ export function ProductDetail({
     { id: 'material', title: 'Material', content: product.material },
     { id: 'care', title: 'Care', content: product.care },
     { id: 'shipping', title: 'Shipping & Returns', content: `${product.shipping}. ${product.returns}.` },
-  ].filter((s) => s.content);
+  ].filter((s) => s.content && (s.id !== 'shipping' || D.show_shipping));
 
   const discount = product.comparePrice
     ? Math.round(((product.comparePrice - product.basePrice) / product.comparePrice) * 100)
@@ -127,8 +131,12 @@ export function ProductDetail({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: EASE_PREMIUM }}
             >
+              <div className={D.thumbs_position === 'side' && images.length > 1 ? 'flex flex-col-reverse gap-4 lg:flex-row' : ''}>
               <div
-                className="relative aspect-[3/4] bg-charcoal overflow-hidden cursor-zoom-in rounded-xl"
+                className={cn(
+                  'relative aspect-[3/4] bg-charcoal overflow-hidden cursor-zoom-in rounded-xl',
+                  D.thumbs_position === 'side' && images.length > 1 && 'flex-1'
+                )}
                 onClick={() => {
                   setViewerIndex(currentImage);
                   setShowImageViewer(true);
@@ -191,7 +199,10 @@ export function ProductDetail({
 
               {/* Thumbnails */}
               {images.length > 1 && (
-                <div className="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-none">
+                <div className={D.thumbs_position === 'side'
+                  ? 'flex gap-3 overflow-x-auto pb-2 scrollbar-none lg:flex-col lg:overflow-visible lg:pb-0 lg:w-20 lg:shrink-0'
+                  : 'flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-none'
+                }>
                   {images.map((img, i) => (
                     <button
                       key={i}
@@ -206,6 +217,7 @@ export function ProductDetail({
                   ))}
                 </div>
               )}
+              </div>
             </motion.div>
 
             {/* Product Details */}
@@ -268,6 +280,7 @@ export function ProductDetail({
               </div>
 
               {/* Quantity */}
+              {D.show_quantity && (
               <div className="mt-6">
                 <span className="font-mono-meta text-[10px] tracking-widest uppercase text-off-white/50 block mb-3">
                   Quantity
@@ -291,6 +304,7 @@ export function ProductDetail({
                   </button>
                 </div>
               </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-3 mt-8">
@@ -322,6 +336,7 @@ export function ProductDetail({
                 </button>
               </div>
 
+              {D.show_buy_now && (
               <button
                 onClick={handleBuyNow}
                 disabled={!selectedSize}
@@ -332,8 +347,9 @@ export function ProductDetail({
               >
                 Buy Now
               </button>
-
+              )}
               {/* Trust */}
+              {D.show_trust && (
               <div className="grid grid-cols-2 gap-4 py-5 border-y border-white/10 mt-8 mb-6">
                 {[
                   { icon: Truck, text: 'Free shipping above ₹999' },
@@ -347,8 +363,10 @@ export function ProductDetail({
                   </div>
                 ))}
               </div>
+              )}
 
               {/* Accordion */}
+              {D.show_accordions && (
               <div className="divide-y divide-white/10">
                 {detailSections.map((section) => (
                   <div key={section.id}>
@@ -377,19 +395,20 @@ export function ProductDetail({
                   </div>
                 ))}
               </div>
+              )}
             </div>
           </div>
 
           {/* Related */}
-          {related.length > 0 && (
+          {D.related_count > 0 && related.slice(0, D.related_count).length > 0 && (
             <div className="mt-20 sm:mt-28">
               <div className="flex items-end justify-between mb-8">
-                <h2 className="headline text-2xl sm:text-3xl text-off-white">You may also like</h2>
+                <h2 className="headline text-2xl sm:text-3xl text-off-white">{D.related_title}</h2>
                 <Link href="/shop" className="font-mono-meta text-[9px] text-off-white/50 hover:text-off-white tracking-widest uppercase underline underline-offset-4">
                   View all
                 </Link>
               </div>
-              <ProductGrid products={related} editions={editions} />
+              <ProductGrid products={related.slice(0, D.related_count)} editions={editions} />
             </div>
           )}
         </div>

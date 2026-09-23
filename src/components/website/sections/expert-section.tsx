@@ -23,16 +23,16 @@ export function ExpertSection({ settings }: { settings?: XSSettings | null }) {
       <div className="mx-auto max-w-[1400px] px-6 sm:px-8 lg:px-12 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         <motion.div initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8, ease: EASE_PREMIUM }}>
           <p className="eyebrow">Why We&rsquo;re Different</p>
-          <h2 className="headline text-4xl sm:text-5xl text-off-white mt-4 leading-[1.05]">{heading}<br /><em className="text-off-white/40 not-italic">{sub}</em></h2>
-          <p className="mt-6 text-base sm:text-lg text-off-white/60 max-w-md leading-relaxed">We&rsquo;re a crew of kit lovers who check every single stitch. Every jersey gets a 10-point inspection before it&rsquo;s packed. Nothing ships that we wouldn&rsquo;t wear to the final.</p>
-          <div className="mt-10 grid grid-cols-3 gap-6">
+          <h2 data-cms="heading" data-sec-h style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="headline text-4xl sm:text-5xl text-off-white mt-4 leading-[1.05]">{heading}<br /><em className="text-off-white/40 not-italic">{sub}</em></h2>
+          <p style={{ color: 'var(--sec-body, var(--th-text-inverse-soft))' }} className="mt-6 text-base sm:text-lg text-off-white/60 max-w-md leading-relaxed">We&rsquo;re a crew of kit lovers who check every single stitch. Every jersey gets a 10-point inspection before it&rsquo;s packed. Nothing ships that we wouldn&rsquo;t wear to the final.</p>
+          <div data-cms="arguments" className="mt-10 grid grid-cols-3 gap-6">
             {args.map((arg) => (
               <div key={arg.label}><p className="headline text-3xl sm:text-4xl text-off-white">{arg.value}</p><p className="font-mono-meta text-[9px] text-off-white/50 mt-1.5 uppercase tracking-wider leading-relaxed">{arg.label}</p></div>
             ))}
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 1.05 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 1, ease: EASE_PREMIUM }} className="relative aspect-[4/5] overflow-hidden">
-          <img src={image} alt="Quality inspection" className="w-full h-full object-cover" />
+          <img src={image} alt="Quality inspection" data-cms="image" className="w-full h-full object-cover" />
           <span className="absolute bottom-4 left-4 font-mono-meta text-[9px] text-off-white/70 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm">QC PASS — SEAN #001</span>
         </motion.div>
       </div>

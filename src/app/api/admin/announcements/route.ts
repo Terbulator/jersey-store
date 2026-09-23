@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { checkOrigin, checkRateLimit } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  if (blocked) return blocked;
   const { text, active, sort_order } = await req.json();
   if (!text?.trim()) return NextResponse.json({ error: 'Missing text.' }, { status: 400 });
   const sb = await adminDataClient();
@@ -13,6 +16,8 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  if (blocked) return blocked;
   const { id, text, active, sort_order } = await req.json();
   if (!id) return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
   const sb = await adminDataClient();
@@ -27,6 +32,8 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   await requireAdmin();
+  const blocked = checkOrigin(req) ?? checkRateLimit(req, 'expensive');
+  if (blocked) return blocked;
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
   const sb = await adminDataClient();

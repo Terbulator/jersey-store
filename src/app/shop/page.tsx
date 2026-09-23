@@ -1,13 +1,16 @@
 import { ShopPageShell, ShopTemplate } from '@/components/website/shop/shop-template';
 import { getProducts, getCategories, getEditions } from '@/lib/storefront';
+import { getDisplay } from '@/lib/display';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ShopPage() {
-  const [products, categories, editions] = await Promise.all([
+  const [products, categories, editions, display] = await Promise.all([
     getProducts(),
     getCategories(),
     getEditions(),
+    getDisplay(createClient()),
   ]);
 
   return (
@@ -18,6 +21,7 @@ export default async function ShopPage() {
         products={products}
         categories={categories}
         editions={editions}
+        collection={display.collection}
       />
     </ShopPageShell>
   );

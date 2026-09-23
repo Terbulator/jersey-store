@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function AdminHomepagePage() {
-  redirect('/admin/homepage-sections');
+  redirect('/admin/theme-editor');
 }

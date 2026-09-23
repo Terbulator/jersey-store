@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { checkOrigin, checkRateLimit } from '@/lib/security';
 
 // Shared POST/PATCH/DELETE for simple admin content tables.
 // Each route module builds one spec and re-exports the three handlers.
@@ -17,6 +18,8 @@ export interface CrudSpec {
   boolFields?: string[];
   /** Columns coerced to number on write; '' becomes null */
   numericFields?: string[];
+  /** Row validator — return an error message to reject with 400 */
+  validate?: (row: Record<string, unknown>) => string | null;
 }
 
 const coerce = (spec: CrudSpec, row: Record<string, unknown>) => {
@@ -38,12 +41,18 @@ const coerce = (spec: CrudSpec, row: Record<string, unknown>) => {
 export function makeCrudApi(spec: CrudSpec) {
   async function POST(req: NextRequest) {
     await requireAdmin();
+    const blocked = checkOrigin(req) ?? checkRateLimit(req);
+    if (blocked) return blocked;
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
     if (!body) return NextResponse.json({ error: 'Invalid body.' }, { status: 400 });
     if (spec.require && !String(body[spec.require] ?? '').trim()) {
       return NextResponse.json({ error: `Missing ${spec.require}.` }, { status: 400 });
     }
     const row = { ...(spec.defaults ?? {}), ...coerce(spec, body) };
+    if (spec.validate) {
+      const err = spec.validate(row);
+      if (err) return NextResponse.json({ error: err }, { status: 400 });
+    }
     const sb = await adminDataClient();
     const { error } = await sb.from(spec.table).insert(row);
     if (error) return NextResponse.json({ error: 'Could not create.' }, { status: 500 });
@@ -52,11 +61,17 @@ export function makeCrudApi(spec: CrudSpec) {
 
   async function PATCH(req: NextRequest) {
     await requireAdmin();
+    const blocked = checkOrigin(req) ?? checkRateLimit(req);
+    if (blocked) return blocked;
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
     if (!body) return NextResponse.json({ error: 'Invalid body.' }, { status: 400 });
     const { id, ...patch } = body;
     if (!id) return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
     const updates = coerce(spec, patch ?? {});
+    if (spec.validate) {
+      const err = spec.validate(updates);
+      if (err) return NextResponse.json({ error: err }, { status: 400 });
+    }
     if (!Object.keys(updates).length) return NextResponse.json({ ok: true });
     updates.updated_at = new Date().toISOString();
     const sb = await adminDataClient();
@@ -67,6 +82,8 @@ export function makeCrudApi(spec: CrudSpec) {
 
   async function DELETE(req: NextRequest) {
     await requireAdmin();
+    const blocked = checkOrigin(req) ?? checkRateLimit(req, 'expensive');
+    if (blocked) return blocked;
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
     if (!body) return NextResponse.json({ error: 'Invalid body.' }, { status: 400 });
     const { id } = body;

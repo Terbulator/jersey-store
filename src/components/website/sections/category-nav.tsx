@@ -18,7 +18,7 @@ export function CategoryNav({ categories, settings }: { categories: Category[]; 
         <div className="flex items-end justify-between mb-10">
           <div>
             <p className="eyebrow">Shop by Category</p>
-            <h2 className="headline text-4xl sm:text-5xl lg:text-6xl text-off-white mt-3">
+            <h2 data-cms="heading" data-sec-h style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="headline text-4xl sm:text-5xl lg:text-6xl text-off-white mt-3">
               {heading}
               <br />One House.
             </h2>
@@ -32,7 +32,7 @@ export function CategoryNav({ categories, settings }: { categories: Category[]; 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
                   <div>
-                    <p className="font-mono-meta text-[10px] tracking-[0.3em] text-red mb-2">{cat.label}</p>
+                    <p style={{ color: 'var(--sec-accent, var(--th-brand-primary))' }} className="font-mono-meta text-[10px] tracking-[0.3em] text-red mb-2">{cat.label}</p>
                     <h3 className="headline text-3xl sm:text-4xl text-off-white">{cat.name}</h3>
                   </div>
                   <ArrowUpRight className="w-6 h-6 text-off-white/60 group-hover:text-off-white transition-colors" strokeWidth={1.5} />

@@ -1,3 +1,5 @@
+import { Fragment, type ReactNode } from 'react';
+import { SectionShell, SECTION_SUPPORT } from '@/components/website/section-shell';
 import { SiteHero } from '@/components/website/sections/site-hero';
 import { StorySlides } from '@/components/website/sections/story-slides';
 import { TrustStrip } from '@/components/website/sections/trust-strip';
@@ -81,39 +83,52 @@ export function renderSection(
 ) {
   switch (key) {
     case 'hero':
-      return <SiteHero settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.hero}><SiteHero settings={settings as any} /></SectionShell>;
     case 'story_slides':
-      return <StorySlides categories={data.categories} settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.story_slides}><StorySlides categories={data.categories} settings={settings as any} /></SectionShell>;
     case 'trust_strip':
-      return <TrustStrip settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.trust_strip}><TrustStrip settings={settings as any} /></SectionShell>;
     case 'category_nav':
-      return <CategoryNav categories={data.categories} settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.category_nav}><CategoryNav categories={data.categories} settings={settings as any} /></SectionShell>;
     case 'best_sellers':
-      return <BestSellers products={data.products} editions={data.editions} settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.best_sellers}><BestSellers products={data.products} editions={data.editions} settings={settings as any} /></SectionShell>;
     case 'editorial_split':
-      return <EditorialSplit settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.editorial_split}><EditorialSplit settings={settings as any} /></SectionShell>;
     case 'bundle_section':
-      return <BundleSection settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.bundle_section}><BundleSection settings={settings as any} /></SectionShell>;
     case 'stats_section':
-      return <StatsSection settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.stats_section}><StatsSection settings={settings as any} /></SectionShell>;
     case 'editions_section':
-      return <EditionsSection editions={data.editions} products={data.products} settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.editions_section}><EditionsSection editions={data.editions} products={data.products} settings={settings as any} /></SectionShell>;
     case 'expert_section':
-      return <ExpertSection settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.expert_section}><ExpertSection settings={settings as any} /></SectionShell>;
     case 'newsletter_section':
-      return <NewsletterSection settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.newsletter_section}><NewsletterSection settings={settings as any} /></SectionShell>;
     case 'review_section':
-      return <ReviewSection reviews={data.reviews} products={data.products} editions={data.editions} settings={settings as any} />;
+      return <SectionShell design={(settings as any)?.design} support={SECTION_SUPPORT.review_section}><ReviewSection reviews={data.reviews} products={data.products} editions={data.editions} settings={settings as any} /></SectionShell>;
     default:
       return null;
   }
 }
 
-// Renders every section in the registry (used as the fallback when no
-// homepage_sections rows exist).
-export function renderAllSections(
+// Renders the homepage exactly as the storefront does: enabled sections in
+// the given order — or every registry section when none are enabled (the
+// storefront fallback). The live page and every admin preview call this one
+// function, so preview can never drift from production. Unknown keys render
+// null via renderSection's default branch. Items may repeat a key
+// (duplicated sections); identity comes from id, settings from the item.
+export function renderHomepageSections(
+  items: { id?: string | null; key: string; enabled: boolean; settings?: Record<string, unknown> | null }[],
   settingsMap: Record<string, Record<string, unknown> | null>,
-  data: StorefrontData
+  data: StorefrontData,
+  wrap?: (item: { id?: string | null; key: SectionKey }, node: ReactNode) => ReactNode
 ) {
-  return SECTION_ORDER.map((key) => renderSection(key, settingsMap[key] ?? null, data));
+  const enabled = items.filter((i) => i.enabled);
+  const list: { id?: string | null; key: string; enabled: boolean; settings?: Record<string, unknown> | null }[] =
+    enabled.length ? enabled : SECTION_ORDER.map((key) => ({ key, enabled: true }));
+  return list.map((item, idx) => {
+    const key = item.key as SectionKey;
+    const node = renderSection(key, item.settings ?? settingsMap[item.key] ?? null, data);
+    return <Fragment key={item.id ?? `${item.key}-${idx}`}>{wrap ? wrap({ id: item.id, key }, node) : node}</Fragment>;
+  });
 }

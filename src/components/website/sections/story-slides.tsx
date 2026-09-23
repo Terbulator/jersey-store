@@ -42,7 +42,7 @@ export function StorySlides({ categories, settings }: { categories: Category[]; 
   const cric = categories[1];
 
   const slides: StorySlide[] = useMemo(() => {
-    if (settings?.slides?.length) return settings.slides.map((s) => ({ ...s, image_url: s.image_url }));
+    if (settings?.slides?.length) return settings.slides.map((s, i) => ({ ...s, id: s.id ?? `slide-${i}`, code: s.code ?? String(i + 1).padStart(2, '0'), image_url: s.image_url }));
     return [
       { ...DEFAULT_SLIDES[0], image_url: (foot?.image ?? FALLBACK_FOOTBALL).replace('w=800', 'w=1400') },
       { ...DEFAULT_SLIDES[1], image_url: (cric?.image ?? FALLBACK_CRICKET).replace('w=800', 'w=1400') },
@@ -74,9 +74,9 @@ export function StorySlides({ categories, settings }: { categories: Category[]; 
           <motion.div key={active} initial={{ opacity: 0, y: reduce ? 0 : 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: reduce ? undefined : EASE_EDITORIAL }} className="max-w-[640px]">
             <p className="font-mono-meta text-[11px] tracking-[0.3em] text-[#B3001B] mb-4 sm:mb-5">{slide.code} — {slide.label.toUpperCase()}</p>
-            <h2 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[0.95] text-[#EFECE6]">{slide.headline}</h2>
-            {slide.sub && <p className="mt-4 font-mono-meta text-[11px] sm:text-[12px] tracking-[0.2em] text-[#A8A8A8]">{slide.sub.toUpperCase()}</p>}
-            <Link href={slide.href} className="group mt-8 sm:mt-10 inline-flex items-center gap-2 border border-[rgba(239,236,230,0.2)] hover:border-[#B3001B] px-6 py-3 font-mono-meta text-[11px] tracking-[0.15em] text-[#EFECE6] hover:text-[#B3001B] transition-colors duration-300">
+            <h2 data-cms="slides" data-sec-h style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[0.95] text-[#EFECE6]">{slide.headline}</h2>
+            {slide.sub && <p style={{ color: 'var(--sec-body, var(--th-text-secondary))' }} className="mt-4 font-mono-meta text-[11px] sm:text-[12px] tracking-[0.2em] text-[#A8A8A8]">{slide.sub.toUpperCase()}</p>}
+            <Link href={slide.href} data-cms="slides" className="group mt-8 sm:mt-10 inline-flex items-center gap-2 border border-[rgba(239,236,230,0.2)] hover:border-[#B3001B] px-6 py-3 font-mono-meta text-[11px] tracking-[0.15em] text-[#EFECE6] hover:text-[#B3001B] transition-colors duration-300">
               {slide.cta} <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" strokeWidth={1.5} />
             </Link>
           </motion.div>

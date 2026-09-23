@@ -7,6 +7,7 @@ import { ROUTES } from '@/lib/utils';
 import { useUiStore } from '@/store/ui-store';
 import { useCartStore } from '@/store/cart-store';
 import type { NavItem } from '@/lib/storefront-types';
+import type { HeaderSettings } from '@/lib/site-chrome';
 
 const FALLBACK_LINKS = [
   { label: 'Shop All', href: ROUTES.SHOP },
@@ -19,7 +20,8 @@ const FALLBACK_LINKS = [
   { label: 'Account', href: ROUTES.ACCOUNT },
 ];
 
-export function MobileMenu({ navItems }: { navItems: NavItem[] }) {
+export function MobileMenu({ navItems, header }: { navItems: NavItem[]; header?: HeaderSettings }) {
+  const logoText = header?.logo_text || 'HEADERR.';
   const links = navItems.filter((n) => n.section === 'mobile');
   const LINKS = links.length
     ? links.map((n) => ({ label: n.label, href: n.href }))
@@ -37,7 +39,11 @@ export function MobileMenu({ navItems }: { navItems: NavItem[] }) {
           className="fixed inset-0 z-[60] bg-black flex flex-col"
         >
           <div className="flex items-center justify-between px-6 h-16 border-b border-white/10">
-            <span className="headline text-xl text-off-white">HEADERR.</span>
+            {header?.logo ? (
+              <img src={header.logo} alt={logoText} className="h-6 w-auto" />
+            ) : (
+              <span className="headline text-xl text-off-white">{logoText}</span>
+            )}
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"

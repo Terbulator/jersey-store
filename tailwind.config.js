@@ -14,20 +14,21 @@ module.exports = {
     },
     extend: {
       colors: {
-        // HEADERR system — legacy names remapped to new palette
-        navy: 'hsl(var(--navy))',
-        deep_blue: 'hsl(var(--deep-blue))',
-        olive: 'hsl(var(--olive))',
-        sage: 'hsl(var(--sage))',
-        green: 'hsl(var(--green))',
+        // HEADERR system — driven by theme tokens (--th-*) so the Theme
+        // Editor recolors the whole site. Defaults equal the old palette.
+        navy: 'var(--th-surface-base)',
+        deep_blue: 'var(--th-surface-ink)',
+        olive: 'var(--th-brand-secondary)',
+        sage: 'var(--th-text-secondary)',
+        green: 'var(--th-brand-secondary)',
         gold: 'hsl(var(--gold))',
         bronze: 'hsl(var(--bronze))',
         amber: 'hsl(var(--amber))',
-        red: 'hsl(var(--red))',
-        blood_red: 'hsl(var(--red))',
-        off_white: 'hsl(var(--off-white))',
-        charcoal: 'hsl(var(--charcoal))',
-        chrome: 'hsl(var(--chrome))',
+        red: 'var(--th-brand-primary)',
+        blood_red: 'var(--th-brand-primary)',
+        off_white: 'var(--th-text-inverse)',
+        charcoal: 'var(--th-brand-secondary)',
+        chrome: 'var(--th-text-secondary)',
       },
       fontFamily: {
         display: ["'Instrument Serif'", 'Georgia', 'serif'],

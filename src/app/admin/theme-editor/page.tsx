@@ -1,55 +1,45 @@
 import { requireAdmin, adminDataClient } from '@/lib/admin';
-import { getProducts, getCategories, getEditions, getApprovedReviews } from '@/lib/storefront';
+import { getHomepageRenderData, type HomepageSection } from '@/lib/homepage';
+import { getTheme, mergeTheme, type Theme } from '@/lib/theme';
+import { getDisplay, mergeDisplay, type DisplaySettings } from '@/lib/display';
 import type { StorefrontData } from '@/components/website/section-registry';
 import { ThemeEditor } from './theme-editor';
 
 export const metadata = { title: 'Theme Editor — HEADERR Admin' };
 
-export interface EditorSection {
-  key: string;
-  name: string;
-  enabled: boolean;
-  sort_order: number;
-  settings: Record<string, unknown> | null;
-  hasDraft: boolean;
-}
+export type EditorSection = HomepageSection;
 
 export default async function AdminThemeEditorPage() {
   await requireAdmin();
 
-  const sb = await adminDataClient();
-  const { data, error } = await sb
-    .from('homepage_sections')
-    .select('id, key, name, enabled, sort_order, settings, draft_enabled, draft_sort_order, draft_settings')
-    .order('sort_order', { ascending: true });
-
-  const initialItems: EditorSection[] = (data ?? []).map((s) => {
-    const draftEnabled = s.draft_enabled ?? null;
-    const draftOrder = s.draft_sort_order ?? null;
-    const draftSettings = (s.draft_settings as Record<string, unknown> | null) ?? null;
-    return {
-      key: s.key as string,
-      name: s.name as string,
-      enabled: draftEnabled ?? !!s.enabled,
-      sort_order: draftOrder ?? (s.sort_order as number),
-      settings: draftSettings ?? ((s.settings as Record<string, unknown>) ?? null),
-      hasDraft: draftEnabled !== null || draftOrder !== null || draftSettings !== null,
-    };
-  });
-  initialItems.sort((a, b) => a.sort_order - b.sort_order);
-
-  const storefrontData: StorefrontData = {
-    products: await getProducts(),
-    categories: await getCategories(),
-    editions: await getEditions(),
-    reviews: await getApprovedReviews(),
-  };
+  // Draft-over-live: the editor works on unpublished state, preview included.
+  let initialItems: EditorSection[] = [];
+  let storefrontData: StorefrontData = { products: [], categories: [], editions: [], reviews: [] };
+  let initialTheme: Theme = mergeTheme(null);
+  let initialDisplay: DisplaySettings = mergeDisplay(null);
+  let initialUpdatedAt: string | null = null;
+  let sectionsError: string | null = null;
+  try {
+    const sb = await adminDataClient();
+    const data = await getHomepageRenderData(sb, 'draft');
+    initialItems = data.items;
+    storefrontData = data.storefrontData;
+    initialTheme = await getTheme(sb);
+    initialDisplay = await getDisplay(sb);
+    const { data: touched } = await sb.from('homepage_sections').select('updated_at').order('updated_at', { ascending: false }).limit(1);
+    initialUpdatedAt = ((touched?.[0] as { updated_at?: string } | undefined)?.updated_at) ?? null;
+  } catch (e) {
+    sectionsError = e instanceof Error ? e.message : 'Could not load sections.';
+  }
 
   return (
     <ThemeEditor
       initialItems={initialItems}
       storefrontData={storefrontData}
-      sectionsError={error?.message ?? null}
+      sectionsError={sectionsError}
+      initialTheme={initialTheme}
+      initialDisplay={initialDisplay}
+      initialUpdatedAt={initialUpdatedAt}
     />
   );
 }

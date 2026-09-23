@@ -52,7 +52,10 @@ export function SiteHero({ settings }: { settings?: HeroSettings | null }) {
     return () => { cancelled = true; };
   }, [settings]);
 
-  const heroImage = slide.image_url ?? FALLBACK.image_url!;
+  // Canonical image resolution: explicit desktop image first, then the
+  // legacy image_url key (still present in older saved settings), then the
+  // built-in fallback. Old content keeps working with no data migration.
+  const heroImage = slide.desktop_image || slide.image_url || FALLBACK.image_url!;
   const headlineParts = (slide.headline ?? '').split('GAME.');
   const hasGameSplit = headlineParts.length > 1;
   const firstPart = hasGameSplit ? headlineParts[0] : slide.headline ?? '';
@@ -66,7 +69,7 @@ export function SiteHero({ settings }: { settings?: HeroSettings | null }) {
         transition={{ duration: 1.6, ease: EASE_PREMIUM }}
         className="absolute inset-0"
       >
-        <img src={heroImage} alt="" className="w-full h-full object-cover opacity-50" />
+        <img src={heroImage} alt="" data-cms="image" className="w-full h-full object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/50" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
       </motion.div>
@@ -78,25 +81,25 @@ export function SiteHero({ settings }: { settings?: HeroSettings | null }) {
           transition={{ delay: 0.3, duration: 0.9, ease: EASE_PREMIUM }}
           className="max-w-3xl"
         >
-          <p className="font-mono-meta text-[10px] tracking-[0.35em] text-off-white/60 mb-6">
+          <p data-cms="eyebrow" className="font-mono-meta text-[10px] tracking-[0.35em] text-off-white/60 mb-6">
             {slide.eyebrow ?? FALLBACK.eyebrow}
           </p>
-          <h1 className="headline text-[52px] sm:text-[76px] lg:text-[104px] leading-[0.95] text-off-white">
+          <h1 data-cms="heading" data-sec-h style={{ color: 'var(--sec-heading, var(--th-text-inverse))' }} className="headline text-[52px] sm:text-[76px] lg:text-[104px] leading-[0.95] text-off-white">
             {firstPart}
             {hasGameSplit && (
               <>
                 <br />
-                <em className="text-red not-italic underline underline-offset-[0.12em] decoration-[0.5px]">
+                <em style={{ color: 'var(--sec-accent, var(--th-brand-primary))' }} className="text-red not-italic underline underline-offset-[0.12em] decoration-[0.5px]">
                   {highlight}
                 </em>
               </>
             )}
           </h1>
-          <p className="mt-7 text-base sm:text-lg text-off-white/70 max-w-md leading-relaxed">
+          <p data-cms="subheading" style={{ color: 'var(--sec-body, var(--th-text-inverse-soft))' }} className="mt-7 text-base sm:text-lg text-off-white/70 max-w-md leading-relaxed">
             {slide.subheadline ?? 'Player-version football & cricket jerseys. Master-edition streetwear. Cut for the culture that never stops.'}
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Link href={slide.cta_url ?? ROUTES.SHOP} className="btn-pill btn-pill-solid">
+            <Link href={slide.cta_url ?? ROUTES.SHOP} data-cms="button" className="btn-pill btn-pill-solid">
               {slide.cta_text ?? 'Shop the Drop'}
             </Link>
             <Link href="/bundle" className="btn-pill btn-pill-outline">
