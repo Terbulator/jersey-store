@@ -68,7 +68,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (searchDone && !loading && user && roleReady) {
-      router.replace(redirect ?? (role ? '/admin' : ROUTES.ACCOUNT));
+      router.replace(role ? '/admin' : (redirect ?? ROUTES.ACCOUNT));
     }
   }, [searchDone, loading, user, roleReady, role, redirect, router]);
 

@@ -33,12 +33,10 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  const target =
-    next && next.startsWith('/') && !next.startsWith('//')
-      ? next
-      : (await getAdminSession()).status === 'ok'
-        ? '/admin'
-        : '/account';
+  const session = await getAdminSession();
+  const isAdmin = session.status === 'ok';
+  const validNext = next && next.startsWith('/') && !next.startsWith('//');
+  const target = isAdmin ? '/admin' : (validNext ? next : '/account');
 
   return NextResponse.redirect(`${origin}${target}`);
 }

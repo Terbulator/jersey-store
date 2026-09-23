@@ -18,9 +18,20 @@ export default function AccountPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) setName((user.user_metadata?.full_name as string | undefined) ?? '');
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { setRole(null); return; }
+    let active = true;
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((j: { role?: string | null }) => { if (active) setRole(j.role ?? null); })
+      .catch(() => {});
+    return () => { active = false; };
   }, [user]);
 
   if (loading) {
@@ -29,6 +40,19 @@ export default function AccountPage() {
         <span className="w-8 h-8 border border-off-white/20 border-t-off-white rounded-full animate-spin" />
       </section>
     );
+  }
+
+  if (user && role === null) {
+    return (
+      <section className="min-h-screen bg-black flex items-center justify-center">
+        <span className="w-8 h-8 border border-off-white/20 border-t-off-white rounded-full animate-spin" />
+      </section>
+    );
+  }
+
+  if (role === 'ADMIN') {
+    router.replace('/admin');
+    return null;
   }
 
   if (!user) {
