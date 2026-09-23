@@ -1,5 +1,3 @@
-'use client';
-
 import { SiteHero } from '@/components/website/sections/site-hero';
 import { StorySlides } from '@/components/website/sections/story-slides';
 import { TrustStrip } from '@/components/website/sections/trust-strip';
