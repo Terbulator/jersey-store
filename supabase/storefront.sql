@@ -162,6 +162,9 @@ create table if not exists public.homepage_sections (
   enabled boolean not null default true,
   sort_order int not null default 0,
   settings jsonb not null default '{}'::jsonb,
+  draft_enabled boolean,
+  draft_sort_order int,
+  draft_settings jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

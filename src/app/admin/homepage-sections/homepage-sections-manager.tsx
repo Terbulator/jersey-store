@@ -63,7 +63,7 @@ export function HomepageSectionsManager({
               </button>
             </div>
             {expandedKey === s.key && (
-              <SectionEditor sectionKey={s.key} sectionName={s.name} settings={settingsMap[s.key] ?? null} onSettingsChange={onSettingsChange} />
+              <SectionEditor sectionId={s.id} sectionKey={s.key} sectionName={s.name} settings={settingsMap[s.key] ?? null} onSettingsChange={onSettingsChange} />
             )}
           </li>
         ))}

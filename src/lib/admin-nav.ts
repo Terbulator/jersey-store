@@ -67,7 +67,8 @@ export const ADMIN_NAV: AdminNavSection[] = [
     title: 'Website',
     items: [
       { label: 'Homepage', href: '/admin/homepage', icon: Home },
-      { label: 'Homepage Sections', href: '/admin/homepage-sections', icon: LayoutTemplate },
+      { label: 'Theme Editor', href: '/admin/theme-editor', icon: LayoutTemplate },
+      { label: 'Homepage Sections', href: '/admin/homepage-sections', icon: Home },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
       { label: 'Promotional Slides', href: '/admin/promo-slides', icon: Megaphone },
       { label: 'Announcements', href: '/admin/announcements', icon: Megaphone },
