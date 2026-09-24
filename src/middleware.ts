@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-const protectedPaths = ['/account', '/admin'];
+// Account authentication is resolved client-side by AuthProvider. Keeping /account out of
+// middleware avoids a mobile timing race where the Supabase browser session exists but
+// the SSR cookie has not reached middleware yet, causing a false redirect to /login.
+// /admin remains server-protected because it must never render for an unauthenticated user.
+const protectedPaths = ['/admin'];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
