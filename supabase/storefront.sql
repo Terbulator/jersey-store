@@ -197,6 +197,9 @@ create table if not exists public.orders (
   subtotal numeric(10,2) not null default 0,
   total numeric(10,2) not null default 0,
   notes text,
+  tracking_token text unique,
+  idempotency_key text unique,
+  coupon_id uuid references public.coupons(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -289,6 +292,9 @@ create index if not exists idx_products_published on public.products(published);
 create index if not exists idx_product_variants_product on public.product_variants(product_id);
 create index if not exists idx_orders_created on public.orders(created_at);
 create index if not exists idx_orders_status on public.orders(status);
+create index if not exists idx_orders_tracking_token on public.orders(tracking_token);
+create index if not exists idx_orders_idempotency_key on public.orders(idempotency_key);
+create index if not exists idx_orders_user_id on public.orders(user_id);
 create index if not exists idx_reviews_status on public.reviews(status);
 create index if not exists idx_analytics_event on public.analytics_events(event);
 create index if not exists idx_analytics_created on public.analytics_events(created_at);
@@ -322,12 +328,21 @@ alter table public.analytics_events enable row level security;
 do $$
 declare t text;
 begin
-  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','homepage_sections','site_settings','reviews','offers']
+  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','homepage_sections','reviews','offers']
   loop
     execute format('drop policy if exists "public read %1$s" on public.%1$s', t);
     execute format('create policy "public read %1$s" on public.%1$s for select using (true)', t);
   end loop;
 end $$;
+
+-- site_settings: separate public vs private keys
+-- Public keys (shipping, contact, site) readable by anon/authenticated
+-- Private keys (theme, header, footer, templates, etc.) require service role
+drop policy if exists "public read site_settings" on public.site_settings;
+create policy "public read site_settings" on public.site_settings
+  for select using (
+    key in ('shipping', 'contact', 'site')
+  );
 
 -- Reviews: only approved visible to the storefront.
 drop policy if exists "public read reviews" on public.reviews;
@@ -345,7 +360,7 @@ grant usage on schema public to anon, authenticated, service_role;
 
 grant select on public.categories, public.editions, public.products, public.product_variants,
   public.collections, public.announcements, public.navigation_items, public.promo_slides,
-  public.banners, public.campaigns, public.homepage_sections, public.site_settings, public.reviews, public.offers
+  public.banners, public.campaigns, public.homepage_sections, public.reviews, public.offers
   to anon, authenticated;
 
 grant insert on public.analytics_events to anon, authenticated;
@@ -355,3 +370,45 @@ grant all on public.products, public.product_variants, public.categories, public
   public.banners, public.campaigns, public.homepage_sections, public.site_settings, public.reviews,
   public.admin_users, public.orders, public.media_assets, public.coupons, public.analytics_events, public.offers
   to service_role;
+
+-- RPC function for atomic coupon usage increment
+-- Uses a single atomic UPDATE ... to safely increment usage and prevent
+-- concurrent checkouts from exceeding the coupon's max_uses limit.
+-- Returns JSON with success status, new used_count, max_uses, and remaining.
+create or replace function public.increment_coupon_usage(coupon_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_rows int;
+  new_used_count int;
+  coupon_max_uses int;
+  result jsonb;
+begin
+  -- Atomically increment used_count only if below max_uses.
+  update public.coupons
+  set used_count = public.coupons.used_count + 1,
+      updated_at = now()
+  where id = coupon_id
+  and used_count < (select max_uses from public.coupons where id = coupon_id);
+
+  GET DIAGNOSTICS updated_rows = ROW_COUNT;
+
+-- Read back the current used_count and max_uses for the response.
+  select used_count, max_uses
+  into new_used_count, coupon_max_uses
+  from public.coupons
+  where id = coupon_id;
+
+  result = jsonb_build_object(
+    'success', updated_rows > 0,
+    'used_count', COALESCE(new_used_count, 0),
+    'max_uses', COALESCE(coupon_max_uses, 0),
+    'remaining', GREATEST(0, COALESCE(coupon_max_uses, 0) - COALESCE(new_used_count, 0))
+  );
+
+  return result;
+end;
+$$;

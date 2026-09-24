@@ -22,8 +22,8 @@ export function FooterWordmark() {
   const hidden = reduce
     ? { opacity: 1 }
     : mobile
-      ? { opacity: 0, y: 60, scale: 0.97, filter: 'blur(6px)' }
-      : { opacity: 0, y: 100, scale: 0.97, filter: 'blur(6px)' };
+      ? { opacity: 0, y: '100%', scale: 0.97, filter: 'blur(6px)' }
+      : { opacity: 0, y: '100%', scale: 0.97, filter: 'blur(6px)' };
   const shown = { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' };
 
   return (
@@ -39,7 +39,7 @@ export function FooterWordmark() {
           duration: reduce ? 0 : mobile ? 1.15 : 1.4,
           ease: EASE_EDITORIAL,
         }}
-        className="font-display text-[22vw] sm:text-[23vw] lg:text-[24vw] xl:text-[25vw] leading-[0.8] tracking-[-0.035em] whitespace-nowrap text-center text-[#A8A8A8] -mb-[0.18em]"
+        className="font-display font-display font-[Instrument Serif],Georgia,serif clamp(1.5rem, 3vw, 3.5rem) leading-[0.8] tracking-[-0.035em] whitespace-nowrap text-center text-[#A8A8A8] -mb-[0.18em]"
       >
         HEADERR
         <span className="inline-block text-[0.15em] align-super leading-none translate-y-[0.15em]">
