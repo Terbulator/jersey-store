@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 // middleware avoids a mobile timing race where the Supabase browser session exists but
 // the SSR cookie has not reached middleware yet, causing a false redirect to /login.
 // /admin remains server-protected because it must never render for an unauthenticated user.
+// /reset-password must be accessible for password recovery flow (recovery session).
 const protectedPaths = ['/admin'];
 
 export async function middleware(request: NextRequest) {
@@ -53,5 +54,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/account/:path*', '/admin/:path*', '/login', '/signup', '/forgot-password'],
+  matcher: ['/account/:path*', '/admin/:path*', '/login', '/signup', '/forgot-password', '/reset-password'],
 };

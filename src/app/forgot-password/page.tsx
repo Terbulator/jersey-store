@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
     setError(null);
     setBusy(true);
     const { error: resetError } = await createClient().auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setBusy(false);
 

@@ -83,7 +83,7 @@ export default function SignupPage() {
 
 // Full navigation lets the newly persisted Supabase SSR cookie reach
     // middleware before the authenticated account route is requested.
-    window.location.replace(redirect ?? ROUTES.ACCOUNT);
+    router.replace(redirect ?? ROUTES.ACCOUNT);
   };
 
   return (

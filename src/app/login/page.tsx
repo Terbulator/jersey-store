@@ -90,7 +90,7 @@ export default function LoginPage() {
       if (data.user) {
         void syncGuestData(data.user.id).catch(() => {});
 
-        window.location.replace(redirect ?? ROUTES.ACCOUNT);
+        router.replace(redirect ?? ROUTES.ACCOUNT);
         return;
       }
       setBusy(false);

@@ -77,7 +77,7 @@ export default function AccountPage() {
 
   const sendResetLink = async () => {
     await createClient().auth.resetPasswordForEmail(user.email!, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
     });
     setResetSent(true);
   };
