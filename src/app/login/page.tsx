@@ -97,12 +97,12 @@ export default function LoginPage() {
         try {
           const roleResponse = await fetch('/api/me', { cache: 'no-store' });
           const roleData = (await roleResponse.json()) as { role?: string | null };
-          router.replace(roleData.role ? '/admin' : (redirect ?? ROUTES.ACCOUNT));
-          router.refresh();
+          // Use a full navigation after auth so mobile browsers send the newly
+          // persisted Supabase SSR cookie through Next middleware.
+          window.location.replace(roleData.role ? '/admin' : (redirect ?? ROUTES.ACCOUNT));
           return;
         } catch {
-          router.replace(redirect ?? ROUTES.ACCOUNT);
-          router.refresh();
+          window.location.replace(redirect ?? ROUTES.ACCOUNT);
           return;
         }
       }
