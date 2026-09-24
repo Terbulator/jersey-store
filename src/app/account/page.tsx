@@ -19,37 +19,42 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
 
   useEffect(() => {
     if (user) setName((user.user_metadata?.full_name as string | undefined) ?? '');
   }, [user]);
 
   useEffect(() => {
-    if (!user) { setRole(null); return; }
+    if (!user) {
+      setRole(null);
+      setRoleLoading(false);
+      return;
+    }
     let active = true;
-    fetch('/api/me')
+    setRoleLoading(true);
+    fetch('/api/me', { cache: 'no-store' })
       .then((r) => r.json())
-      .then((j: { role?: string | null }) => { if (active) setRole(j.role ?? null); })
-      .catch(() => {});
+      .then((j: { role?: string | null }) => {
+        if (!active) return;
+        setRole(j.role ?? null);
+        setRoleLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setRole(null);
+        setRoleLoading(false);
+      });
     return () => { active = false; };
   }, [user]);
 
-  if (loading) {
+  if (loading || (user && roleLoading)) {
     return (
       <section className="min-h-screen bg-black flex items-center justify-center">
         <span className="w-8 h-8 border border-off-white/20 border-t-off-white rounded-full animate-spin" />
       </section>
     );
   }
-
-  if (user && role === null) {
-    return (
-      <section className="min-h-screen bg-black flex items-center justify-center">
-        <span className="w-8 h-8 border border-off-white/20 border-t-off-white rounded-full animate-spin" />
-      </section>
-    );
-  }
-
   if (role === 'ADMIN') {
     router.replace('/admin');
     return null;
@@ -113,8 +118,7 @@ export default function AccountPage() {
       <button
         onClick={async () => {
           await signOut();
-          router.replace(ROUTES.HOME);
-          router.refresh();
+          window.location.replace(ROUTES.HOME);
         }}
         className="w-full text-left flex items-center gap-3 py-3.5 px-4 font-mono-meta text-[10px] tracking-[0.12em] border-b border-off-white/10 text-red hover:text-[#ff5f6d] transition-colors"
       >
@@ -210,8 +214,7 @@ export default function AccountPage() {
                   <button
                     onClick={async () => {
                       await signOut();
-                      router.replace(ROUTES.HOME);
-                      router.refresh();
+                      window.location.replace(ROUTES.HOME);
                     }}
                     className="btn-pill btn-pill-outline text-red border-red/50 hover:bg-red hover:text-white"
                   >

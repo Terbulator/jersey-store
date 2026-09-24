@@ -88,8 +88,12 @@ export default function LoginPage() {
         return;
       }
       if (data.user) {
-        await syncGuestData(data.user.id);
+        void syncGuestData(data.user.id).catch(() => {});
+
+        window.location.replace(redirect ?? ROUTES.ACCOUNT);
+        return;
       }
+      setBusy(false);
     } catch {
       setError(errorMessage({ message: 'failed' }));
       setBusy(false);
