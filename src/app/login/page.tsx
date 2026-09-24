@@ -89,7 +89,24 @@ export default function LoginPage() {
       }
       if (data.user) {
         await syncGuestData(data.user.id);
+
+        // Do not wait for AuthProvider's async listener to perform navigation.
+        // On touch/mobile browsers the auth event and React state update can
+        // arrive on different ticks, leaving a successful login visually stuck
+        // on the form. Route explicitly from the successful sign-in response.
+        try {
+          const roleResponse = await fetch('/api/me', { cache: 'no-store' });
+          const roleData = (await roleResponse.json()) as { role?: string | null };
+          router.replace(roleData.role ? '/admin' : (redirect ?? ROUTES.ACCOUNT));
+          router.refresh();
+          return;
+        } catch {
+          router.replace(redirect ?? ROUTES.ACCOUNT);
+          router.refresh();
+          return;
+        }
       }
+      setBusy(false);
     } catch {
       setError(errorMessage({ message: 'failed' }));
       setBusy(false);
