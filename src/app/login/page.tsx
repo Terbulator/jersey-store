@@ -88,23 +88,10 @@ export default function LoginPage() {
         return;
       }
       if (data.user) {
-        await syncGuestData(data.user.id);
+        void syncGuestData(data.user.id).catch(() => {});
 
-        // Do not wait for AuthProvider's async listener to perform navigation.
-        // On touch/mobile browsers the auth event and React state update can
-        // arrive on different ticks, leaving a successful login visually stuck
-        // on the form. Route explicitly from the successful sign-in response.
-        try {
-          const roleResponse = await fetch('/api/me', { cache: 'no-store' });
-          const roleData = (await roleResponse.json()) as { role?: string | null };
-          // Use a full navigation after auth so mobile browsers send the newly
-          // persisted Supabase SSR cookie through Next middleware.
-          window.location.replace(roleData.role ? '/admin' : (redirect ?? ROUTES.ACCOUNT));
-          return;
-        } catch {
-          window.location.replace(redirect ?? ROUTES.ACCOUNT);
-          return;
-        }
+        window.location.replace(redirect ?? ROUTES.ACCOUNT);
+        return;
       }
       setBusy(false);
     } catch {
