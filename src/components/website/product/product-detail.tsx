@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
@@ -143,15 +144,14 @@ export function ProductDetail({
                 }}
               >
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <Image
                     key={currentImage}
                     src={images[currentImage]}
                     alt={product.imageAlt || product.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority
                   />
                 </AnimatePresence>
                 {product.badge && (
@@ -212,7 +212,14 @@ export function ProductDetail({
                         currentImage === i ? 'border-red opacity-100' : 'border-white/10 opacity-50 hover:opacity-80'
                       )}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <Image
+                        src={img}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                        loading="lazy"
+                      />
                     </button>
                   ))}
                 </div>
@@ -539,11 +546,16 @@ export function ProductDetail({
                 </button>
               </>
             )}
-            <img
-              src={images[viewerIndex]}
-              alt={product.name}
-              className="max-w-[90vw] max-h-[85vh] object-contain"
-            />
+            <div className="relative max-w-[90vw] max-h-[85vh]">
+              <Image
+                src={images[viewerIndex]}
+                alt={product.name}
+                fill
+                className="object-contain"
+                sizes="90vw"
+                priority
+              />
+            </div>
             <div className="absolute bottom-6 font-mono-meta text-[10px] text-off-white/60">
               {viewerIndex + 1} / {images.length}
             </div>

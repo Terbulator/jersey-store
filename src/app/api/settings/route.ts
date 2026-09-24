@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { withCacheHeaders } from '@/lib/utils';
 
 // Public read of select site_settings (RLS allows anon SELECT).
 // Storefront cart/checkout read shipping config from here.
@@ -17,5 +18,8 @@ export async function GET() {
     .eq('key', 'shipping')
     .maybeSingle();
 
-  return NextResponse.json(data?.value ?? ({} as Record<string, unknown>));
+  return withCacheHeaders(
+    NextResponse.json(data?.value ?? ({} as Record<string, unknown>)),
+    'publicCatalog'
+  );
 }

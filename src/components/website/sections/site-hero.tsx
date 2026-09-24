@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ROUTES } from '@/lib/utils';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
@@ -69,7 +70,15 @@ export function SiteHero({ settings }: { settings?: HeroSettings | null }) {
         transition={{ duration: 1.6, ease: EASE_PREMIUM }}
         className="absolute inset-0"
       >
-        <img src={heroImage} alt="" data-cms="image" className="w-full h-full object-cover opacity-50" />
+        <Image
+          src={heroImage}
+          alt=""
+          data-cms="image"
+          fill
+          className="object-cover opacity-50"
+          priority
+          sizes="100vw"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/50" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
       </motion.div>

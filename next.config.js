@@ -20,7 +20,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'plus.unsplash.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
-    unoptimized: true,
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [320, 420, 640, 750, 828, 1080, 1200, 1400, 1920, 2560, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 640],
   },
   headers: async () => [
     {
@@ -33,6 +35,19 @@ const nextConfig = {
         { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
         { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
       ],
+    },
+    // Cache static assets aggressively
+    {
+      source: '/:path*.ico',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+    },
+    {
+      source: '/:path*.svg',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+    },
+    {
+      source: '/:path*.woff2',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
     },
   ],
 };

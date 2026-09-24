@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { X, Plus, Minus, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -61,12 +62,14 @@ export function CartDrawer() {
                       <Link
                         href={`/shop/products/${item.product.slug}`}
                         onClick={closeCart}
-                        className="w-20 h-24 bg-off-white shrink-0 overflow-hidden"
+                        className="w-20 h-24 bg-off-white shrink-0 overflow-hidden relative"
                       >
-                        <img
+                        <Image
                           src={item.product.image}
                           alt={item.product.imageAlt}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="80px"
                         />
                       </Link>
                       <div className="flex-1 min-w-0">

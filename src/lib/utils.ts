@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { NextResponse } from 'next/server';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,6 +15,25 @@ export function formatPrice(price: number | string, currency = 'INR') {
     style: 'currency',
     currency,
   }).format(num);
+}
+
+// Cache-Control header utilities
+export const CACHE_HEADERS = {
+  // Static assets - 1 year, immutable
+  static: 'public, max-age=31536000, immutable',
+  // Public catalog data - 5 minutes stale-while-revalidate
+  publicCatalog: 'public, max-age=60, stale-while-revalidate=300',
+  // Public homepage content - 1 minute
+  publicPage: 'public, max-age=60, stale-while-revalidate=120',
+  // Private user data - no cache
+  private: 'private, no-cache, no-store, must-revalidate',
+  // No cache
+  none: 'no-store',
+} as const;
+
+export function withCacheHeaders(res: NextResponse, cacheType: keyof typeof CACHE_HEADERS) {
+  res.headers.set('Cache-Control', CACHE_HEADERS[cacheType]);
+  return res;
 }
 
 export const ROUTES = {

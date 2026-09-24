@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,9 +22,11 @@ const RATIOS: Record<string, string> = {
 export function ProductCard({
   product,
   editions,
+  priority = false,
 }: {
   product: Product;
   editions: Edition[];
+  priority?: boolean;
 }) {
   const T = useTemplates().card;
   const isWishlisted = useWishlistStore((s) => s.isWishlisted(product.id));
@@ -41,18 +44,23 @@ export function ProductCard({
         style={T.radius ? { borderRadius: T.radius } : undefined}
         className={cn('block relative bg-off-white overflow-hidden', RATIOS[T.image_ratio] ?? 'aspect-[3/4]')}
       >
-        <img
+        <Image
           src={product.image}
           alt={product.imageAlt}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          loading="lazy"
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          priority={priority}
+          loading={priority ? 'eager' : 'lazy'}
         />
         {T.show_second_image && secondImage && (
-          <img
+          <Image
             src={secondImage}
             alt=""
-            aria-hidden
-            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            aria-hidden="true"
+            fill
+            className="absolute inset-0 object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             loading="lazy"
           />
         )}

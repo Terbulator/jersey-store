@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Check, ChevronRight, Lock } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart-store';
@@ -271,7 +272,13 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={`${item.product.id}-${item.size}`} className="flex gap-3">
                     <div className="w-14 h-16 bg-off-white flex-shrink-0 overflow-hidden relative">
-                      <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                      <Image
+                        src={item.product.image}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
+                        sizes="56px"
+                      />
                       <span className="absolute -top-1 -right-1 w-4 h-4 bg-charcoal/70 text-off-white text-[9px] flex items-center justify-center">
                         {item.quantity}
                       </span>

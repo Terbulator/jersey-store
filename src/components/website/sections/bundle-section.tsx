@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
@@ -40,7 +41,15 @@ export function BundleSection({ settings }: { settings?: BSSettings | null }) {
             <Link href="/bundle" className="group inline-flex items-center gap-2 mt-10 text-sm text-off-white font-medium">Build your bundle <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" strokeWidth={1.5} /></Link>
           </motion.div>
           <motion.div initial={{ opacity: 0, scale: 1.05 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 1, ease: EASE_PREMIUM }} className="relative aspect-[4/5] overflow-hidden rounded-2xl">
-            <img src={image} alt="HEADERR bundle stack" data-cms="image" className="w-full h-full object-cover" />
+            <Image
+              src={image}
+              alt="HEADERR bundle stack"
+              data-cms="image"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              loading="lazy"
+            />
             <div className="absolute inset-0 bg-black/20" />
             <span className="absolute top-5 left-5 font-mono-meta text-[9px] text-off-white bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">THE 2026 STACK</span>
           </motion.div>

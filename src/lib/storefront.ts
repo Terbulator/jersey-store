@@ -18,11 +18,14 @@ import {
 
 export type { Category, Edition, NavItem, Product, Review };
 
+// Product fields needed by mapProduct
+const PRODUCT_FIELDS = 'id,name,slug,category,edition,team,season,price,compare_price,badge,image,image_alt,images,description,fit,material,care,sizes,shipping_note,returns_note,featured';
+
 export async function getProducts(): Promise<Product[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_FIELDS)
     .eq('published', true)
     .order('featured', { ascending: false })
     .order('created_at', { ascending: true });
@@ -35,7 +38,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_FIELDS)
     .eq('slug', slug)
     .eq('published', true)
     .maybeSingle();
@@ -49,7 +52,7 @@ export async function getProductsByIds(ids: string[]): Promise<Product[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_FIELDS)
     .in('id', ids)
     .eq('published', true);
 
@@ -61,7 +64,7 @@ export async function getCategories(): Promise<Category[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('categories')
-    .select('*')
+    .select('id,slug,name,image,label,description')
     .order('sort_order', { ascending: true });
 
   if (error) return [];
@@ -72,7 +75,7 @@ export async function getEditions(): Promise<Edition[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('editions')
-    .select('*')
+    .select('id,slug,name,icon,description')
     .order('sort_order', { ascending: true });
 
   if (error) return [];
@@ -83,7 +86,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('reviews')
-    .select('*')
+    .select('id,product_id,product_name,product_variant,customer_name,customer_email,rating,title,body,verified_buyer,featured,photo_url,created_at')
     .eq('status', 'approved')
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false });
@@ -96,7 +99,7 @@ export async function getNavItems(): Promise<NavItem[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('navigation_items')
-    .select('*')
+    .select('id,section,label,href,active,sort_order')
     .eq('active', true)
     .order('sort_order', { ascending: true });
 

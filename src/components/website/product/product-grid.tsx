@@ -28,7 +28,7 @@ export function ProductGrid({
           viewport={{ once: true, margin: '-60px' }}
           transition={{ delay: (i % 4) * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <ProductCard product={product} editions={editions} />
+          <ProductCard product={product} editions={editions} priority={i < 4} />
         </motion.div>
       ))}
     </div>

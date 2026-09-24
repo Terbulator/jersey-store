@@ -14,6 +14,7 @@ import { getDisplay } from '@/lib/display';
 import { getSiteChrome } from '@/lib/site-chrome';
 import { createClient } from '@/lib/supabase/server';
 import { getNavItems, getProducts, getEditions } from '@/lib/storefront';
+import { instrumentSerif } from '@/lib/fonts';
 
 export const metadata = {
   title: 'HEADERR — Premium Football & Cricket Jerseys',
@@ -38,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
 
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className={`${instrumentSerif.variable} scroll-smooth`}>
       <body className="bg-black text-off-white antialiased">
         <ThemeStyle theme={theme} />
         <ThemeProvider theme={theme}>

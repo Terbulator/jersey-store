@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, useReducedMotion, useScroll } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import type { Category } from '@/lib/storefront-types';
@@ -62,14 +63,22 @@ export function StorySlides({ categories, settings }: { categories: Category[]; 
   return (
     <section ref={sectionRef} aria-label="Editions story" className="relative h-[500vh] bg-black">
       <div className="sticky top-0 h-screen overflow-hidden">
-        {slides.map((s, i) => (
-          <motion.div key={s.id} aria-hidden={i !== active} className="absolute inset-0"
-            animate={reduce ? { opacity: i === active ? 1 : 0 } : { opacity: i === active ? 1 : 0, scale: i === active ? 1 : 1.05 }}
-            transition={{ duration: reduce ? 0 : 0.9, ease: EASE_EDITORIAL }}>
-            <img src={s.image_url} alt={s.label} loading={i === 0 ? 'eager' : 'lazy'} decoding={i === 0 ? 'sync' : 'async'} className="w-full h-full object-cover opacity-70" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30" />
-          </motion.div>
-        ))}
+{slides.map((s, i) => (
+            <motion.div key={s.id} aria-hidden={i !== active} className="absolute inset-0"
+              animate={reduce ? { opacity: i === active ? 1 : 0 } : { opacity: i === active ? 1 : 0, scale: i === active ? 1 : 1.05 }}
+              transition={{ duration: reduce ? 0 : 0.9, ease: EASE_EDITORIAL }}>
+              <Image
+                src={s.image_url}
+                alt={s.label}
+                fill
+                className="object-cover opacity-70"
+                priority={i === 0}
+                loading={i === 0 ? 'eager' : 'lazy'}
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30" />
+            </motion.div>
+          ))}
         <div className="relative z-10 h-full flex flex-col justify-end px-6 sm:px-8 lg:px-12 pb-24 sm:pb-28 lg:pb-24">
           <motion.div key={active} initial={{ opacity: 0, y: reduce ? 0 : 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: reduce ? undefined : EASE_EDITORIAL }} className="max-w-[640px]">

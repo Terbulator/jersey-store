@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import type { Category } from '@/lib/storefront-types';
@@ -28,7 +29,14 @@ export function CategoryNav({ categories, settings }: { categories: Category[]; 
           {categories.map((cat, i) => (
             <motion.div key={cat.id} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ delay: i * 0.1, duration: 0.7, ease: EASE_PREMIUM }}>
               <Link href={`/shop/${cat.slug}`} className="group block relative aspect-[3/4] bg-charcoal overflow-hidden">
-                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover opacity-70 group-hover:opacity-50 transition-opacity duration-700" loading="lazy" />
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover opacity-70 group-hover:opacity-50 transition-opacity duration-700"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
                   <div>

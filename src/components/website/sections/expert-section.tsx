@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { EASE_PREMIUM } from '@/components/motion/motion-variants';
 
@@ -32,7 +33,15 @@ export function ExpertSection({ settings }: { settings?: XSSettings | null }) {
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 1.05 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 1, ease: EASE_PREMIUM }} className="relative aspect-[4/5] overflow-hidden">
-          <img src={image} alt="Quality inspection" data-cms="image" className="w-full h-full object-cover" />
+          <Image
+            src={image}
+            alt="Quality inspection"
+            data-cms="image"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            loading="lazy"
+          />
           <span className="absolute bottom-4 left-4 font-mono-meta text-[9px] text-off-white/70 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm">QC PASS — SEAN #001</span>
         </motion.div>
       </div>
