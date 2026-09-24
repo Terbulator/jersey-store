@@ -98,9 +98,14 @@ export default function ResetPasswordPage() {
     }
 
     setBusy(true);
-    const { error: updateError } = await createClient().auth.updateUser({
+    const supabase = createClient();
+    const { error: updateError } = await supabase.auth.updateUser({
       password,
     });
+    if (!updateError) {
+      // Terminate the recovery session so user must log in fresh with new password
+      await supabase.auth.signOut();
+    }
     setBusy(false);
 
     if (updateError) {
