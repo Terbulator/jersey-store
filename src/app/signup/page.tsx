@@ -81,8 +81,9 @@ export default function SignupPage() {
       return;
     }
 
-    router.replace(redirect ?? ROUTES.ACCOUNT);
-    router.refresh();
+    // Use a full navigation so the Supabase SSR cookie is available to
+    // Next middleware before /account is requested on mobile browsers.
+    window.location.replace(redirect ?? ROUTES.ACCOUNT);
   };
 
   return (
