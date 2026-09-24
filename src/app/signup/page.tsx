@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthShell } from '@/components/auth/auth-shell';
+import { PasswordField } from '@/components/auth/password-field';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/auth/auth-provider';
 import { ROUTES } from '@/lib/utils';
@@ -137,13 +138,12 @@ export default function SignupPage() {
 
             <label className="block mt-8">
               <span className="font-mono-meta text-[10px] text-off-white/50 block mb-2.5">PASSWORD</span>
-              <input
-                type="password"
-                required
-                autoComplete="new-password"
+              <PasswordField
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent border-b border-off-white/25 py-3.5 text-[15px] text-off-white placeholder:text-off-white/25 outline-none focus:border-red transition-colors"
+                onChange={setPassword}
+                autoComplete="new-password"
+                required
+                ariaLabel="Password"
               />
             </label>
 
@@ -151,13 +151,12 @@ export default function SignupPage() {
               <span className="font-mono-meta text-[10px] text-off-white/50 block mb-2.5">
                 CONFIRM PASSWORD
               </span>
-              <input
-                type="password"
-                required
-                autoComplete="new-password"
+              <PasswordField
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="w-full bg-transparent border-b border-off-white/25 py-3.5 text-[15px] text-off-white placeholder:text-off-white/25 outline-none focus:border-red transition-colors"
+                onChange={setConfirm}
+                autoComplete="new-password"
+                required
+                ariaLabel="Confirm password"
               />
             </label>
 

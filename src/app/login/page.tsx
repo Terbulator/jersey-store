@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthShell } from '@/components/auth/auth-shell';
+import { PasswordField } from '@/components/auth/password-field';
 import { createClient } from '@/lib/supabase/client';
 import { syncGuestData } from '@/lib/sync';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -139,13 +140,12 @@ export default function LoginPage() {
               Forgot password?
             </Link>
           </div>
-          <input
-            type="password"
-            required
-            autoComplete="current-password"
+          <PasswordField
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-transparent border-b border-off-white/25 py-3.5 text-[15px] text-off-white placeholder:text-off-white/25 outline-none focus:border-red transition-colors"
+            onChange={setPassword}
+            autoComplete="current-password"
+            required
+            ariaLabel="Password"
           />
         </div>
 
