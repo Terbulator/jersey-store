@@ -39,7 +39,7 @@ export function FooterWordmark() {
           duration: reduce ? 0 : mobile ? 1.15 : 1.4,
           ease: EASE_EDITORIAL,
         }}
-        className="font-display font-normal text-[13vw] sm:text-[15vw] md:text-[16vw] lg:text-[13vw] xl:text-[12vw] leading-[1.05] tracking-[-0.01em] whitespace-nowrap text-center text-[#A8A8A8]"
+        className="font-display font-normal text-[clamp(4rem,18.25vw,16.5rem)] leading-[1.05] tracking-[-0.01em] whitespace-nowrap text-center text-[#A8A8A8]"
         style={{ fontWeight: 300, fontFamily: "'Instrument Serif', Georgia, serif" }}
       >
         HEADERR
