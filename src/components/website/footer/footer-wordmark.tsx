@@ -7,7 +7,7 @@ const EASE_EDITORIAL = [0.16, 1, 0.3, 1] as const;
 
 export function FooterWordmark() {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { amount: 0.25 });
+  const inView = useInView(ref, { amount: 0.1 });
   const reduce = useReducedMotion();
   const [mobile, setMobile] = useState(false);
 
@@ -30,7 +30,7 @@ export function FooterWordmark() {
     <div
       ref={ref}
       aria-hidden="true"
-      className="select-none pointer-events-none overflow-hidden"
+      className="select-none pointer-events-none"
     >
       <motion.h2
         initial={reduce ? shown : hidden}
