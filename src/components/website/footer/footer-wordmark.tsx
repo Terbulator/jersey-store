@@ -19,12 +19,8 @@ export function FooterWordmark() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const hidden = reduce
-    ? { opacity: 1 }
-    : mobile
-      ? { opacity: 0, y: '100%', scale: 0.97, filter: 'blur(6px)' }
-      : { opacity: 0, y: '100%', scale: 0.97, filter: 'blur(6px)' };
-  const shown = { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' };
+  const shown = { opacity: 1, y: 0, filter: 'blur(0px)' };
+  const hidden = reduce ? shown : { opacity: 0, y: '100%', filter: 'blur(6px)' };
 
   return (
     <div
