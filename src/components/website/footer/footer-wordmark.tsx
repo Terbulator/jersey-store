@@ -39,10 +39,11 @@ export function FooterWordmark() {
           duration: reduce ? 0 : mobile ? 1.15 : 1.4,
           ease: EASE_EDITORIAL,
         }}
-        className="font-display text-[22vw] leading-[0.8] tracking-[-0.035em] whitespace-nowrap text-center text-[#A8A8A8]"
+        className="font-display font-normal text-[13vw] sm:text-[15vw] md:text-[16vw] lg:text-[13vw] xl:text-[12vw] leading-[1.05] tracking-[-0.01em] whitespace-nowrap text-center text-[#A8A8A8]"
+        style={{ fontWeight: 300, fontFamily: "'Instrument Serif', Georgia, serif" }}
       >
         HEADERR
-        <span className="inline-block text-[0.15em] align-super leading-none translate-y-[0.15em]">
+        <span className="inline-block text-[0.14em] align-super leading-none translate-y-[0.12em]">
           ®
         </span>
       </motion.h2>

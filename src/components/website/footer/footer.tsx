@@ -124,7 +124,7 @@ export function Footer({ navItems, footer }: { navItems: NavItem[]; footer?: Foo
 
       {/* Giant HEADERR wordmark — clipping container for reveal animation */}
       {F.show_wordmark && (
-        <div className="relative w-full overflow-hidden min-h-[22vw] sm:min-h-[26vw] lg:min-h-[22vw] flex items-end">
+        <div className="relative w-full min-h-[22vw] sm:min-h-[26vw] lg:min-h-[22vw] flex items-end">
           <div className="w-full px-6 sm:px-8 lg:px-12 pb-8 sm:pb-12 lg:pb-14">
             <FooterWordmark />
           </div>
