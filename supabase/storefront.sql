@@ -328,24 +328,22 @@ alter table public.analytics_events enable row level security;
 do $$
 declare t text;
 begin
-  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','homepage_sections','reviews','offers']
+  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','reviews','offers']
   loop
     execute format('drop policy if exists "public read %1$s" on public.%1$s', t);
     execute format('create policy "public read %1$s" on public.%1$s for select using (true)', t);
   end loop;
 end $$;
 
--- site_settings: separate public vs private keys
--- Public keys (shipping, contact, site) readable by anon/authenticated
--- Private keys (theme, header, footer, templates, etc.) require service role
+-- site_settings: all rows are public storefront render config
+-- (site, shipping, contact, seo, theme, header, footer, templates).
+-- Storefront reads them with the anon key in layout.tsx, so SELECT
+-- must be public. Writes stay service_role-only (no write policies).
 drop policy if exists "public read site_settings" on public.site_settings;
 create policy "public read site_settings" on public.site_settings
   for select using (
-    key in ('shipping', 'contact', 'site')
+    key in ('theme','header','footer','templates','shipping')
   );
-
--- Reviews: only approved visible to the storefront.
-drop policy if exists "public read reviews" on public.reviews;
 create policy "public read reviews" on public.reviews for select using (status = 'approved');
 
 -- Analytics: anyone can insert events, nobody can read (service role bypasses RLS).
@@ -360,7 +358,7 @@ grant usage on schema public to anon, authenticated, service_role;
 
 grant select on public.categories, public.editions, public.products, public.product_variants,
   public.collections, public.announcements, public.navigation_items, public.promo_slides,
-  public.banners, public.campaigns, public.homepage_sections, public.reviews, public.offers
+  public.banners, public.campaigns, public.reviews, public.offers
   to anon, authenticated;
 
 grant insert on public.analytics_events to anon, authenticated;
@@ -371,6 +369,18 @@ grant all on public.products, public.product_variants, public.categories, public
   public.admin_users, public.orders, public.media_assets, public.coupons, public.analytics_events, public.offers
   to service_role;
 
+
+-- RPC: published homepage sections (sole public path; draft columns never exposed)
+revoke select on public.homepage_sections from anon, authenticated;
+create or replace function public.get_published_homepage_sections()
+returns table (id uuid, key text, name text, enabled boolean, sort_order int, settings jsonb)
+language sql security definer set search_path = public stable as $$
+  select s.id, s.key, s.name, s.enabled, s.sort_order, s.settings
+  from public.homepage_sections s
+  where s.enabled = true
+  order by s.sort_order
+$$;
+grant execute on function public.get_published_homepage_sections() to anon, authenticated;
 -- RPC function for atomic coupon usage increment
 -- Uses a single atomic UPDATE ... to safely increment usage and prevent
 -- concurrent checkouts from exceeding the coupon's max_uses limit.
