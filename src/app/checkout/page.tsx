@@ -246,7 +246,22 @@ export default function CheckoutPage() {
                           throw new Error(data.error || 'Could not place your order.');
                         }
                         clearCart();
-                        window.location.href = `/checkout/success?order=${data.order.order_number}`;
+                        // Carry the guest tracking token to the confirmation page. It is
+                        // the only credential that authorises order lookup, so we stash it
+                        // in sessionStorage (keeps the URL shareable) before navigating.
+                        if (data.trackingToken) {
+                          try {
+                            sessionStorage.setItem(
+                              `headerr:order:${data.order.order_number}`,
+                              data.trackingToken
+                            );
+                          } catch {
+                            // Private-mode storage failures fall back to the query param.
+                          }
+                        }
+                        const params = new URLSearchParams({ order: data.order.order_number });
+                        if (data.trackingToken) params.set('token', data.trackingToken);
+                        window.location.href = `/checkout/success?${params.toString()}`;
                       } catch (e) {
                         setPlacing(false);
                         setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');

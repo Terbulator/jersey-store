@@ -1,37 +1,83 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Check, Package, ArrowRight } from 'lucide-react';
-import { useCartStore } from '@/store/cart-store';
+import { Check, Package, ArrowRight, Copy, CheckCircle2 } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
+
+const TOKEN_PREFIX = 'headerr:order:';
 
 export default function CheckoutSuccessPage() {
   const [orderId, setOrderId] = useState('HDR-UNKNOWN');
   const [orderTotal, setOrderTotal] = useState<number | null>(null);
+  const [token, setToken] = useState('');
+  const [lookupFailed, setLookupFailed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
+  // The tracking token comes from the checkout response, which puts it in the URL and
+  // in sessionStorage. Only the SHA-256 of this value is stored server-side.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const order = params.get('order');
-    if (order) {
-      setOrderId(order);
-      fetch(`/api/orders?order=${encodeURIComponent(order)}`)
-        .then(async (r) => {
-          const data = await r.json();
-          const total = data.order?.total ?? null;
-          if (total !== null) {
-            setOrderTotal(total);
-            trackEvent('purchase', {
-              product_name: `Order ${order}`,
-              category: 'checkout',
-              price: total,
-              page_url: window.location.href,
-            });
-          }
-        })
-        .catch(() => {});
+    if (!order) return;
+
+    setOrderId(order);
+
+    let tokenFromUrl = params.get('token') ?? '';
+    if (!tokenFromUrl) {
+      try {
+        tokenFromUrl = sessionStorage.getItem(`${TOKEN_PREFIX}${order}`) ?? '';
+      } catch {
+        tokenFromUrl = '';
+      }
     }
+    setToken(tokenFromUrl);
+
+    const query = new URLSearchParams({ order });
+    if (tokenFromUrl) query.set('token', tokenFromUrl);
+
+    fetch(`/api/orders?${query.toString()}`, { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) {
+          setLookupFailed(true);
+          return;
+        }
+        const data = await r.json();
+        const total = data.order?.total ?? null;
+        if (total !== null) {
+          setOrderTotal(total);
+          trackEvent('purchase', {
+            product_name: `Order ${order}`,
+            category: 'checkout',
+            price: total,
+            page_url: window.location.href,
+          });
+        }
+      })
+      .catch(() => setLookupFailed(true));
   }, []);
+
+  // Lets the customer keep the link that actually works later — the token is the only
+  // way to read this order without signing in.
+  const trackingLink = useMemo(
+    () =>
+      typeof window !== 'undefined' && orderId !== 'HDR-UNKNOWN'
+        ? `${window.location.origin}/checkout/success?order=${encodeURIComponent(orderId)}${
+            token ? `&token=${encodeURIComponent(token)}` : ''
+          }`
+        : '',
+    [orderId, token]
+  );
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(trackingLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <section className="py-16 sm:py-24 px-4 text-center">
@@ -60,6 +106,30 @@ export default function CheckoutSuccessPage() {
             <p className="text-[11px] text-chrome">You will receive tracking information via email once your order is shipped.</p>
           </div>
         </div>
+
+        {/* Tracking link. Order lookup requires both the order number and this token. */}
+        {trackingLink && !lookupFailed && (
+          <div className="bg-white border border-charcoal/10 p-4 mb-8 text-left">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] tracking-widest uppercase font-medium text-charcoal mb-1">Your tracking link</p>
+                <p className="text-[11px] text-chrome break-all">{trackingLink}</p>
+              </div>
+              <button
+                type="button"
+                onClick={copyLink}
+                aria-label="Copy tracking link"
+                className="shrink-0 inline-flex items-center gap-1.5 border border-charcoal/15 px-3 py-2 text-[10px] tracking-widest uppercase text-charcoal hover:bg-off-white transition-colors"
+              >
+                {copied ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+            <p className="text-[10px] text-chrome/70 mt-2">
+              Keep this link to check your order status. Anyone with it can view this order.
+            </p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

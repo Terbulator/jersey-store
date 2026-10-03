@@ -84,9 +84,11 @@ export async function getEditions(): Promise<Edition[]> {
 
 export async function getApprovedReviews(): Promise<Review[]> {
   const supabase = createClient();
+  // `customer_email` is intentionally not selected: the public storefront has no
+  // use for a reviewer's address, and the anon key must not be able to read it.
   const { data, error } = await supabase
     .from('reviews')
-    .select('id,product_id,product_name,product_variant,customer_name,customer_email,rating,title,body,verified_buyer,featured,photo_url,created_at')
+    .select('id,product_id,product_name,product_variant,customer_name,rating,title,body,verified_buyer,featured,photo_url,created_at')
     .eq('status', 'approved')
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false });

@@ -1,86 +1,93 @@
+import { randomBytes } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
+import { checkMutation } from '@/lib/security';
+import { validateUpload, UPLOAD_FOLDERS } from '@/lib/upload-guard';
 import { logAudit } from '@/lib/audit';
 
-export const runtime = 'edge';
+// Admin media upload.
+//
+// Runs on the Node runtime on purpose: the Edge runtime has a much lower request
+// body ceiling, so the size limits below would be unenforceable there.
+//
+// Authorization happens before the body is read and before the service-role client
+// is constructed, so an unauthenticated caller never reaches storage.
 
-const ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
-const EXT: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/avif': 'avif',
-};
-const FOLDERS = ['homepage', 'products', 'pages', 'media', 'header', 'misc'];
+// Hard ceiling enforced by the platform, independent of our own checks.
+export const maxDuration = 30;
 
-// Magic-byte sniff: the stored extension and content type come from the
-// verified bytes, never from the client-supplied name or MIME.
-function sniffedMime(head: Uint8Array): string | null {
-  if (head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47) return 'image/png';
-  if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return 'image/jpeg';
-  if (head[0] === 0x47 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x38) return 'image/gif';
-  if (
-    head.length >= 12 && head[0] === 0x52 && head[1] === 0x49 && head[2] === 0x46 && head[3] === 0x46 &&
-    head[8] === 0x57 && head[9] === 0x45 && head[10] === 0x42 && head[11] === 0x50
-  ) return 'image/webp';
-  if (head.length >= 12 && head[4] === 0x66 && head[5] === 0x74 && head[6] === 0x79 && head[7] === 0x70) {
-    const brand = String.fromCharCode(head[8], head[9], head[10], head[11]);
-    if (brand === 'avif' || brand === 'avis' || brand === 'mif1') return 'image/avif';
-  }
-  return null;
-}
+const BUCKET = 'product-images';
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  const limited = checkRateLimit(req, 'upload');
-  if (limited) return limited;
-  const originErr = checkOrigin(req);
-  if (originErr) return originErr;
+  const guard = await authorize({ permission: 'media:write' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req, 'upload');
+  if (blocked) return blocked;
 
-  const folder = new URL(req.url).searchParams.get('folder') ?? 'homepage';
-  if (!FOLDERS.includes(folder)) {
+  const folder = new URL(req.url).searchParams.get('folder') ?? 'media';
+  if (!(UPLOAD_FOLDERS as readonly string[]).includes(folder)) {
     return NextResponse.json({ error: 'Unknown upload folder.' }, { status: 400 });
   }
-  const form = await req.formData();
-  const file = form.get('file') as File | null;
-  if (!file || typeof file.arrayBuffer !== 'function') {
+
+  let form: FormData;
+  try {
+    form = await req.formData();
+  } catch {
+    return NextResponse.json({ error: 'Could not read the upload.' }, { status: 400 });
+  }
+
+  const file = form.get('file');
+  if (!file || typeof file === 'string' || typeof (file as File).arrayBuffer !== 'function') {
     return NextResponse.json({ error: 'No file.' }, { status: 400 });
   }
-  if (!ALLOWED_MIME.includes(file.type)) {
-    return NextResponse.json({ error: 'Unsupported image type.' }, { status: 400 });
-  }
-  if (file.size > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Image must be under 10 MB.' }, { status: 400 });
-  }
-  let head: Uint8Array;
-  try {
-    head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
-  } catch {
-    return NextResponse.json({ error: 'Could not read file.' }, { status: 400 });
-  }
-  if (sniffedMime(head) !== file.type) {
-    return NextResponse.json({ error: 'File content does not match its type.' }, { status: 400 });
+
+  const upload = file as File;
+  const bytes = new Uint8Array(await upload.arrayBuffer());
+
+  const verdict = validateUpload(
+    {
+      declaredType: upload.type,
+      size: upload.size,
+      bytes,
+      folder,
+      name: upload.name ?? '',
+    },
+    // CSPRNG suffix; the client filename never reaches storage.
+    randomBytes(8).toString('hex')
+  );
+
+  if (!verdict.ok) {
+    return NextResponse.json({ error: verdict.error }, { status: 400 });
   }
 
-  const path = `${folder}/${Date.now()}-${crypto.randomUUID()}.${EXT[file.type]}`;
   const sb = await adminDataClient();
-  const { error: upErr } = await sb.storage.from('product-images').upload(path, file, {
+  const { error: uploadError } = await sb.storage.from(BUCKET).upload(verdict.path, bytes, {
     cacheControl: '3600',
     upsert: false,
-    contentType: file.type,
+    contentType: verdict.mime,
   });
-  if (upErr) return NextResponse.json({ error: 'Upload failed.' }, { status: 500 });
+  if (uploadError) {
+    return NextResponse.json({ error: 'Upload failed.' }, { status: 500 });
+  }
 
-  const { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
-  const url = urlData?.publicUrl ?? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${path}`;
+  const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(verdict.path);
+  const url = urlData?.publicUrl ?? '';
+
   await logAudit(sb, {
-    actor: session.user.email ?? null,
-    role: session.role,
+    actor: guard.actor.user.email ?? null,
+    role: guard.actor.role,
     action: 'upload',
     resource: 'media',
-    summary: `${folder}/${file.name} (${file.size} bytes)`,
+    summary: `${verdict.path} (${bytes.byteLength} bytes, ${verdict.dimensions?.width ?? '?'}x${verdict.dimensions?.height ?? '?'})`,
   });
-  return NextResponse.json({ url, fileName: file.name, mimeType: file.type, sizeBytes: file.size });
+
+  return NextResponse.json({
+    url,
+    path: verdict.path,
+    // The stored name, not the client-supplied one.
+    fileName: verdict.path.split('/').pop() ?? verdict.path,
+    mimeType: verdict.mime,
+    sizeBytes: bytes.byteLength,
+  });
 }

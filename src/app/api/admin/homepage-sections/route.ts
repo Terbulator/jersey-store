@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
 import { parseSectionSettings } from '@/lib/section-schemas';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { checkMutation } from '@/lib/security';
+import { isUuid, readJson } from '@/lib/validate';
 import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
-  await requireAdmin();
+  const guard = await authorize({ permission: 'homepage:write' });
+  if (!guard.ok) return guard.response;
   const sb = await adminDataClient();
   const { data, error } = await sb
     .from('homepage_sections')
@@ -16,11 +19,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await requireAdmin();
-  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  const guard = await authorize({ permission: 'homepage:write' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req);
   if (blocked) return blocked;
-  const body = await req.json().catch(() => null);
-  if (!body?.id || typeof body.id !== 'string') return NextResponse.json({ error: 'Missing id.' }, { status: 400 });
+  const body = await readJson(req);
+  if (!isUuid(body?.id)) return NextResponse.json({ error: 'Invalid section id.' }, { status: 400 });
   const sb = await adminDataClient();
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (body.enabled !== undefined) {
@@ -67,12 +71,12 @@ export async function PATCH(req: NextRequest) {
       const { error: e } = await sb.from('homepage_sections').update({ sort_order: idx }).eq('id', r.id);
       if (e) return NextResponse.json({ error: 'Could not save section.' }, { status: 500 });
     }
-    await logAudit(sb, { actor: session.user.email ?? null, role: session.role, action: 'reorder', resource: 'homepage', resourceId: String(body.id) });
+    await logAudit(sb, { actor: guard.actor.user.email ?? null, role: guard.actor.role, action: 'reorder', resource: 'homepage', resourceId: String(body.id) });
     return NextResponse.json({ ok: true });
   }
 
   const { error } = await sb.from('homepage_sections').update(updates).eq('id', body.id);
   if (error) return NextResponse.json({ error: 'Could not save section.' }, { status: 500 });
-  await logAudit(sb, { actor: session.user.email ?? null, role: session.role, action: 'update', resource: 'homepage', resourceId: String(body.id), summary: Object.keys(updates).join(', ') });
+  await logAudit(sb, { actor: guard.actor.user.email ?? null, role: guard.actor.role, action: 'update', resource: 'homepage', resourceId: String(body.id), summary: Object.keys(updates).join(', ') });
   return NextResponse.json({ ok: true });
 }

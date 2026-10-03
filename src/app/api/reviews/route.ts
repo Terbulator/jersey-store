@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { adminDataClient } from '@/lib/admin';
-import { isRateLimited } from '@/lib/rate-limit';
+import { adminDataClient } from '@/lib/admin-session';
+import { checkRateLimit } from '@/lib/security';
+
+// Public review submission. Submissions land as `pending` and are never readable by
+// the public; `verified_buyer` is hard-coded false because "did this person buy it"
+// is a server question, not something the form may assert.
 
 const reviewSchema = z.object({
   customerName: z.string().trim().min(1).max(80),
@@ -9,21 +13,23 @@ const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
   title: z.string().trim().min(1).max(120),
   body: z.string().trim().min(1).max(2000),
-  productId: z.string().uuid(),
-  photoUrl: z.string().max(1_500_000).optional().nullable(),
+  productId: z.string().uuid('Unknown product.'),
+  // A photo reference, not an upload. Must be https so it cannot be a
+  // javascript:/data: URL rendered into the storefront.
+  photoUrl: z.string().url().max(1500).refine((v) => v.startsWith('https://'), {
+    message: 'Photo URL must be https.',
+  }).optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
+  const limited = checkRateLimit(req, 'reviews');
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
-  }
-
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  if (isRateLimited(`reviews:${ip}`, 5, 60_000)) {
-    return NextResponse.json({ error: 'Too many requests, please slow down.' }, { status: 429 });
   }
 
   const parsed = reviewSchema.safeParse(body);
@@ -63,6 +69,7 @@ export async function POST(req: NextRequest) {
     body: p.body,
     photo_url: p.photoUrl || null,
     verified_buyer: false,
+    // Server-owned moderation state. A client cannot publish its own review.
     status: 'pending',
     featured: false,
   });

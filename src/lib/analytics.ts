@@ -1,7 +1,25 @@
 import { createClient } from '@/lib/supabase/client';
 
+/**
+ * Event names the public INSERT policy on `analytics_events` accepts. That policy
+ * is enforced by Postgres (see supabase/20261003_security-hardening.sql), and this
+ * function discards insert errors, so an unlisted name would fail silently and the
+ * event would simply never be recorded. Typing the parameter as a union makes that
+ * a compile error instead. Add new names here *and* to the policy in the same change.
+ */
+export const ANALYTICS_EVENTS = [
+  'page_view',
+  'product_view',
+  'add_to_cart',
+  'remove_from_cart',
+  'begin_checkout',
+  'purchase',
+] as const;
+
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+
 export async function trackEvent(
-  event: string,
+  event: AnalyticsEvent,
   payload: {
     product_id?: string;
     product_name?: string;

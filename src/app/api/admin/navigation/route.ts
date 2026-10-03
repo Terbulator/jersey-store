@@ -6,6 +6,9 @@ const NAV_SECTIONS = ['main', 'mobile', 'footer-shop', 'footer-support', 'footer
 export const { POST, PATCH, DELETE } = makeCrudApi({
   table: 'navigation_items',
   fields: ['section', 'label', 'href'],
+  write: 'content:write',
+  remove: 'content:delete',
+  read: 'content:read',
   require: 'label',
   boolFields: ['active'],
   numericFields: ['sort_order'],

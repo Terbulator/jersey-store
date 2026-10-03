@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test tests/security/*.test.ts",
+    "test:security": "node --import tsx --test tests/security/*.test.ts",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build",
     "test:mobile": "node tests/auth-mobile-regression.mjs"
   },
   "dependencies": {
@@ -21,7 +25,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.2",
     "lucide-react": "^0.408.0",
-    "next": "14.2.5",
+    "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.4.0",
@@ -37,9 +41,9 @@
     "autoprefixer": "^10.4.19",
     "dotenv": "^17.4.2",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint-config-next": "14.2.35",
     "pg": "^8.23.0",
-    "postcss": "^8.4.39",
+    "postcss": "^8.5.22",
     "tailwindcss": "^3.4.6",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3"

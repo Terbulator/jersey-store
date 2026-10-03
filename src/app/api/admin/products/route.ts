@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
 import { productSchema } from '@/lib/product-schemas';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { checkMutation } from '@/lib/security';
 import { logAudit } from '@/lib/audit';
 
 // Category/edition options for the product forms.
 export async function GET() {
-  await requireAdmin();
+  const guard = await authorize({ permission: 'products:read' });
+  if (!guard.ok) return guard.response;
   const sb = await adminDataClient();
   const [{ data: categories }, { data: editions }] = await Promise.all([
     sb.from('categories').select('slug, name').order('name'),
@@ -16,8 +18,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  const guard = await authorize({ permission: 'products:write' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req);
   if (blocked) return blocked;
   const parsed = productSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -33,6 +36,6 @@ export async function POST(req: NextRequest) {
     image: parsed.data.image || null,
   }).select('id').single();
   if (error) return NextResponse.json({ error: 'Could not create product.' }, { status: 500 });
-  await logAudit(sb, { actor: session.user.email ?? null, role: session.role, action: 'create', resource: 'products', resourceId: data.id, summary: parsed.data.slug });
+  await logAudit(sb, { actor: guard.actor.user.email ?? null, role: guard.actor.role, action: 'create', resource: 'products', resourceId: data.id, summary: parsed.data.slug });
   return NextResponse.json({ id: data.id }, { status: 201 });
 }

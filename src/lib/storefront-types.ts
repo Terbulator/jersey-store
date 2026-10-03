@@ -170,7 +170,6 @@ interface ReviewRow {
   product_name: string | null;
   product_variant: string | null;
   customer_name: string;
-  customer_email: string | null;
   rating: number;
   title: string | null;
   body: string | null;
@@ -184,7 +183,9 @@ export function mapReview(row: ReviewRow): Review {
   return {
     id: row.id,
     customerName: row.customer_name,
-    customerEmail: row.customer_email,
+    // The public storefront never selects a reviewer's email address; the field is
+    // kept on the type so admin screens can still carry it if they ever need to.
+    customerEmail: null,
     rating: row.rating,
     title: row.title,
     body: row.body,

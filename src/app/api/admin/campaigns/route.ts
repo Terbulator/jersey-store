@@ -3,6 +3,9 @@ import { makeCrudApi } from '@/lib/admin-crud';
 export const { POST, PATCH, DELETE } = makeCrudApi({
   table: 'campaigns',
   fields: ['name', 'description', 'image', 'cta_text', 'cta_url', 'status'],
+  write: 'content:write',
+  remove: 'content:delete',
+  read: 'content:read',
   require: 'name',
   boolFields: ['active'],
   numericFields: ['sort_order'],

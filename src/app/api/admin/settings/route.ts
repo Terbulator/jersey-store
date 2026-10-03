@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
 import { themeSchema } from '@/lib/theme';
 import { headerSchema, footerSchema } from '@/lib/site-chrome';
 import { templateSchema } from '@/lib/display';
 import { recordVersion, type VersionScope } from '@/lib/versions';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { checkMutation } from '@/lib/security';
 import { logAudit } from '@/lib/audit';
 
 export async function GET() {
-  await requireAdmin();
+  const guard = await authorize({ permission: 'settings:read_private' });
+  if (!guard.ok) return guard.response;
   const sb = await adminDataClient();
   const { data, error } = await sb.from('site_settings').select('key, value');
   if (error) return NextResponse.json({ error: 'Could not load settings.' }, { status: 500 });
@@ -20,15 +22,16 @@ export async function GET() {
 const ALLOWED_KEYS = ['shipping', 'contact', 'site', 'theme', 'header', 'footer', 'templates'];
 
 export async function PATCH(req: NextRequest) {
-  const session = await requireAdmin();
-  const blocked = checkOrigin(req) ?? checkRateLimit(req);
+  const guard = await authorize({ permission: 'settings:write' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req);
   if (blocked) return blocked;
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body || typeof body !== 'object') {
     return NextResponse.json({ error: 'Invalid settings.' }, { status: 400 });
   }
   const sb = await adminDataClient();
-  const author = session.user.email ?? null;
+  const author = guard.actor.user.email ?? null;
   const versioned: VersionScope[] = ['theme', 'header', 'footer', 'templates'];
   for (const [key, value] of Object.entries(body)) {
     if (!ALLOWED_KEYS.includes(key)) continue;
@@ -49,7 +52,7 @@ export async function PATCH(req: NextRequest) {
     if (versioned.includes(key as VersionScope)) {
       await recordVersion(sb, key as VersionScope, stored, author, `Saved ${key}`);
     }
-    await logAudit(sb, { actor: author, role: session.role, action: 'save', resource: 'settings', resourceId: key });
+    await logAudit(sb, { actor: author, role: guard.actor.role, action: 'save', resource: 'settings', resourceId: key });
   }
   return NextResponse.json({ ok: true });
 }

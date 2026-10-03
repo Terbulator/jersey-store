@@ -325,10 +325,13 @@ alter table public.analytics_events enable row level security;
 
 -- Public content: anyone with anon/authenticated key can SELECT.
 -- Writes are service-role only (no write policies exist).
+--
+-- `reviews` is deliberately NOT in this list. Reviews carry a submitter email and a
+-- moderation state, so only approved rows are public (policy below).
 do $$
 declare t text;
 begin
-  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','reviews','offers']
+  foreach t in array array['categories','editions','products','product_variants','collections','announcements','navigation_items','promo_slides','banners','campaigns','offers']
   loop
     execute format('drop policy if exists "public read %1$s" on public.%1$s', t);
     execute format('create policy "public read %1$s" on public.%1$s for select using (true)', t);
@@ -344,11 +347,28 @@ create policy "public read site_settings" on public.site_settings
   for select using (
     key in ('theme','header','footer','templates','shipping')
   );
-create policy "public read reviews" on public.reviews for select using (status = 'approved');
+-- Reviews: only approved rows are public. Do not add a second, broader policy here —
+-- permissive policies for the same command are OR'd together, so a `using (true)`
+-- policy would silently widen this back to every row (including customer_email).
+drop policy if exists "approved reviews are public" on public.reviews;
+drop policy if exists "public read reviews" on public.reviews;
+create policy "approved reviews are public"
+  on public.reviews
+  for select
+  using (status = 'approved');
 
--- Analytics: anyone can insert events, nobody can read (service role bypasses RLS).
+-- Analytics: the browser telemetry helper writes with the anon key, so INSERT stays
+-- open — but bounded to known event names and sane field lengths.
 drop policy if exists "anyone insert analytics" on public.analytics_events;
-create policy "anyone insert analytics" on public.analytics_events for insert with check (true);
+create policy "anyone insert analytics" on public.analytics_events for insert with check (
+  event in ('page_view','product_view','add_to_cart','remove_from_cart','begin_checkout','purchase')
+  and length(coalesce(product_name,'')) <= 200
+  and length(coalesce(category,'')) <= 100
+  and length(coalesce(page_url,'')) <= 2000
+  and length(coalesce(referrer,'')) <= 2000
+  and length(coalesce(device,'')) <= 300
+  and (price is null or (price >= 0 and price <= 10000000))
+);
 
 -- ============================================================
 -- GRANTS
@@ -358,8 +378,14 @@ grant usage on schema public to anon, authenticated, service_role;
 
 grant select on public.categories, public.editions, public.products, public.product_variants,
   public.collections, public.announcements, public.navigation_items, public.promo_slides,
-  public.banners, public.campaigns, public.reviews, public.offers
+  public.banners, public.campaigns, public.offers
   to anon, authenticated;
+
+-- Column-level grant: the public never sees customer_email or the moderation state
+-- of an unapproved review.
+grant select (id, product_id, product_name, product_variant, customer_name, rating,
+              title, body, verified_buyer, featured, photo_url, created_at)
+  on public.reviews to anon, authenticated;
 
 grant insert on public.analytics_events to anon, authenticated;
 
@@ -381,10 +407,14 @@ language sql security definer set search_path = public stable as $$
   order by s.sort_order
 $$;
 grant execute on function public.get_published_homepage_sections() to anon, authenticated;
--- RPC function for atomic coupon usage increment
--- Uses a single atomic UPDATE ... to safely increment usage and prevent
--- concurrent checkouts from exceeding the coupon's max_uses limit.
--- Returns JSON with success status, new used_count, max_uses, and remaining.
+-- RPC: atomic coupon usage increment.
+-- Legacy helper retained for compatibility. Checkout uses redeem_coupon() instead,
+-- which validates and redeems under a row lock.
+--
+-- SECURITY: this is SECURITY DEFINER, so it is EXECUTE-able by PUBLIC unless the
+-- grant is revoked. PostgREST exposes it at /rest/v1/rpc/increment_coupon_usage,
+-- which would let any anonymous client burn a coupon's whole usage limit. The
+-- revokes below are mandatory, not optional hardening.
 create or replace function public.increment_coupon_usage(coupon_id uuid)
 returns jsonb
 language plpgsql
@@ -406,7 +436,7 @@ begin
 
   GET DIAGNOSTICS updated_rows = ROW_COUNT;
 
--- Read back the current used_count and max_uses for the response.
+  -- Read back the current used_count and max_uses for the response.
   select used_count, max_uses
   into new_used_count, coupon_max_uses
   from public.coupons
@@ -422,3 +452,13 @@ begin
   return result;
 end;
 $$;
+
+revoke all on function public.increment_coupon_usage(uuid) from public;
+revoke all on function public.increment_coupon_usage(uuid) from anon, authenticated;
+grant execute on function public.increment_coupon_usage(uuid) to service_role;
+
+-- NOTE: checkout also depends on redeem_coupon(), reserve_order_stock() and
+-- release_order_stock(). Those are defined in
+-- supabase/20261003_security-hardening.sql — apply that migration after this file.
+-- They are intentionally NOT stubbed here so that re-running this file can never
+-- overwrite the real hardened bodies with a placeholder.

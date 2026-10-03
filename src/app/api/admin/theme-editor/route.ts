@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
 import { parseSectionSettings } from '@/lib/section-schemas';
 import { recordVersion } from '@/lib/versions';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { checkMutation } from '@/lib/security';
 import { logAudit } from '@/lib/audit';
 
 export interface ThemeSectionDTO {
@@ -16,7 +17,8 @@ export interface ThemeSectionDTO {
 }
 
 export async function GET() {
-  await requireAdmin();
+  const guard = await authorize({ permission: 'theme:read' });
+  if (!guard.ok) return guard.response;
   const sb = await adminDataClient();
   const { data, error } = await sb
     .from('homepage_sections')
@@ -65,8 +67,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 // Save the working config as draft (no changes to live/published state).
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  const blocked = checkOrigin(req) ?? checkRateLimit(req, 'expensive');
+  const guard = await authorize({ permission: 'theme:write' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req, 'expensive');
   if (blocked) return blocked;
   const body = await req.json().catch(() => null);
   if (!body || !['draft', 'publish', 'discard'].includes(body.action)) {
@@ -101,7 +104,7 @@ export async function POST(req: NextRequest) {
       .update({ draft_enabled: null, draft_sort_order: null, draft_settings: null, draft_deleted: null, updated_at: new Date().toISOString() })
       .or('draft_settings.not.is.null,draft_enabled.not.is.null,draft_sort_order.not.is.null,draft_deleted.not.is.null');
     if (error) return NextResponse.json({ error: 'Could not discard draft.' }, { status: 500 });
-    await logAudit(sb, { actor: session.user.email ?? null, role: session.role, action: 'discard', resource: 'homepage' });
+    await logAudit(sb, { actor: guard.actor.user.email ?? null, role: guard.actor.role, action: 'discard', resource: 'homepage' });
     return NextResponse.json({ ok: true });
   }
 
@@ -129,7 +132,7 @@ export async function POST(req: NextRequest) {
 
   // action === 'publish' — copy working config over live, clear drafts, and
   // delete rows removed in the editor.
-  const author = session.user.email ?? null;
+  const author = guard.actor.user.email ?? null;
   const base = typeof body.baseUpdatedAt === 'string' && body.baseUpdatedAt ? body.baseUpdatedAt : null;
   if (base) {
     // Optimistic locking: refuse to publish over someone else's publish.
@@ -166,6 +169,6 @@ export async function POST(req: NextRequest) {
     author,
     'Published homepage'
   );
-  await logAudit(sb, { actor: author, role: session.role, action: 'publish', resource: 'homepage', summary: `${rows.length} sections` });
+  await logAudit(sb, { actor: author, role: guard.actor.role, action: 'publish', resource: 'homepage', summary: `${rows.length} sections` });
   return NextResponse.json({ ok: true, updatedAt: publishedAt });
 }

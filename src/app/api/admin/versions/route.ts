@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, adminDataClient } from '@/lib/admin';
+import { adminDataClient } from '@/lib/admin-session';
+import { authorize } from '@/lib/api-guard';
 import { listVersions, getVersionSnapshot, recordVersion, type VersionScope } from '@/lib/versions';
-import { checkOrigin, checkRateLimit } from '@/lib/security';
+import { checkMutation } from '@/lib/security';
+import { isUuid } from '@/lib/validate';
 import { logAudit } from '@/lib/audit';
 
 const SCOPES: VersionScope[] = ['homepage', 'theme', 'header', 'footer', 'templates'];
@@ -9,7 +11,8 @@ const SCOPES: VersionScope[] = ['homepage', 'theme', 'header', 'footer', 'templa
 // Version history list. ?scope=homepage returns latest first with total for
 // V-numbering; ?id=… includes the snapshot for preview.
 export async function GET(req: NextRequest) {
-  await requireAdmin();
+  const guard = await authorize({ permission: 'versions:read' });
+  if (!guard.ok) return guard.response;
   const params = new URL(req.url).searchParams;
   const scope = params.get('scope') ?? 'homepage';
   if (!SCOPES.includes(scope as VersionScope)) return NextResponse.json({ error: 'Unknown scope.' }, { status: 400 });
@@ -29,13 +32,14 @@ export async function GET(req: NextRequest) {
 // Restore a version: snapshots current live state first (so the restore
 // itself is undoable), then applies the version as a publish.
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  const blocked = checkOrigin(req) ?? checkRateLimit(req, 'expensive');
+  const guard = await authorize({ permission: 'versions:restore' });
+  if (!guard.ok) return guard.response;
+  const blocked = checkMutation(req, 'expensive');
   if (blocked) return blocked;
   const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
-  if (!body?.id || typeof body.id !== 'string') return NextResponse.json({ error: 'Missing version id.' }, { status: 400 });
+  if (!isUuid(body?.id)) return NextResponse.json({ error: 'Invalid version id.' }, { status: 400 });
   const sb = await adminDataClient();
-  const author = session.user.email ?? null;
+  const author = guard.actor.user.email ?? null;
 
   let version: { scope: string; snapshot: unknown };
   try {
@@ -66,7 +70,7 @@ export async function POST(req: NextRequest) {
     );
     if (error) return NextResponse.json({ error: 'Could not restore version.' }, { status: 500 });
     await recordVersion(sb, 'homepage', version.snapshot, author, 'Restored version');
-    await logAudit(sb, { actor: author, role: session.role, action: 'restore', resource: 'homepage', resourceId: typeof body.id === 'string' ? body.id : null });
+    await logAudit(sb, { actor: author, role: guard.actor.role, action: 'restore', resource: 'homepage', resourceId: typeof body.id === 'string' ? body.id : null });
     return NextResponse.json({ ok: true });
   }
 
@@ -79,7 +83,7 @@ export async function POST(req: NextRequest) {
       .upsert({ key: version.scope, value: version.snapshot ?? {}, updated_at: new Date().toISOString() }, { onConflict: 'key' });
     if (error) return NextResponse.json({ error: 'Could not restore version.' }, { status: 500 });
     await recordVersion(sb, version.scope as VersionScope, version.snapshot ?? {}, author, 'Restored version');
-    await logAudit(sb, { actor: author, role: session.role, action: 'restore', resource: version.scope, resourceId: typeof body.id === 'string' ? body.id : null });
+    await logAudit(sb, { actor: author, role: guard.actor.role, action: 'restore', resource: version.scope, resourceId: typeof body.id === 'string' ? body.id : null });
     return NextResponse.json({ ok: true });
   }
 

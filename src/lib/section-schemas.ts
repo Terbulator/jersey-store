@@ -1,19 +1,31 @@
 import { z } from 'zod';
 
-// Rejects javascript:, data:, vbscript: and other executable URL schemes.
-// ponytail: blocklist check, not a full URL resolver — relative paths allowed
-// deliberately (/shop, #top). Upgrade to a scheme allowlist when rich text
-// editors or external link components get added.
-export const SAFE_URL_REFINER = (v: string) => !/^(javascript|data|vbscript)\s*:/i.test(v.trimStart());
+// Strict URL allowlist: only https: scheme and relative paths (/, #, or scheme-less).
+// Rejects javascript:, data:, vbscript:, ftp:, mailto:, file:, http:, and all other schemes.
+const ALLOWED_URL_PATTERN = /^(https?:)?\/\/|^\/|^#|^[a-z0-9-]+:/i;
+
+export const SAFE_URL_REFINER = (v: string): boolean => {
+  const trimmed = v.trimStart();
+  // Allow relative paths (starting with / or #) and https: URLs
+  if (trimmed.startsWith('/') || trimmed.startsWith('#')) return true;
+  // Allow https: URLs only
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'https:';
+  } catch {
+    // Not a valid absolute URL, might be a relative path without leading /
+    return false;
+  }
+};
 
 // Server-side URL gate shared by all CMS write paths.
 export function isSafeUrl(v: unknown): boolean {
   return typeof v === 'string' && v.length <= 2000 && SAFE_URL_REFINER(v);
 }
 
-const safeUrl = z.string().max(2000).refine(SAFE_URL_REFINER, { message: 'URL scheme not allowed.' });
+const safeUrl = z.string().max(2000).refine(SAFE_URL_REFINER, { message: 'URL scheme not allowed. Only https:// and relative paths allowed.' });
 const optStr = z.string().max(500);
-const optUrl = z.string().max(2000).refine(SAFE_URL_REFINER, { message: 'URL scheme not allowed.' });
+const optUrl = z.string().max(2000).refine(SAFE_URL_REFINER, { message: 'URL scheme not allowed. Only https:// and relative paths allowed.' });
 
 // Per-section design overrides (settings.design). Colors accept #rrggbb or a
 // 'token:<path>' reference so local overrides follow theme changes. Only
